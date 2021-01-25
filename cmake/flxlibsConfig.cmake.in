@@ -1,0 +1,13 @@
+
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(appfwk)
+find_dependency(dataformats)
+find_dependency(udaq_readout_deps)
+
+set_and_check(targets_file ${CMAKE_CURRENT_LIST_DIR}/@PROJECT_NAME@Targets.cmake)
+include(${targets_file})
+
+check_required_components(@PROJECT_NAME@)
