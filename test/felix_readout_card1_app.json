@@ -1,0 +1,38 @@
+{
+  "queues": {
+    "blocks-0": {
+      "capacity": 6000000,
+      "kind": "FollySPSCQueue"
+    },
+    "blocks-64": {
+      "capacity": 6000000,
+      "kind": "FollySPSCQueue"
+    },
+    "blocks-128": {
+      "capacity": 6000000,
+      "kind": "FollySPSCQueue"
+    },
+    "blocks-192": {
+      "capacity": 6000000,
+      "kind": "FollySPSCQueue"
+    },
+    "blocks-256": {
+      "capacity": 6000000,
+      "kind": "FollySPSCQueue"
+    },
+    "blocks-320": {
+      "capacity": 6000000,
+      "kind": "FollySPSCQueue"
+    }
+  },
+  "modules": {
+    "cardreader": {
+      "user_module_type": "CardReader",
+      "outputs": [ "blocks-0", "blocks-64", "blocks-128", "blocks-192", "blocks-256" ]
+    }
+  },
+  "commands": {
+    "start": [ "validator", "reverser", "generator" ],
+    "stop": [ "generator", "reverser", "validator" ]
+  }
+}

@@ -1,0 +1,140 @@
+[
+    {
+        "data": {
+            "modules": [
+                {
+                    "data": {
+                        "qinfos": [
+                            {
+                                "dir": "output",
+                                "inst": "link-0",
+                                "name": "output"
+                            },
+                            {
+                                "dir": "output",
+                                "inst": "link-1",
+                                "name": "output"
+                            },
+                            {
+                                "dir": "output",
+                                "inst": "link-2",
+                                "name": "output"
+                            },
+                            {
+                                "dir": "output",
+                                "inst": "link-3",
+                                "name": "output"
+                            },
+                            {
+                                "dir": "output",
+                                "inst": "link-4",
+                                "name": "output"
+                            }
+                        ]
+                    },
+                    "inst": "felix-source",
+                    "plugin": "FelixCardReader"
+                },
+                {
+                    "data": {
+                        "qinfos": [
+                            {
+                                "dir": "input",
+                                "inst": "link-0",
+                                "name": "input"
+                            }
+                        ]
+                    },
+                    "inst": "wib-linkhandler-0",
+                    "plugin": "DataLinkHandler"
+                }
+            ],
+            "queues": [
+                {
+                    "capacity": 100000,
+                    "inst": "link-0",
+                    "kind": "FollySPSCQueue"
+                },
+                {
+                    "capacity": 100000,
+                    "inst": "link-1",
+                    "kind": "FollySPSCQueue"
+                },
+                {
+                    "capacity": 100000,
+                    "inst": "link-2",
+                    "kind": "FollySPSCQueue"
+                },
+                {
+                    "capacity": 100000,
+                    "inst": "link-3",
+                    "kind": "FollySPSCQueue"
+                },
+                {
+                    "capacity": 100000,
+                    "inst": "link-4",
+                    "kind": "FollySPSCQueue"
+                }
+            ]
+        },
+        "id": "init"
+    },
+    {
+        "data": {
+            "modules": [
+                {
+                    "data": {
+                      "card_id": 0,
+                      "card_offset": 0,
+                      "dma_id": 0,
+                      "numa_id": 0,
+                      "num_sources": 1,
+                      "num_links": 5
+                    },
+                    "match": "felix-source"
+                },
+                {
+                    "data": {
+                      "raw_type": "wib",
+                      "source_queue_timeout_ms": 2000,
+                      "latency_buffer_size": 100000,
+                      "pop_limit_pct": 0.8,
+                      "pop_size_pct": 0.3
+                    },
+                    "match": "wib-linkhandler-0"
+                }
+            ]
+        },
+        "id": "conf"
+    },
+    {
+        "data": {
+            "modules": [
+                {
+                    "data": {
+                      "run": 42                      
+                    },
+                    "match": "card-source"
+                },
+                {
+                    "data": {
+                      "run": 42
+                    },
+                    "match": "wib-linkhandler-0"
+                }
+            ]
+        },
+        "id": "start"
+    },
+    {
+        "data": {
+            "modules": [
+                {
+                    "data": {},
+                    "match": ""
+                } 
+            ]
+        },
+        "id": "stop"
+    }
+]

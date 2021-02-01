@@ -1,0 +1,84 @@
+{
+  "queues": {
+    "blocks-0": {
+      "capacity": 6000000,
+      "kind": "FollySPSCQueue"
+    },
+    "blocks-64": {
+      "capacity": 6000000,
+      "kind": "FollySPSCQueue"
+    },
+    "blocks-128": {
+      "capacity": 6000000,
+      "kind": "FollySPSCQueue"
+    },
+    "blocks-192": {
+      "capacity": 6000000,
+      "kind": "FollySPSCQueue"
+    },
+    "blocks-256": {
+      "capacity": 6000000,
+      "kind": "FollySPSCQueue"
+    },
+    "blocks-320": {
+      "capacity": 6000000,
+      "kind": "FollySPSCQueue"
+    },
+
+    "chunks-0": {
+      "capacity": 800000,
+      "kind": "FollySPSCQueue"
+    },
+    "chunks-64": {
+      "capacity": 800000,
+      "kind": "FollySPSCQueue"
+    },
+    "chunks-128": {
+      "capacity": 800000,
+      "kind": "FollySPSCQueue"
+    },
+    "chunks-192": {
+      "capacity": 800000,
+      "kind": "FollySPSCQueue"
+    },
+    "chunks-256": {
+      "capacity": 800000,
+      "kind": "FollySPSCQueue"
+    },
+    "chunks-320": {
+      "capacity": 800000,
+      "kind": "FollySPSCQueue"
+    },
+
+  },
+  "modules": {
+    "cardreader-0": {
+      "user_module_type": "CardReaderDAQModule",
+      "outputs": [ "blocks-0", "blocks-64", "blocks-128", "blocks-192", "blocks-256" ],
+      "card_id": 0,
+      "card_offset": 0,
+      "dma_id": 0,
+      "numa_id": 0,
+      "num_sources": 1,
+      "num_links": 5   
+    },
+
+    "linkreader-0": {
+      "user_module_type": "LinkReaderDAQModule",
+      "input": "blocks-0",
+      "output": "chunks-0",
+    
+      "card_id": 0,
+      "card_offset": 0,
+      "dma_id": 0,
+      "numa_id": 0,
+      "num_sources": 1,
+      "num_links": 5   
+    }
+
+  },
+  "commands": {
+    "start": [ "validator", "reverser", "generator" ],
+    "stop": [ "generator", "reverser", "validator" ]
+  }
+}
