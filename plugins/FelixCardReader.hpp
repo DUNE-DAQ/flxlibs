@@ -7,15 +7,16 @@
 #include "appfwk/cmd/Structs.hpp"
 #include "appfwk/cmd/Nljs.hpp"
 
-#include "readout/felixcardreader/Structs.hpp"
+#include "flxlibs/felixcardreader/Structs.hpp"
 
+// From appfwk
 #include "appfwk/DAQModule.hpp"
 #include "appfwk/DAQSink.hpp"
 #include "appfwk/ThreadHelper.hpp"
 
-// Module internals
-#include "ReusableThread.hpp"
-#include "ReadoutTypes.hpp"
+// From readout
+#include "readout/ReusableThread.hpp"
+#include "readout/ReadoutTypes.hpp"
 
 // FELIX Software Suite provided
 #include "flxcard/FlxCard.h"
@@ -26,7 +27,7 @@
 #include <string>
 #include <vector>
 
-namespace dunedaq::readout {
+namespace dunedaq::flxlibs {
 
 /**
  * @brief FelixCardReader reads FELIX DMA block pointers
@@ -63,10 +64,10 @@ private:
 
   // Configuration
   bool configured_;
-  using conf_count_t = dunedaq::readout::felixcardreader::Count;
-  using module_conf_t = dunedaq::readout::felixcardreader::Conf;
+  using conf_count_t = dunedaq::flxlibs::felixcardreader::Count;
+  using module_conf_t = dunedaq::flxlibs::felixcardreader::Conf;
   module_conf_t cfg_;    
-  std::map<uint8_t, types::UniqueBlockPtrSink> block_ptr_sinks_;
+  std::map<uint8_t, readout::types::UniqueBlockPtrSink> block_ptr_sinks_;
 
   // Card control
   typedef std::unique_ptr<FlxCard> UniqueFlxCard;
@@ -101,7 +102,7 @@ private:
   inline static const std::string dma_processor_name_ = "flx-dma";
   std::atomic<bool> run_lock_{false};
   std::atomic<bool> active_{false};
-  ReusableThread dma_processor_;
+  readout::ReusableThread dma_processor_;
   void processDMA();
 
   // Functionalities

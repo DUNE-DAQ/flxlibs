@@ -7,7 +7,7 @@ For the dependencies, you need the following external package that ships a build
 
     udaq_readout_deps v0_0_1
 
-Please modify your `.dunedaq_area` file in your work area, by appending the following item to your `dune_products_dir` set:
+Please modify your `dbt-settings` file in your work area, by enabling the following item to your `dune_products_dir` set:
 
     "/cvmfs/dune.opensciencegrid.org/dunedaq/DUNE/products_dev"
 

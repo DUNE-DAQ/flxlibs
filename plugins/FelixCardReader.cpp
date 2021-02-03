@@ -7,7 +7,7 @@
  * received with this code.
  */
 #include "FelixCardReader.hpp"
-#include "ReadoutIssues.hpp"
+#include "FelixIssues.hpp"
 
 #include "flxcard/FlxException.h"
 
@@ -24,7 +24,7 @@
 #define TRACE_NAME "FelixCardReader" // NOLINT
 
 namespace dunedaq {
-namespace readout {
+namespace flxlibs {
 
 FelixCardReader::FelixCardReader(const std::string& name)
   : DAQModule(name)
@@ -145,7 +145,7 @@ FelixCardReader::openCard()
     card_mutex_.unlock();
   }
   catch(FlxException& ex) {
-    ers::error(readout::FelixError(ERS_HERE, ex.what()));
+    ers::error(flxlibs::CardError(ERS_HERE, ex.what()));
     exit(EXIT_FAILURE);
   }
 }
@@ -160,7 +160,7 @@ FelixCardReader::closeCard()
     card_mutex_.unlock();
   }
   catch(FlxException& ex) {
-    ers::error(readout::FelixError(ERS_HERE, ex.what()));
+    ers::error(flxlibs::CardError(ERS_HERE, ex.what()));
     exit(EXIT_FAILURE);
   }
 }
@@ -186,7 +186,7 @@ FelixCardReader::allocateCMEM(uint8_t numa, u_long bsize, u_long* paddr, u_long*
     card_mutex_.lock();
     flx_card_->card_close();
     card_mutex_.unlock();
-    ers::error(readout::FelixError(ERS_HERE, 
+    ers::error(flxlibs::CardError(ERS_HERE, 
       "Not enough CMEM memory allocated or the application demands too much CMEM memory.\n"
       "Fix the CMEM memory reservation in the driver or change the module's configuration."));
     exit(EXIT_FAILURE);
@@ -335,7 +335,7 @@ FelixCardReader::processDMA()
 
 
 
-} // namespace readout
+} // namespace flxlibs
 } // namespace dunedaq
 
-DEFINE_DUNE_DAQ_MODULE(dunedaq::readout::FelixCardReader)
+DEFINE_DUNE_DAQ_MODULE(dunedaq::flxlibs::FelixCardReader)

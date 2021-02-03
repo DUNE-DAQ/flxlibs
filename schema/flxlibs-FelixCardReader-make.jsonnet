@@ -1,4 +1,4 @@
-// hand written helpers to make object compliant with readout-CardReader
+// hand written helpers to make object compliant with flxlibs-FelixCardReader
 {
     // The internally known name of the only queue used
     queue: "blocks-0", 
