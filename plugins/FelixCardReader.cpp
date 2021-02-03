@@ -32,7 +32,8 @@ FelixCardReader::FelixCardReader(const std::string& name)
   , block_ptr_sinks_{ } 
   , dma_processor_{0}
 {
-  register_command("configure", &FelixCardReader::do_configure);
+  flx_card_ = std::make_unique<FlxCard>();
+  register_command("conf", &FelixCardReader::do_configure);
   register_command("start", &FelixCardReader::do_start);
   register_command("stop", &FelixCardReader::do_stop);
 }
