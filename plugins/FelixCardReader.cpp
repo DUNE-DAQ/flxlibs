@@ -51,6 +51,7 @@ FelixCardReader::init(const data_t& args)
   }
   std::vector<std::string> queue_names; // = get_config()["outputs"].get<std::vector<std::string>>();
 
+  dma_memory_size_ = 4096*1024*1024UL;
   card_id_ = 0; //init_data.get<uint8_t>("card_id", 0);
   card_offset_ = 0; //get_config().value<uint8_t>("card_offset", 0);
   dma_id_ = 0; //get_config().value<uint8_t>("dma_id", 0);
@@ -83,8 +84,9 @@ FelixCardReader::do_configure(const data_t& /*args*/)
     openCard();
     ERS_INFO("Card[" << card_id_ << "] opened.");
     // Allocate CMEM
+    std::cout << " CMEM sizE: " << dma_memory_size_ << '\n';
     cmem_handle_ = allocateCMEM(numa_id_, dma_memory_size_, &phys_addr_, &virt_addr_);  
-    ERS_INFO("Card[" << card_id_ << "] CMEM memory allocated with " << dma_memory_size_ << " Bytes.");
+    ERS_INFO("Card[" << (unsigned)card_id_ << "] CMEM memory allocated with " << (unsigned)dma_memory_size_ << " Bytes.");
     // Stop currently running DMA
     stopDMA();
     ERS_INFO("Card[" << card_id_ << "] DMA interactions force stopped.");
@@ -305,9 +307,9 @@ FelixCardReader::processDMA()
       unsigned block_elink_to_id = static_cast<unsigned>(block->elink)/64;
       //ERS_INFO("BLOCK ELINK: " << block_elink);
 
-#warning RS: Add here the proper error handling via appfwk
+#warning RS: Add parser implementation
       // Queue block pointer for processing
-      block_ptr_sinks_[block_elink_to_id]->push(from_address);
+      //block_ptr_sinks_[block_elink_to_id]->push(from_address);
 
       //if ( !block_ptr_queues_[block_elink_to_id]->push(from_address) ) {
       //  elink_metrics_[block_elink]++;

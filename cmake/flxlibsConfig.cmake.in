@@ -6,7 +6,7 @@ include(CMakeFindDependencyMacro)
 find_dependency(appfwk)
 find_dependency(dataformats)
 find_dependency(readout)
-find_dependency(udaq_readout_deps)
+#find_dependency(udaq_readout_deps)
 
 if (EXISTS ${CMAKE_SOURCE_DIR}/@PROJECT_NAME@)
 

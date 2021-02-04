@@ -8,18 +8,35 @@ daq_setup_environment()
 find_package(appfwk REQUIRED)
 find_package(dataformats REQUIRED)
 find_package(readout REQUIRED)
-find_package(udaq_readout_deps REQUIRED)
+#find_package(udaq_readout_deps REQUIRED)
 
 ##############################################################################
 # Dependency sets
-set(FLXCARD_DEPENDENCIES udaq_readout_deps::FlxCard udaq_readout_deps::cmem_rcc udaq_readout_deps::packetformat)
 set(FLXUTIL_DEPENDENCIES readout::readout dataformats::dataformats)
+#set(FLXCARD_DEPENDENCIES udaq_readout_deps::FlxCard udaq_readout_deps::cmem_rcc udaq_readout_deps::packetformat)
+message("FELIX LIB -> " $ENV{FLX_LIB})
+message("FELIX INC -> " $ENV{FLX_INC})
+
+set(FLXCARD_DEPENDENCIES 
+  $ENV{FLX_LIB}/libregmap.so
+  $ENV{FLX_LIB}/libpacketformat.so
+  $ENV{FLX_LIB}/libdrivers_rcc.so
+  $ENV{FLX_LIB}/libgetinput.so
+  $ENV{FLX_LIB}/libio_rcc.so
+  $ENV{FLX_LIB}/librcc_error.so
+  $ENV{FLX_LIB}/libcmem_rcc.so
+  $ENV{FLX_LIB}/libDFDebug.so
+  $ENV{FLX_LIB}/libFlxCard.so
+)
 
 ##############################################################################
 # Main library
 daq_add_library(DefaultParserImpl.cpp          
   LINK_LIBRARIES appfwk::appfwk ${FLXCARD_DEPENDENCIES} ${FLXUTIL_DEPENDENCIES}
 )
+
+# Hack targets
+target_include_directories(flxlibs PUBLIC $ENV{FLX_INC})
 
 ##############################################################################
 # Plugins
@@ -30,7 +47,7 @@ daq_add_plugin(FelixCardReader duneDAQModule SCHEMA LINK_LIBRARIES appfwk::appfw
 
 ##############################################################################
 # Test configurations
-file(COPY test/felix_readout_card0_app.json DESTINATION test)
+file(COPY test/felixreadout-commands.json DESTINATION test)
 
 ##############################################################################
 # Installation
