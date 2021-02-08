@@ -90,7 +90,7 @@ private:
   std::string info_str_;
 
   // CMEM
-  uint64_t dma_memory_size_; // size of CMEM (driver) memory to allocate
+  std::size_t dma_memory_size_; // size of CMEM (driver) memory to allocate
   int cmem_handle_;         // handle to the DMA memory block
   uint64_t virt_addr_;      // virtual address of the DMA memory block
   uint64_t phys_addr_;      // physical address of the DMA memory block
