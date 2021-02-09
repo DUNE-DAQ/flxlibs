@@ -20,6 +20,8 @@ CardWrapper::CardWrapper()
   , m_configured(false)
   , m_run_lock{false}
   , m_dma_processor(0)
+  , m_handle_block_addr(nullptr)
+  , m_block_addr_handler_available(false)
 {
   m_flx_card = std::make_unique<FlxCard>();
 }
@@ -106,6 +108,8 @@ CardWrapper::set_running(bool should_run)
   ERS_DEBUG(2, "Active state was toggled from " << was_running << " to " << should_run);
 }
 
+
+
 void 
 CardWrapper::open_card()
 {
@@ -139,7 +143,7 @@ CardWrapper::close_card()
 int 
 CardWrapper::allocate_CMEM(uint8_t numa, u_long bsize, u_long* paddr, u_long* vaddr)
 {
-  ERS_DEBUG(2, "Allocating CMEM buffer " << m_card_id_str << " dma id:" << m_dma_id);
+  ERS_DEBUG(2, "Allocating CMEM buffer " << m_card_id_str << " dma id:" << std::to_string(m_dma_id));
   int handle;
   unsigned ret = CMEM_Open(); // cmem_rcc.h
   if (!ret) {
@@ -200,9 +204,8 @@ CardWrapper::init_DMA()
 void 
 CardWrapper::start_DMA()
 {
-  ERS_DEBUG(2, "Issuing flxCard.dma_to_host for card " << m_card_id_str << " dma id:" << m_dma_id);
+  ERS_DEBUG(2, "Issuing flxCard.dma_to_host for card " << m_card_id_str << " dma id:" << std::to_string(m_dma_id));
   m_card_mutex.lock();
-  //m_flx_card->dma_to_host(m_dma_id, m_phys_addr, m_dma_memory_size, FLX_DMA_WRAPAROUND); // FlxCard.h
   m_flx_card->dma_to_host(m_dma_id, m_phys_addr, m_dma_memory_size, constant::dma_wraparound); // FlxCard.h
   m_card_mutex.unlock();
 }
@@ -210,7 +213,7 @@ CardWrapper::start_DMA()
 void 
 CardWrapper::stop_DMA()
 {
-  ERS_DEBUG(2, "Issuing flxCard.dma_stop for card " << m_card_id_str << " dma id:" << m_dma_id);
+  ERS_DEBUG(2, "Issuing flxCard.dma_stop for card " << m_card_id_str << " dma id:" << std::to_string(m_dma_id));
   m_card_mutex.lock();
   m_flx_card->dma_stop(m_dma_id);
   m_card_mutex.unlock();
@@ -267,13 +270,22 @@ CardWrapper::process_DMA()
     while (m_read_index != write_index) {
       uint64_t from_address = m_virt_addr + (m_read_index * constant::block_size);
 
+      if (m_block_addr_handler_available) {
+        m_handle_block_addr(from_address);
+      }
+
       // Interpret block
+
+/*
       const felix::packetformat::block* block = const_cast<felix::packetformat::block*>(
         felix::packetformat::block_from_bytes(reinterpret_cast<const char*>(from_address))
       );
 
       // Get ELink ID
       unsigned block_elink_to_id = static_cast<unsigned>(block->elink)/64;
+*/
+      
+
       //ERS_INFO("BLOCK ELINK: " << block_elink);
 
 #warning RS: Add parser implementation

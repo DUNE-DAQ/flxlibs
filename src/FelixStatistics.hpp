@@ -15,16 +15,16 @@ namespace dunedaq::flxlibs::stats {
 typedef std::atomic<int> counter_t;
 
 struct ParserStats {
-  counter_t packet_ctr_{0};
-  counter_t short_ctr_{0};
-  counter_t chunk_ctr_{0};
-  counter_t subchunk_ctr_{0};
-  counter_t block_ctr_{0};
-  counter_t error_short_ctr_{0};
-  counter_t error_chunk_ctr_{0};
-  counter_t error_subchunk_ctr_{0};
-  counter_t error_block_ctr_{0};
-  counter_t last_chunk_size_{0};
+  counter_t packet_ctr{0};
+  counter_t short_ctr{0};
+  counter_t chunk_ctr{0};
+  counter_t subchunk_ctr{0};
+  counter_t block_ctr{0};
+  counter_t error_short_ctr{0};
+  counter_t error_chunk_ctr{0};
+  counter_t error_subchunk_ctr{0};
+  counter_t error_block_ctr{0};
+  counter_t last_chunk_size{0};
 };
 
 } // namespace dunedaq::readout

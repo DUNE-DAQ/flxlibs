@@ -16,7 +16,6 @@ namespace dunedaq::flxlibs::constant {
   static constexpr size_t margin_blocks = 4;
   static constexpr size_t block_threshold = 256;
   static constexpr size_t block_size = felix::packetformat::BLOCKSIZE; 
-
   static constexpr size_t dma_wraparound = FLX_DMA_WRAPAROUND;
 
 } // namespace dunedaq::flxlibs::constant

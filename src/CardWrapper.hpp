@@ -46,6 +46,11 @@ public:
   void stop(const data_t& args);
   void set_running(bool should_run);
 
+  void set_block_addr_handler(std::function<void(uint64_t)>& handle) {
+    m_handle_block_addr = std::bind(handle, std::placeholders::_1);
+    m_block_addr_handler_available = true;
+  }
+
 private:
   // Card
   void open_card();
@@ -89,6 +94,8 @@ private:
   inline static const std::string m_dma_processor_name = "flx-dma";
   std::atomic<bool> m_run_lock;
   readout::ReusableThread m_dma_processor;
+  std::function<void(uint64_t)> m_handle_block_addr;
+  bool m_block_addr_handler_available;
   void process_DMA();
 
 };
