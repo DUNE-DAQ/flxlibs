@@ -10,9 +10,13 @@
 
 #include "flxcard/FlxCard.h"
 
-#include "CardConstants.hpp"
+#include "readout/ReusableThread.hpp"
+
+#include <nlohmann/json.hpp>
 
 #include <string>
+#include <mutex>
+#include <atomic>
 
 namespace dunedaq::flxlibs {
 
@@ -35,25 +39,25 @@ public:
   CardWrapper& operator=(CardWrapper&&) =
     delete; ///< CardWrapper is not move-assignable
 
+  using data_t = nlohmann::json;
   void init(const data_t& args);
   void configure(const data_t& args);
   void start(const data_t& args);
   void stop(const data_t& args);
-  void setRunning(bool shouldRun);
-
-  // Card
-  void openCard();
-  void closeCard();
-
-  // DMA
-  int allocateCMEM(uint8_t numa, u_long bsize, u_long* paddr, u_long* vaddr);
-  void initDMA();
-  void startDMA();
-  void stopDMA();
-  uint64_t bytesAvailable();
-  void readCurrentAddress();
+  void set_running(bool should_run);
 
 private:
+  // Card
+  void open_card();
+  void close_card();
+
+  // DMA
+  int allocate_CMEM(uint8_t numa, u_long bsize, u_long* paddr, u_long* vaddr);
+  void init_DMA();
+  void start_DMA();
+  void stop_DMA();
+  uint64_t bytes_available();
+  void read_current_address();
 
   // Card object
   using UniqueFlxCard = std::unique_ptr<FlxCard>;
@@ -62,7 +66,9 @@ private:
   std::atomic<bool> m_active;
 
   // Internals
+  bool m_configured;
   uint8_t m_card_id;
+  std::string m_card_id_str;
   uint8_t m_card_offset;
   uint8_t m_dma_id;
   uint8_t m_numa_id;
@@ -72,12 +78,18 @@ private:
 
   // DMA: CMEM
   std::size_t m_dma_memory_size; // size of CMEM (driver) memory to allocate
-  int m_cmem_handle;         // handle to the DMA memory block
-  uint64_t m_virt_addr;      // virtual address of the DMA memory block
-  uint64_t m_phys_addr;      // physical address of the DMA memory block
-  uint64_t m_current_addr;   // pointer to the current write position for the card
+  int m_cmem_handle;             // handle to the DMA memory block
+  uint64_t m_virt_addr;          // virtual address of the DMA memory block
+  uint64_t m_phys_addr;          // physical address of the DMA memory block
+  uint64_t m_current_addr;       // pointer to the current write position for the card
   unsigned m_read_index;
-  u_long m_destination;      // FlxCard.h
+  u_long m_destination;          // u_long -> FlxCard.h
+
+  // Processor
+  inline static const std::string m_dma_processor_name = "flx-dma";
+  std::atomic<bool> m_run_lock;
+  readout::ReusableThread m_dma_processor;
+  void process_DMA();
 
 };
   
