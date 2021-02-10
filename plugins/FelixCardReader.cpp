@@ -29,9 +29,12 @@ namespace flxlibs {
 FelixCardReader::FelixCardReader(const std::string& name)
   : DAQModule(name)
   , m_configured(false)
+  , m_card_wrapper{ std::make_unique<CardWrapper>() }
+  , m_block_router(nullptr)
   //, block_ptr_sinks_{ } 
 
 {
+  m_card_wrapper = std::make_unique<CardWrapper>();
 
   register_command("conf", &FelixCardReader::do_configure);
   register_command("start", &FelixCardReader::do_start);
@@ -51,21 +54,10 @@ FelixCardReader::init(const data_t& args)
     }
   }
   std::vector<std::string> queue_names; // = get_config()["outputs"].get<std::vector<std::string>>();
-
-  dma_memory_size_ = 4096*1024*1024UL;
-  card_id_ = 0; //init_data.get<uint8_t>("card_id", 0);
-  card_offset_ = 0; //get_config().value<uint8_t>("card_offset", 0);
-  dma_id_ = 0; //get_config().value<uint8_t>("dma_id", 0);
-  numa_id_ = 0; //get_config().value<uint8_t>("numa_id", 0);
-  num_sources_ = 1; //get_config().value<uint8_t>("num_sources", 1);
-  num_links_ = 6; //get_config().value<uint8_t>("num_links", M_MAX_LINKS_PER_CARD);
-
-  //ERS_INFO("Base parameters initialized: " << get_config().dump()); 
 */
 
-
 /*
-  if (queue_names.size() != num_links_) {
+  if (queue_names.size() != m_num_links_) {
     ers::error(readout::ConfigurationError(ERS_HERE, "Number of links does not match number of output queues."));
   } else {
     for (unsigned i=0; i<queue_names.size(); ++i){
@@ -74,24 +66,74 @@ FelixCardReader::init(const data_t& args)
     }
   }
 */
+
+  m_card_id = 0; // from name?
+  m_num_links = 6; // from output sinks?
+
+  m_card_wrapper->init(args);
+  for (unsigned lid=0; lid<m_num_links; ++lid) {
+    auto tag = lid*64;
+    m_elink_handlers[tag] = std::make_unique<ElinkHandler>();
+    m_elink_handlers[tag]->init(args);
+  }
+
+  // Router function of block to appropriate ElinkHandlers
+  m_block_router = [&](uint64_t block_addr) {
+    //block_counter++;
+    const auto* block = const_cast<felix::packetformat::block*>(
+      felix::packetformat::block_from_bytes(reinterpret_cast<const char*>(block_addr))
+    );
+    auto elink = block->elink;
+    if(m_elink_handlers.count(elink) != 0) {
+      m_elink_handlers[elink]->queue_in_block(block_addr);
+    } else {
+      // Really bad -> unexpeced ELINK ID in Block.
+      // This check is needed in order to avoid dynamically add thousands
+      // of ELink parser implementations on the fly, in case the data
+      // corruption is extremely severe.
+      //
+      // Possible causes:
+      //   -> enabled links that don't connect to anything
+      //   -> unexpected format (fw/sw version missmatch)
+      //   -> data corruption from FE
+      //   -> data corruption from CR (really rare, last possible cause)
+      
+      // NO ERS_DEBUG, but should count and periodically report corrupted DMA blocks.
+    }
+  };
+
+  // Set function for the CardWrapper's block processor.
+  m_card_wrapper->set_block_addr_handler(m_block_router);
 }
 
 void
-FelixCardReader::do_configure(const data_t& /*args*/)
+FelixCardReader::do_configure(const data_t& args)
 {
-
+  m_card_wrapper->configure(args);
+  for (unsigned lid=0; lid<m_num_links; ++lid) {
+    auto tag = lid*64;
+    m_elink_handlers[tag]->configure(args);
+  } 
 }
 
 void
-FelixCardReader::do_start(const data_t& /*args*/)
+FelixCardReader::do_start(const data_t& args)
 {
-
+  m_card_wrapper->start(args);
+  for (unsigned lid=0; lid<m_num_links; ++lid) {
+    auto tag = lid*64;
+    m_elink_handlers[tag]->start(args);
+  } 
 }
 
 void
-FelixCardReader::do_stop(const data_t& /*args*/)
+FelixCardReader::do_stop(const data_t& args)
 {
-
+  m_card_wrapper->stop(args);
+  for (unsigned lid=0; lid<m_num_links; ++lid) {
+    auto tag = lid*64;
+    m_elink_handlers[tag]->stop(args);
+  }
 }
 
 } // namespace flxlibs

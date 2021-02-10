@@ -76,6 +76,9 @@ CardWrapper::start(const data_t& /*args*/)
 {
   ERS_INFO("Starting CardWrapper of card " << m_card_id_str << "...");
   if (!m_active.load()) {
+    if (!m_block_addr_handler_available) {
+      ERS_INFO("Block Address handler is not set! Is it intentional?");
+    }
     start_DMA();
     set_running(true);
     m_dma_processor.set_work(&CardWrapper::process_DMA, this);

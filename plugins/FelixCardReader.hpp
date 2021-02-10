@@ -18,8 +18,10 @@
 #include "readout/ReusableThread.hpp"
 
 // FELIX Software Suite provided
-#include "flxcard/FlxCard.h"
 #include "packetformat/block_format.hpp"
+
+#include "CardWrapper.hpp"
+#include "ElinkHandler.hpp"
 
 #include <future>
 #include <memory>
@@ -58,8 +60,21 @@ private:
   bool m_configured;
   using module_conf_t = dunedaq::flxlibs::felixcardreader::Conf;
   module_conf_t m_cfg;
-  
-  //std::map<uint8_t, readout::types::UniqueBlockPtrSink> m_block_ptr_sinks;
+
+  int m_card_id = 0;
+  int m_num_links = 0;
+
+  // FELIX Cards
+  std::unique_ptr<CardWrapper> m_card_wrapper;
+
+  // ElinkHandler
+  std::map<int, std::unique_ptr<ElinkHandler>> m_elink_handlers;
+
+  // Function for routing block addresses from card to elink handler
+  std::function<void(uint64_t)> m_block_router;
+
+  // Appfwk sinks
+
 
 };
 
