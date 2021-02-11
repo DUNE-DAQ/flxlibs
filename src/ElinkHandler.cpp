@@ -32,12 +32,9 @@ void
 ElinkHandler::init(const data_t& /*args*/)
 {
   m_block_addr_queue = std::make_unique<folly::ProducerConsumerQueue<uint64_t>>(1000000);
-
   // based on queue name, modify the function members of m_parser_impl
-
   // create parser
   m_parser = std::make_unique<felix::packetformat::BlockParser<DefaultParserImpl>>( m_parser_impl );
-  m_parser->configure(4096, true); // unsigned bsize, bool trailer_is_32bit
 }
 
 void 
@@ -50,6 +47,10 @@ ElinkHandler::configure(const data_t& /*args*/)
     m_link_id = 0;
     m_link_tag = 0;
     //m_parser_thread.set_id(0);
+    
+    // We will need a way to figure this out from regmap.
+    m_parser->configure(4096, true); // unsigned bsize, bool trailer_is_32bit
+
     m_configured=true;
   }
 }
