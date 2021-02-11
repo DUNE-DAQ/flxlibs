@@ -122,7 +122,6 @@ ElinkHandler::process_elink()
 void
 ElinkHandler::run_stats()
 {
-  int new_packet_ctr = 0;
   int new_short_ctr = 0;
   int new_chunk_ctr = 0;
   int new_subchunk_ctr = 0;
@@ -136,7 +135,6 @@ ElinkHandler::run_stats()
   auto t0 = std::chrono::high_resolution_clock::now();
   while(m_run_marker.load()) {
     auto now = std::chrono::high_resolution_clock::now();
-    new_packet_ctr = stats.packet_ctr.exchange(0);
     new_short_ctr = stats.short_ctr.exchange(0);
     new_chunk_ctr = stats.chunk_ctr.exchange(0);
     new_subchunk_ctr = stats.subchunk_ctr.exchange(0);
@@ -147,7 +145,7 @@ ElinkHandler::run_stats()
     new_error_block_ctr = stats.error_block_ctr.exchange(0);
 
     double seconds =  std::chrono::duration_cast<std::chrono::microseconds>(now-t0).count()/1000000.;
-    ERS_INFO("Parser stats -> \n"
+    ERS_INFO("Parser stats ->"
           << " Blocks: " << new_block_ctr
           << " Block rate: " << new_block_ctr/seconds/1000. << " [kHz]"
           << " Chunks: " << new_chunk_ctr
@@ -155,6 +153,7 @@ ElinkHandler::run_stats()
           << " Shorts: " << new_short_ctr
           << " Subchunks:" << new_subchunk_ctr
           << " Error Chunks: " << new_error_chunk_ctr
+          << " Error Shorts: " << new_error_short_ctr
           << " Error Subchunks: " << new_error_subchunk_ctr
           << " Error Block: " << new_error_block_ctr);
 

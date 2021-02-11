@@ -51,6 +51,8 @@ public:
 
   bool queue_in_block(uint64_t block_addr);
 
+  DefaultParserImpl& get_parser() { return std::ref(m_parser_impl); }
+ 
   void set_ids(unsigned id, unsigned tag) {
     m_link_id = id;
     m_link_tag = tag;
