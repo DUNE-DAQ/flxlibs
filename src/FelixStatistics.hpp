@@ -24,7 +24,6 @@ struct ParserStats {
   counter_t error_chunk_ctr{0};
   counter_t error_subchunk_ctr{0};
   counter_t error_block_ctr{0};
-  counter_t last_chunk_size{0};
 };
 
 } // namespace dunedaq::readout

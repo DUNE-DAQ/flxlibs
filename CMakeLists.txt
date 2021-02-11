@@ -31,7 +31,7 @@ set(FLXCARD_DEPENDENCIES
 
 ##############################################################################
 # Main library
-daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp         
+daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp ElinkHandler.cpp 
   LINK_LIBRARIES appfwk::appfwk ${FLXCARD_DEPENDENCIES} ${FLXUTIL_DEPENDENCIES}
 )
 
@@ -45,6 +45,7 @@ daq_add_plugin(FelixCardReader duneDAQModule SCHEMA LINK_LIBRARIES appfwk::appfw
 ##############################################################################
 # Integration tests
 daq_add_application(flxlibs_test_cardwrapper test_cardwrapper_app.cxx TEST LINK_LIBRARIES flxlibs)
+daq_add_application(flxlibs_test_elinkhandler test_elinkhandler_app.cxx TEST LINK_LIBRARIES flxlibs)
 
 ##############################################################################
 # Test configurations

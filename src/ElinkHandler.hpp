@@ -8,10 +8,13 @@
 #ifndef FLXLIBS_SRC_ELINKHANDLER_HPP_
 #define FLXLIBS_SRC_ELINKHANDLER_HPP_
 
+#include "DefaultParserImpl.hpp"
+
 #include "readout/ReusableThread.hpp"
 
-#include <nlohmann/json.hpp>
+#include "packetformat/detail/block_parser.hpp"
 
+#include <nlohmann/json.hpp>
 #include <folly/ProducerConsumerQueue.h>
 
 #include <string>
@@ -40,14 +43,13 @@ public:
     delete; ///< ElinkHandler is not move-assignable
 
   using data_t = nlohmann::json;
-  void init(const data_t& args) {}
-  void configure(const data_t& args) {}
-  void start(const data_t& args) {}
-  void stop(const data_t& args) {}
-  void set_running(bool should_run) {}
+  void init(const data_t& args);
+  void configure(const data_t& args);
+  void start(const data_t& args);
+  void stop(const data_t& args);
+  void set_running(bool should_run);
 
-  void queue_in_block(uint64_t) {}
-
+  bool queue_in_block(uint64_t block_addr);
 
   void set_ids(unsigned id, unsigned tag) {
     m_link_id = id;
@@ -55,22 +57,28 @@ public:
   }
 
 private:
-  unsigned m_link_id = 0;
-  unsigned m_link_tag = 0;
+  // Internals
+  std::atomic<bool> m_run_marker;
+  bool m_configured;
+  unsigned m_link_id;
+  unsigned m_link_tag;
 
   // blocks to process
-  folly::ProducerConsumerQueue<uint64_t> m_block_addr_queue;
+  using UniqueBlockAddrQueue = std::unique_ptr<folly::ProducerConsumerQueue<uint64_t>>;
+  UniqueBlockAddrQueue m_block_addr_queue;
+
+  // Block Parser
+  DefaultParserImpl m_parser_impl;
+  std::unique_ptr<felix::packetformat::BlockParser<DefaultParserImpl>> m_parser;
 
   // Processor
-  /*
-  inline static const std::string m_dma_processor_name = "flx-dma";
-  std::atomic<bool> m_run_lock;
-  readout::ReusableThread m_elink_processor;
-  std::function<void(uint64_t)> m_handle_block_addr;
-  bool m_block_addr_handler_available;
+  inline static const std::string m_parser_thread_name = "elinkp";
+  readout::ReusableThread m_parser_thread;
   void process_elink();
-*/
 
+  // Statistics
+  readout::ReusableThread m_stats_thread;
+  void run_stats();
 };
   
 } // namespace dunedaq::flxlibs

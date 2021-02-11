@@ -39,74 +39,38 @@ public:
   DefaultParserImpl& operator=(DefaultParserImpl&&) =
     delete; ///< DefaultParserImpl is not move-assignable
 
-  void set_ids(unsigned id, unsigned tag) { 
-    m_link_id = id; 
-    m_link_tag = tag; 
-  }
+  stats::ParserStats& get_stats();
 
-  //void start() {}
-  //void stop() {}
-  void log_packet(bool /*is_short*/) { m_stats.packet_ctr++; }
+  // Public functions for re-bind
+  std::function<void(const felix::packetformat::chunk& chunk)> process_chunk_func;
+  std::function<void(const felix::packetformat::shortchunk& shortchunk)> process_shortchunk_func;
+  std::function<void(const felix::packetformat::subchunk& subchunk)> process_subchunk_func;
+  std::function<void(const felix::packetformat::block& block)> process_block_func;
+  std::function<void(const felix::packetformat::chunk& chunk)> process_chunk_with_error_func;
+  std::function<void(const felix::packetformat::subchunk& subchunk)> process_subchunk_with_error_func;
+  std::function<void(const felix::packetformat::shortchunk& shortchunk)> process_shortchunk_with_error_func;
+  std::function<void(const felix::packetformat::block& block)> process_block_with_error_func;
 
-  std::function<void(const felix::packetformat::chunk& chunk)> process_chunk_func = nullptr;
-  void process_chunk(const felix::packetformat::chunk& chunk);
-  void chunk_processed(const felix::packetformat::chunk& chunk) { 
-    process_chunk_func(chunk);
-    m_stats.chunk_ctr++;
-  }
-
-  std::function<void(const felix::packetformat::shortchunk& shortchunk)> process_shortchunk_func = nullptr;
-  void process_shortchunk(const felix::packetformat::shortchunk& shortchunk);
-  void shortchunk_processed(const felix::packetformat::shortchunk& shortchunk) { 
-    process_shortchunk_func(shortchunk);
-    m_stats.short_ctr++;
-  }
-
-  std::function<void(const felix::packetformat::subchunk& subchunk)> process_subchunk_func = nullptr;
-  void process_subchunk(const felix::packetformat::subchunk& subchunk);
-  void subchunk_processed(const felix::packetformat::subchunk& subchunk) {
-    process_subchunk_func(subchunk);
-    m_stats.subchunk_ctr++;
-  }
-
-  std::function<void(const felix::packetformat::block& block)> process_block_func = nullptr;
-  void process_block(const felix::packetformat::block& block);
-  void block_processed(const felix::packetformat::block& block) {
-    process_block_func(block);
-    m_stats.block_ctr++;
-  }
-
-  std::function<void(const felix::packetformat::chunk& chunk)> process_chunk_with_error_func = nullptr;
-  void process_chunk_with_error(const felix::packetformat::chunk& chunk);
-  void chunk_processed_with_error(const felix::packetformat::chunk& chunk) {
-    process_chunk_with_error_func(chunk);
-    m_stats.error_chunk_ctr++;
-  }
-
-  std::function<void(const felix::packetformat::subchunk& subchunk)> process_subchunk_with_error_func = nullptr;
-  void process_subchunk_with_error(const felix::packetformat::subchunk& subchunk);
-  void subchunk_processed_with_error(const felix::packetformat::subchunk& subchunk) {
-    process_subchunk_with_error_func(subchunk);
-    m_stats.error_subchunk_ctr++;
-  }
-
-  std::function<void(const felix::packetformat::shortchunk& shortchunk)> process_shortchunk_with_error_func = nullptr;
-  void process_shortchunk_with_error(const felix::packetformat::shortchunk& shortchunk);
-  void shortchunk_process_with_error(const felix::packetformat::shortchunk& shortchunk) {
-    process_shortchunk_with_error_func(shortchunk);
-    m_stats.error_short_ctr++;
-  }
-
-  std::function<void(const felix::packetformat::block& block)> process_block_with_error_func = nullptr;
-  void process_block_with_error(const felix::packetformat::block& block);
-  void block_processed_with_error(const felix::packetformat::block& block) {
-    process_block_with_error_func(block);
-    m_stats.error_block_ctr++;
-  }
+  // Implementation of ParserOperations: They call the functions above
+  void chunk_processed(const felix::packetformat::chunk& chunk);
+  void shortchunk_processed(const felix::packetformat::shortchunk& shortchunk);
+  void subchunk_processed(const felix::packetformat::subchunk& subchunk);
+  void block_processed(const felix::packetformat::block& block);
+  void chunk_processed_with_error(const felix::packetformat::chunk& chunk);
+  void subchunk_processed_with_error(const felix::packetformat::subchunk& subchunk);
+  void shortchunk_process_with_error(const felix::packetformat::shortchunk& shortchunk);
+  void block_processed_with_error(const felix::packetformat::block& block); 
 
 private:
-  unsigned m_link_id = 0;
-  unsigned m_link_tag = 0;
+  // Default/empty implementations: No-op "processing"
+  void process_chunk(const felix::packetformat::chunk& /*chunk*/) {}
+  void process_shortchunk(const felix::packetformat::shortchunk& /*shortchunk*/) {}
+  void process_subchunk(const felix::packetformat::subchunk& /*subchunk*/) {}
+  void process_block(const felix::packetformat::block& /*block*/) {}
+  void process_chunk_with_error(const felix::packetformat::chunk& /*chunk*/) {}
+  void process_subchunk_with_error(const felix::packetformat::subchunk& /*subchunk*/) {}
+  void process_shortchunk_with_error(const felix::packetformat::shortchunk& /*shortchunk*/) {}
+  void process_block_with_error(const felix::packetformat::block& /*block*/) {} 
 
   // Statistics
   stats::ParserStats m_stats;

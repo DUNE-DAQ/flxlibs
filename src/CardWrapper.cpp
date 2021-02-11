@@ -16,7 +16,7 @@ namespace dunedaq {
 namespace flxlibs {
 
 CardWrapper::CardWrapper()
-  : m_active{false}
+  : m_run_marker{false}
   , m_configured(false)
   , m_run_lock{false}
   , m_dma_processor(0)
@@ -75,7 +75,7 @@ void
 CardWrapper::start(const data_t& /*args*/)
 {
   ERS_INFO("Starting CardWrapper of card " << m_card_id_str << "...");
-  if (!m_active.load()) {
+  if (!m_run_marker.load()) {
     if (!m_block_addr_handler_available) {
       ERS_INFO("Block Address handler is not set! Is it intentional?");
     }
@@ -92,7 +92,7 @@ void
 CardWrapper::stop(const data_t& /*args*/)
 {
   ERS_INFO("Stopping CardWrapper of card " << m_card_id_str << "...");
-  if (m_active.load()) {
+  if (m_run_marker.load()) {
     stop_DMA();
     set_running(false);
     while (!m_dma_processor.get_readiness()) {
@@ -107,11 +107,9 @@ CardWrapper::stop(const data_t& /*args*/)
 void
 CardWrapper::set_running(bool should_run)
 {
-  bool was_running = m_active.exchange(should_run);
+  bool was_running = m_run_marker.exchange(should_run);
   ERS_DEBUG(2, "Active state was toggled from " << was_running << " to " << should_run);
 }
-
-
 
 void 
 CardWrapper::open_card()
@@ -150,8 +148,8 @@ CardWrapper::allocate_CMEM(uint8_t numa, u_long bsize, u_long* paddr, u_long* va
   int handle;
   unsigned ret = CMEM_Open(); // cmem_rcc.h
   if (!ret) {
-    ret = CMEM_NumaSegmentAllocate(bsize, numa, const_cast<char*>("FelixRO"), &handle);
-    //ret = CMEM_GFPBPASegmentAllocate(bsize, const_cast<char*>("FelixRO"), &handle); 
+    ret = CMEM_NumaSegmentAllocate(bsize, numa, const_cast<char*>("FelixRO"), &handle); // NUMA aware
+    //ret = CMEM_GFPBPASegmentAllocate(bsize, const_cast<char*>("FelixRO"), &handle); // non NUMA aware
   }
   if (!ret) {
     ret = CMEM_SegmentPhysicalAddress(handle, paddr);
@@ -177,25 +175,10 @@ CardWrapper::init_DMA()
 {
   ERS_DEBUG(2, "InitDMA issued...");
   m_card_mutex.lock();
-
-  //m_flx_card->irq_disable();
-  //std::cout <<"flxCard.irq_disable issued.");
-
   m_flx_card->dma_reset();
   ERS_DEBUG(2, "flxCard.dma_reset issued.");
-
   m_flx_card->soft_reset();
   ERS_DEBUG(2, "flxCard.soft_reset issued.");
-
-  //flxCard.irq_disable(ALL_IRQS);
-  //DEBUG("flxCard.irq_diable(ALL_IRQS) issued.");
-
-  // RS TODO: Investigate when did fifo_flush vanish?
-  //m_flx_card->dma_fifo_flush();
-  //DEBUG("flxCard.dma_fifo_flush issued.");
-
-  //m_flx_card->irq_enable(IRQ_DATA_AVAILABLE);
-  //DEBUG("flxCard.irq_enable(IRQ_DATA_AVAILABLE) issued.");
   m_card_mutex.unlock();
 
   m_current_addr = m_phys_addr;
@@ -242,12 +225,12 @@ void
 CardWrapper::process_DMA()
 {
   ERS_DEBUG(2, "CardWrapper starts processing blocks...");
-  while (m_active) {
+  while (m_run_marker.load()) {
 
     // Loop until read address makes sense
     while((m_current_addr < m_phys_addr) || (m_phys_addr+m_dma_memory_size < m_current_addr))
     {
-      if (m_active.load()) {
+      if (m_run_marker.load()) {
         read_current_address();
         std::this_thread::sleep_for(std::chrono::microseconds(5000)); //cfg.poll_time = 5000
       } else {
@@ -258,7 +241,7 @@ CardWrapper::process_DMA()
     // Loop while there are not enough data
     while (bytes_available() < constant::block_threshold * constant::block_size)
     {
-      if (m_active.load()) {
+      if (m_run_marker.load()) {
         std::this_thread::sleep_for(std::chrono::microseconds(5000)); // cfg.poll_time = 5000
         read_current_address();
       } else {
@@ -273,32 +256,10 @@ CardWrapper::process_DMA()
     while (m_read_index != write_index) {
       uint64_t from_address = m_virt_addr + (m_read_index * constant::block_size);
 
+      // Handle block address
       if (m_block_addr_handler_available) {
         m_handle_block_addr(from_address);
       }
-
-      // Interpret block
-
-/*
-      const felix::packetformat::block* block = const_cast<felix::packetformat::block*>(
-        felix::packetformat::block_from_bytes(reinterpret_cast<const char*>(from_address))
-      );
-
-      // Get ELink ID
-      unsigned block_elink_to_id = static_cast<unsigned>(block->elink)/64;
-*/
-      
-
-      //ERS_INFO("BLOCK ELINK: " << block_elink);
-
-#warning RS: Add parser implementation
-      // Queue block pointer for processing
-      //block_ptr_sinks_[block_elink_to_id]->push(from_address);
-
-      //if ( !block_ptr_queues_[block_elink_to_id]->push(from_address) ) {
-      //  elink_metrics_[block_elink]++;
-      //  ERROR("Could not queue in block for elink[" << block_elink << "]");
-      //}
 
       // Advance
       m_read_index = (m_read_index + 1) % (m_dma_memory_size / constant::block_size);

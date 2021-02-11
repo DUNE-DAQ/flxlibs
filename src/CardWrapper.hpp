@@ -64,13 +64,8 @@ private:
   uint64_t bytes_available();
   void read_current_address();
 
-  // Card object
-  using UniqueFlxCard = std::unique_ptr<FlxCard>;
-  UniqueFlxCard m_flx_card;
-  std::mutex m_card_mutex;
-  std::atomic<bool> m_active;
-
   // Internals
+  std::atomic<bool> m_run_marker;
   bool m_configured;
   uint8_t m_card_id;
   std::string m_card_id_str;
@@ -80,6 +75,11 @@ private:
   uint8_t m_num_sources;
   uint8_t m_num_links;
   std::string m_info_str;
+
+  // Card object
+  using UniqueFlxCard = std::unique_ptr<FlxCard>;
+  UniqueFlxCard m_flx_card;
+  std::mutex m_card_mutex;
 
   // DMA: CMEM
   std::size_t m_dma_memory_size; // size of CMEM (driver) memory to allocate

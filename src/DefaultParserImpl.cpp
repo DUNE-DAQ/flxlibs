@@ -32,60 +32,72 @@ DefaultParserImpl::DefaultParserImpl()
     std::bind(&DefaultParserImpl::process_block_with_error, this, std::placeholders::_1);
 }
 
-
 DefaultParserImpl::~DefaultParserImpl()
 {
 
 }
 
-void 
-DefaultParserImpl::process_chunk(const felix::packetformat::chunk& /*chunk*/)
+stats::ParserStats& 
+DefaultParserImpl::get_stats()
 {
-
+  return std::ref(m_stats);
 }
 
 void 
-DefaultParserImpl::process_shortchunk(const felix::packetformat::shortchunk& /*shortchunk*/)
+DefaultParserImpl::chunk_processed(const felix::packetformat::chunk& chunk) 
 {
-
+  process_chunk_func(chunk);
+  m_stats.chunk_ctr++;
 }
 
 void 
-DefaultParserImpl::process_subchunk(const felix::packetformat::subchunk& /*subchunk*/)
+DefaultParserImpl::shortchunk_processed(const felix::packetformat::shortchunk& shortchunk) 
 {
-
+  process_shortchunk_func(shortchunk);
+  m_stats.short_ctr++;
 }
 
 void 
-DefaultParserImpl::process_block(const felix::packetformat::block& /*block*/)
+DefaultParserImpl::subchunk_processed(const felix::packetformat::subchunk& subchunk) 
 {
-
+  process_subchunk_func(subchunk);
+  m_stats.subchunk_ctr++;
 }
 
 void 
-DefaultParserImpl::process_chunk_with_error(const felix::packetformat::chunk& /*chunk*/)
+DefaultParserImpl::block_processed(const felix::packetformat::block& block) 
 {
-
+  process_block_func(block);
+  m_stats.block_ctr++;
 }
 
 void 
-DefaultParserImpl::process_subchunk_with_error(const felix::packetformat::subchunk& /*subchunk*/)
+DefaultParserImpl::chunk_processed_with_error(const felix::packetformat::chunk& chunk) 
 {
-
+  process_chunk_with_error_func(chunk);
+  m_stats.error_chunk_ctr++;
 }
 
 void 
-DefaultParserImpl::process_shortchunk_with_error(const felix::packetformat::shortchunk& /*shortchunk*/)
+DefaultParserImpl::subchunk_processed_with_error(const felix::packetformat::subchunk& subchunk) 
 {
-
+  process_subchunk_with_error_func(subchunk);
+  m_stats.error_subchunk_ctr++;
 }
 
 void 
-DefaultParserImpl::process_block_with_error(const felix::packetformat::block& /*block*/)
+DefaultParserImpl::shortchunk_process_with_error(const felix::packetformat::shortchunk& shortchunk) 
 {
-
+  process_shortchunk_with_error_func(shortchunk);
+  m_stats.error_short_ctr++;
 }
 
+void 
+DefaultParserImpl::block_processed_with_error(const felix::packetformat::block& block) 
+{
+  process_block_with_error_func(block);
+  m_stats.error_block_ctr++;
+}
 
 } // namespace flxlibs
 } // namespace dunedaq
