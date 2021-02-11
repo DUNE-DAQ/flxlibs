@@ -55,6 +55,20 @@ main(int /*argc*/, char** /*argv[]*/)
     handler->start(cmd_params);
   }
 
+  // Modify a specific elink handler
+  bool first = true;
+  auto& parser0 = elink_handlers[0]->get_parser();
+  parser0.process_subchunk_with_error_func = [&](const felix::packetformat::subchunk& subchunk) {
+    // This specific implementation prints the first occurence of a subchunk with error on elink-0.
+    if (first) {
+      ERS_INFO("First subchunk with error:"
+        << " Length=" << subchunk.length
+        << " ErrFlag=" << subchunk.err_flag
+        << " TrunFlag=" << subchunk.trunc_flag);
+      first = false;
+    }
+  };
+
   // Implement how block addresses should be handled
   std::function<void(uint64_t)> count_block_addr = [&](uint64_t block_addr) {
     ++block_counter;
