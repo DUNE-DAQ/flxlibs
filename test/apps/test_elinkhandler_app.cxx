@@ -8,7 +8,12 @@
  * received with this code.
  */
 #include "CardWrapper.hpp"
-#include "ElinkHandler.hpp"
+#include "ElinkConcept.hpp"
+#include "CreateElink.hpp"
+
+#include "flxlibs/AvailableParserOperations.hpp"
+
+#include "readout/ReadoutTypes.hpp"
 
 #include "packetformat/block_format.hpp"
 
@@ -21,6 +26,7 @@
 #include <memory>
 
 using namespace dunedaq::flxlibs;
+using namespace dunedaq::readout;
 
 int
 main(int /*argc*/, char** /*argv[]*/)
@@ -44,20 +50,20 @@ main(int /*argc*/, char** /*argv[]*/)
   // CardWrapper
   ERS_INFO("Creating CardWrapper...");
   CardWrapper flx;
-  std::map<int, std::unique_ptr<ElinkHandler>> elink_handlers;
+  std::map<int, std::unique_ptr<ElinkConcept>> elinks;
 
   // 5 elink handlers
   for (int i=0; i<5; ++i) {
-    elink_handlers[i*64] = std::make_unique<ElinkHandler>();
-    auto& handler = elink_handlers[i*64];
+    elinks[i*64] = createElinkModel("wib");
+    auto& handler = elinks[i*64];
     handler->init(cmd_params);
-    handler->configure(cmd_params);
+    handler->conf(cmd_params);
     handler->start(cmd_params);
   }
 
   // Modify a specific elink handler
   bool first = true;
-  auto& parser0 = elink_handlers[0]->get_parser();
+  auto& parser0 = elinks[0]->get_parser();
   parser0.process_subchunk_with_error_func = [&](const felix::packetformat::subchunk& subchunk) {
     // This specific implementation prints the first occurence of a subchunk with error on elink-0.
     if (first) {
@@ -69,6 +75,11 @@ main(int /*argc*/, char** /*argv[]*/)
     }
   };
 
+  // Sink
+  //using FrameSink = dunedaq::readout::types::WIBFramePtrSink;
+  //FrameSink wibsink("wibsink0");
+  //parser0.process_chunk_func = parsers::fixedsizeChunkInto<types::WIB_SUPERCHUNK_STRUCT>(wibsink);
+
   // Implement how block addresses should be handled
   std::function<void(uint64_t)> count_block_addr = [&](uint64_t block_addr) {
     ++block_counter;
@@ -76,8 +87,8 @@ main(int /*argc*/, char** /*argv[]*/)
       felix::packetformat::block_from_bytes(reinterpret_cast<const char*>(block_addr))
     );
     auto elink = block->elink;
-    if (elink_handlers.count(elink) != 0) {
-      if (elink_handlers[elink]->queue_in_block(block_addr)) {
+    if (elinks.count(elink) != 0) {
+      if (elinks[elink]->queue_in_block(block_addr)) {
         // queued block
       } else {
         // couldn't queue block
@@ -106,7 +117,7 @@ main(int /*argc*/, char** /*argv[]*/)
   flx.stop(cmd_params); 
 
   ERS_INFO("Stop ElinkHandlers...");
-  for (auto const& [tag, handler] : elink_handlers) {
+  for (auto const& [tag, handler] : elinks) {
     handler->stop(cmd_params);
   }
 
