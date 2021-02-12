@@ -31,7 +31,7 @@ set(FLXCARD_DEPENDENCIES
 
 ##############################################################################
 # Main library
-daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp ElinkHandler.cpp 
+daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp 
   LINK_LIBRARIES appfwk::appfwk ${FLXCARD_DEPENDENCIES} ${FLXUTIL_DEPENDENCIES}
 )
 

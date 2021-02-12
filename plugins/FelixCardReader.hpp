@@ -21,7 +21,7 @@
 #include "packetformat/block_format.hpp"
 
 #include "CardWrapper.hpp"
-#include "ElinkHandler.hpp"
+#include "ElinkConcept.hpp"
 
 #include <future>
 #include <memory>
@@ -67,14 +67,11 @@ private:
   // FELIX Cards
   std::unique_ptr<CardWrapper> m_card_wrapper;
 
-  // ElinkHandler
-  std::map<int, std::unique_ptr<ElinkHandler>> m_elink_handlers;
+  // ElinkConcept
+  std::map<int, std::unique_ptr<ElinkConcept>> m_elinks;
 
   // Function for routing block addresses from card to elink handler
   std::function<void(uint64_t)> m_block_router;
-
-  // Appfwk sinks
-
 
 };
 
