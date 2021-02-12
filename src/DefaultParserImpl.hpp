@@ -51,7 +51,7 @@ public:
   std::function<void(const felix::packetformat::shortchunk& shortchunk)> process_shortchunk_with_error_func;
   std::function<void(const felix::packetformat::block& block)> process_block_with_error_func;
 
-  // Implementation of ParserOperations: They call the functions above
+  // Implementation of ParserOperations: They invoke the functions above
   void chunk_processed(const felix::packetformat::chunk& chunk);
   void shortchunk_processed(const felix::packetformat::shortchunk& shortchunk);
   void subchunk_processed(const felix::packetformat::subchunk& subchunk);
