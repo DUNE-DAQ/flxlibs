@@ -44,17 +44,14 @@ fixsizedChunkInto(std::unique_ptr<appfwk::DAQSink<std::unique_ptr<TargetStruct>>
     auto n_subchunks = chunk.subchunk_number();
     std::unique_ptr<TargetStruct> payload_ptr = std::make_unique<TargetStruct>();
     auto target_size = sizeof(*payload_ptr);
-    std::cout << " TARGET SIZE: " << target_size;
     for(unsigned i=0; i<n_subchunks; i++)
     {
-      std::cout << " subchunk:" << subchunk_sizes[i];
       dump_to_buffer(subchunk_data[i], subchunk_sizes[i],
                      static_cast<void*>(&payload_ptr),
                      bytes_copied_chunk, 
                      target_size);
       bytes_copied_chunk += subchunk_sizes[i];
     }
-    std::cout << " bytes_copied: " << bytes_copied_chunk << '\n';
     try {
       sink->push(std::move(payload_ptr), timeout);
     } catch (...) {

@@ -125,7 +125,7 @@ FelixCardReader::do_configure(const data_t& args)
 {
   m_num_links = 5;
   m_card_wrapper->configure(args);
-  for (unsigned lid=0; lid<m_num_links; ++lid) {
+  for (int lid=0; lid<m_num_links; ++lid) {
     m_elinks[lid*64]->conf(args);
   } 
 }
@@ -134,7 +134,7 @@ void
 FelixCardReader::do_start(const data_t& args)
 {
   m_card_wrapper->start(args);
-  for (unsigned lid=0; lid<m_num_links; ++lid) {
+  for (int lid=0; lid<m_num_links; ++lid) {
     m_elinks[lid*64]->start(args);
   } 
 }
@@ -143,7 +143,7 @@ void
 FelixCardReader::do_stop(const data_t& args)
 {
   m_card_wrapper->stop(args);
-  for (unsigned lid=0; lid<m_num_links; ++lid) {
+  for (int lid=0; lid<m_num_links; ++lid) {
     m_elinks[lid*64]->stop(args);
   }
 }
