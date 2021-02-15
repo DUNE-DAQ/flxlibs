@@ -29,6 +29,7 @@ template<class TargetPayloadType>
 class ElinkModel : public ElinkConcept {
 public:
   //using sink_t = appfwk::DAQSink<std::unique_ptr<TargetPayloadType>>;
+  //using sink_t = appfwk::DAQSink<TargetPayloadType*>;
   using sink_t = appfwk::DAQSink<TargetPayloadType>;
   using inherited = ElinkConcept;
   using data_t = nlohmann::json;
@@ -126,10 +127,6 @@ private:
   // blocks to process
   using UniqueBlockAddrQueue = std::unique_ptr<folly::ProducerConsumerQueue<uint64_t>>;
   UniqueBlockAddrQueue m_block_addr_queue;
-
-  // Block Parser
-  //DefaultParserImpl m_parser_impl;
-  //std::unique_ptr<felix::packetformat::BlockParser<DefaultParserImpl>> m_parser;
 
   // Processor
   inline static const std::string m_parser_thread_name = "elinkp";
