@@ -88,7 +88,7 @@ main(int /*argc*/, char** /*argv[]*/)
     );
     auto elink = block->elink;
     if (elinks.count(elink) != 0) {
-      if (elinks[elink]->queue_in_block(block_addr)) {
+      if (elinks[elink]->queue_in_block_address(block_addr)) {
         // queued block
       } else {
         // couldn't queue block
