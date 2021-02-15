@@ -7,28 +7,28 @@
                         "qinfos": [
                             {
                                 "dir": "output",
-                                "inst": "link-0",
-                                "name": "output"
+                                "inst": "wib-0",
+                                "name": "output0"
                             },
                             {
                                 "dir": "output",
-                                "inst": "link-1",
-                                "name": "output"
+                                "inst": "wib-1",
+                                "name": "output1"
                             },
                             {
                                 "dir": "output",
-                                "inst": "link-2",
-                                "name": "output"
+                                "inst": "wib-2",
+                                "name": "output2"
                             },
                             {
                                 "dir": "output",
-                                "inst": "link-3",
-                                "name": "output"
+                                "inst": "wib-3",
+                                "name": "output3"
                             },
                             {
                                 "dir": "output",
-                                "inst": "link-4",
-                                "name": "output"
+                                "inst": "wib-4",
+                                "name": "output4"
                             }
                         ]
                     },
@@ -39,27 +39,27 @@
             "queues": [
                 {
                     "capacity": 100000,
-                    "inst": "link-0",
+                    "inst": "wib-0",
                     "kind": "FollySPSCQueue"
                 },
                 {
                     "capacity": 100000,
-                    "inst": "link-1",
+                    "inst": "wib-1",
                     "kind": "FollySPSCQueue"
                 },
                 {
                     "capacity": 100000,
-                    "inst": "link-2",
+                    "inst": "wib-2",
                     "kind": "FollySPSCQueue"
                 },
                 {
                     "capacity": 100000,
-                    "inst": "link-3",
+                    "inst": "wib-3",
                     "kind": "FollySPSCQueue"
                 },
                 {
                     "capacity": 100000,
-                    "inst": "link-4",
+                    "inst": "wib-4",
                     "kind": "FollySPSCQueue"
                 }
             ]
