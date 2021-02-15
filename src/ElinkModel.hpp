@@ -28,6 +28,7 @@ namespace dunedaq::flxlibs {
 template<class TargetPayloadType>
 class ElinkModel : public ElinkConcept {
 public:
+  using sink_t = appfwk::DAQSink<std::unique_ptr<TargetPayloadType>>;
   using inherited = ElinkConcept;
   using data_t = nlohmann::json;
 
@@ -39,15 +40,27 @@ public:
     : ElinkConcept()
     , m_run_marker{false}
     , m_configured(false)
+    , m_sink_is_set(false)
     , m_parser_thread(0)
     , m_stats_thread(0)
   { }
   ~ElinkModel() { }
 
+  void set_sink(const std::string& sink_name) {
+    if (!m_sink_is_set) { 
+      m_sink_queue = std::make_unique<sink_t>(sink_name);
+      m_sink_is_set = true;
+    } else {
+      //ers::error();
+    }
+  }
+
+  std::unique_ptr<sink_t>& get_sink() {
+    return m_sink_queue;
+  }
+
   void init(const data_t& args) {
-    m_block_addr_queue = std::make_unique<folly::ProducerConsumerQueue<uint64_t>>(1000000);
-    //auto ini = args.get<appfwk::cmd::ModInit>(); 
-    
+    m_block_addr_queue = std::make_unique<folly::ProducerConsumerQueue<uint64_t>>(1000000); 
   }
 
   void conf(const data_t& args) {
@@ -92,7 +105,7 @@ public:
   }
 
 
-  bool queue_in_block(uint64_t block_addr) {
+  bool queue_in_block_address(uint64_t block_addr) {
     if (m_block_addr_queue->write(block_addr)) { // ok write
       return true;
     } else { // failed write
@@ -106,7 +119,7 @@ private:
   bool m_configured;
 
   // Sink
-  using sink_t = appfwk::DAQSink<std::unique_ptr<TargetPayloadType>>;
+  bool m_sink_is_set;
   std::unique_ptr<sink_t> m_sink_queue;
 
   // blocks to process

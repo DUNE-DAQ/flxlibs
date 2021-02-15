@@ -34,26 +34,29 @@ dump_to_buffer(const char* data, long unsigned size,
 
 template<class TargetStruct>
 inline std::function<void(const felix::packetformat::chunk& chunk)>
-fixsizedChunkInto(appfwk::DAQSink<std::unique_ptr<TargetStruct>>& sink, 
+fixsizedChunkInto(std::unique_ptr<appfwk::DAQSink<std::unique_ptr<TargetStruct>>>& sink, 
                   std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
-  return [&](const felix::packetformat::chunk& chunk) {
+  return [&](const felix::packetformat::chunk& chunk) { 
     long unsigned bytes_copied_chunk = 0;
     auto subchunk_data = chunk.subchunks();
     auto subchunk_sizes = chunk.subchunk_lengths();
     auto n_subchunks = chunk.subchunk_number();
     std::unique_ptr<TargetStruct> payload_ptr = std::make_unique<TargetStruct>();
     auto target_size = sizeof(*payload_ptr);
+    std::cout << " TARGET SIZE: " << target_size;
     for(unsigned i=0; i<n_subchunks; i++)
     {
+      std::cout << " subchunk:" << subchunk_sizes[i];
       dump_to_buffer(subchunk_data[i], subchunk_sizes[i],
                      static_cast<void*>(&payload_ptr),
                      bytes_copied_chunk, 
                      target_size);
       bytes_copied_chunk += subchunk_sizes[i];
     }
+    std::cout << " bytes_copied: " << bytes_copied_chunk << '\n';
     try {
-      sink.push(std::move(payload_ptr), timeout);
+      sink->push(std::move(payload_ptr), timeout);
     } catch (...) {
       
     }

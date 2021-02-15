@@ -70,6 +70,7 @@ FelixCardReader::init(const data_t& args)
       auto linkid = std::stoi(words.back());
       ERS_INFO(" -> ELINK id: " << linkid);
       m_elinks[linkid*64] = createElinkModel(qi.inst);
+      m_elinks[linkid*64]->init(args);
     }
   }
 
@@ -98,7 +99,7 @@ FelixCardReader::init(const data_t& args)
     );
     auto elink = block->elink;
     if(m_elinks.count(elink) != 0) {
-      m_elinks[elink]->queue_in_block(block_addr);
+      m_elinks[elink]->queue_in_block_address(block_addr);
     } else {
       // Really bad -> unexpeced ELINK ID in Block.
       // This check is needed in order to avoid dynamically add thousands
