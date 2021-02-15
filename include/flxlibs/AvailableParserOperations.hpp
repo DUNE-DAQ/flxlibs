@@ -11,9 +11,24 @@
 
 #include "readout/ReadoutTypes.hpp"
 
+#include <sstream>
+
 namespace dunedaq {
 namespace flxlibs {
 namespace parsers {
+
+inline void 
+print_bytes(std::ostream& ostr, const char *title, const unsigned char *data, size_t length, bool format = true) {
+  ostr << title << std::endl;
+  ostr << std::setfill('0');
+  for(size_t i = 0; i < length; ++i) {
+    ostr << std::hex << std::setw(2) << (int)data[i];
+    if (format) {
+      ostr << (((i + 1) % 16 == 0) ? "\n" : " ");
+    }
+  }
+  ostr << std::endl;
+}
 
 inline void
 dump_to_buffer(const char* data, long unsigned size,
@@ -34,28 +49,39 @@ dump_to_buffer(const char* data, long unsigned size,
 
 template<class TargetStruct>
 inline std::function<void(const felix::packetformat::chunk& chunk)>
-fixsizedChunkInto(std::unique_ptr<appfwk::DAQSink<std::unique_ptr<TargetStruct>>>& sink, 
+fixsizedChunkInto(std::unique_ptr<appfwk::DAQSink<TargetStruct>>& sink, 
                   std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) { 
-    long unsigned bytes_copied_chunk = 0;
+    // Chunk info
+    //std::cout << "NEXT CHUNK YO. size: " << chunk.length();
     auto subchunk_data = chunk.subchunks();
     auto subchunk_sizes = chunk.subchunk_lengths();
     auto n_subchunks = chunk.subchunk_number();
-    std::unique_ptr<TargetStruct> payload_ptr = std::make_unique<TargetStruct>();
-    auto target_size = sizeof(*payload_ptr);
-    for(unsigned i=0; i<n_subchunks; i++)
-    {
-      dump_to_buffer(subchunk_data[i], subchunk_sizes[i],
-                     static_cast<void*>(&payload_ptr),
-                     bytes_copied_chunk, 
-                     target_size);
-      bytes_copied_chunk += subchunk_sizes[i];
-    }
-    try {
-      sink->push(std::move(payload_ptr), timeout);
-    } catch (...) {
-      
+    auto target_size = sizeof(TargetStruct); 
+
+    // Only dump to buffer if possible
+    if (chunk.length() != target_size) {
+      // report? Add custom way of handling unexpected user payloads.
+      //   In this case -> not fixed size chunk -> chunk-to-userbuff not possible
+    } else {
+      //std::unique_ptr<TargetStruct> payload_ptr = std::make_unique<TargetStruct>();
+      TargetStruct payload;
+      long unsigned bytes_copied_chunk = 0;
+      for(unsigned i=0; i<n_subchunks; i++) {
+        dump_to_buffer(subchunk_data[i], subchunk_sizes[i],
+                       //static_cast<void*>(&payload_ptr->data),
+                       (void*)&payload,
+                       bytes_copied_chunk, 
+                       target_size);
+        bytes_copied_chunk += subchunk_sizes[i];
+      }
+      try {
+        // finally, push to sink
+        sink->push(std::move(payload), timeout); //std::move(std::make_unique<TargetStruct>(payload)), timeout);
+      } catch (...) {
+        //std::cout << "FULL";
+      }
     }
   };
 }

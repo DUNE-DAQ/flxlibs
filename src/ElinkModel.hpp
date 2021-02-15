@@ -28,7 +28,8 @@ namespace dunedaq::flxlibs {
 template<class TargetPayloadType>
 class ElinkModel : public ElinkConcept {
 public:
-  using sink_t = appfwk::DAQSink<std::unique_ptr<TargetPayloadType>>;
+  //using sink_t = appfwk::DAQSink<std::unique_ptr<TargetPayloadType>>;
+  using sink_t = appfwk::DAQSink<TargetPayloadType>;
   using inherited = ElinkConcept;
   using data_t = nlohmann::json;
 
