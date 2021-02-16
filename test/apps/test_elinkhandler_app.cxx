@@ -1,7 +1,6 @@
 /**
- * @file test_cardwrapper_app.cxx Test application for 
- * CardWrapper. Inits, starts, stops the DMA transfer. 
- * Also demonstrates the most basic block interpretation/handler callback.
+ * @file test_elinkhandler_app.cxx Test application for 
+ * ElinkConcept and ElinkModel. Inits, starts, stops block parsers.
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -24,6 +23,7 @@
 #include <string>
 #include <chrono>
 #include <memory>
+#include <map>
 
 using namespace dunedaq::flxlibs;
 using namespace dunedaq::readout;
@@ -75,16 +75,11 @@ main(int /*argc*/, char** /*argv[]*/)
     }
   };
 
-  // Sink
-  //using FrameSink = dunedaq::readout::types::WIBFramePtrSink;
-  //FrameSink wibsink("wibsink0");
-  //parser0.process_chunk_func = parsers::fixedsizeChunkInto<types::WIB_SUPERCHUNK_STRUCT>(wibsink);
-
   // Implement how block addresses should be handled
-  std::function<void(uint64_t)> count_block_addr = [&](uint64_t block_addr) {
+  std::function<void(uint64_t)> count_block_addr = [&](uint64_t block_addr) { // NOLINT
     ++block_counter;
     const auto* block = const_cast<felix::packetformat::block*>(
-      felix::packetformat::block_from_bytes(reinterpret_cast<const char*>(block_addr))
+      felix::packetformat::block_from_bytes(reinterpret_cast<const char*>(block_addr)) // NOLINT
     );
     auto elink = block->elink;
     if (elinks.count(elink) != 0) {

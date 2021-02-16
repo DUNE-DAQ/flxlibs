@@ -18,6 +18,7 @@
 #include <string>
 #include <chrono>
 #include <memory>
+#include <map>
 
 using namespace dunedaq::flxlibs;
 
@@ -43,10 +44,10 @@ main(int /*argc*/, char** /*argv[]*/)
   // Set how block addresses should be handled
   std::map<unsigned, size_t> elink_block_counters;
   size_t block_counter = 0;
-  std::function<void(uint64_t)> count_block_addr = [&](uint64_t block_addr) { 
+  std::function<void(uint64_t)> count_block_addr = [&](uint64_t block_addr) { // NOLINT 
     block_counter++;
     const auto* block = const_cast<felix::packetformat::block*>(
-      felix::packetformat::block_from_bytes(reinterpret_cast<const char*>(block_addr))
+      felix::packetformat::block_from_bytes(reinterpret_cast<const char*>(block_addr)) // NOLINT
     );
     auto elink = block->elink;
     if(elink_block_counters.count(elink) == 0) {
