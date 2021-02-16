@@ -14,14 +14,13 @@
 
 #include "appfwk/DAQSink.hpp"
 
-//#include "packetformat/detail/block_parser.hpp"
-
 #include <nlohmann/json.hpp>
 #include <folly/ProducerConsumerQueue.h>
 
 #include <string>
 #include <mutex>
 #include <atomic>
+#include <memory>
 
 namespace dunedaq::flxlibs {
 
@@ -38,7 +37,7 @@ public:
    * @brief ElinkModel Constructor
    * @param name Instance name for this ElinkModel instance
    */
-  explicit ElinkModel()
+  ElinkModel()
     : ElinkConcept()
     , m_run_marker{false}
     , m_configured(false)
@@ -61,11 +60,11 @@ public:
     return m_sink_queue;
   }
 
-  void init(const data_t& args) {
-    m_block_addr_queue = std::make_unique<folly::ProducerConsumerQueue<uint64_t>>(1000000); 
+  void init(const data_t& /*args*/) {
+    m_block_addr_queue = std::make_unique<folly::ProducerConsumerQueue<uint64_t>>(1000000); // NOLINT 
   }
 
-  void conf(const data_t& args) {
+  void conf(const data_t& /*args*/) {
     if (m_configured) {
       ERS_DEBUG(2, "ElinkModel is already configured!");
     } else {
@@ -75,7 +74,7 @@ public:
     } 
   }
 
-  void start(const data_t& args) {
+  void start(const data_t& /*args*/) {
     if (!m_run_marker.load()) {
       set_running(true);
       m_stats_thread.set_work(&ElinkModel::run_stats, this);
@@ -86,7 +85,7 @@ public:
     }
   }
 
-  void stop(const data_t& args) {
+  void stop(const data_t& /*args*/) {
     if (m_run_marker.load()) {
       set_running(false);
       while (!m_parser_thread.get_readiness()) {
@@ -107,7 +106,7 @@ public:
   }
 
 
-  bool queue_in_block_address(uint64_t block_addr) {
+  bool queue_in_block_address(uint64_t block_addr) { // NOLINT
     if (m_block_addr_queue->write(block_addr)) { // ok write
       return true;
     } else { // failed write
@@ -125,7 +124,7 @@ private:
   std::unique_ptr<sink_t> m_sink_queue;
 
   // blocks to process
-  using UniqueBlockAddrQueue = std::unique_ptr<folly::ProducerConsumerQueue<uint64_t>>;
+  using UniqueBlockAddrQueue = std::unique_ptr<folly::ProducerConsumerQueue<uint64_t>>; // NOLINT
   UniqueBlockAddrQueue m_block_addr_queue;
 
   // Processor
@@ -136,7 +135,7 @@ private:
       uint64_t block_addr; // NOLINT
       if (m_block_addr_queue->read(block_addr)) { // read success
         const auto* block = const_cast<felix::packetformat::block*>(
-          felix::packetformat::block_from_bytes(reinterpret_cast<const char*>(block_addr))
+          felix::packetformat::block_from_bytes(reinterpret_cast<const char*>(block_addr)) // NOLINT
         );
         m_parser->process(block);
       } else { // couldn't read from queue
@@ -188,7 +187,7 @@ private:
       }
       t0 = now;
     }
-  };
+  }
 
 };
   

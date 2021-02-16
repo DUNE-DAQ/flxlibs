@@ -28,7 +28,7 @@ namespace dunedaq::flxlibs {
 class DefaultParserImpl : public felix::packetformat::ParserOperations
 {
 public:
-  explicit DefaultParserImpl();
+  DefaultParserImpl();
   ~DefaultParserImpl();
   DefaultParserImpl(const DefaultParserImpl&) =
     delete; ///< DefaultParserImpl is not copy-constructible
@@ -77,6 +77,6 @@ private:
 
 };
 
-} // namespace dunedaq::readout
+} // namespace dunedaq::flxlibs
 
-#endif // FLXLIBS_SRC_LINKPARSERIMPL_HPP_
+#endif // FLXLIBS_SRC_DEFAULTPARSERIMPL_HPP_

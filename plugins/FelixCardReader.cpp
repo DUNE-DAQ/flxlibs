@@ -1,6 +1,5 @@
 /**
- * @file FelixCardReader.cc FelixCardReader class
- * implementation
+ * @file FelixCardReader.cc FelixCardReader DAQModule implementation
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -17,6 +16,7 @@
 #include <thread>
 #include <utility>
 #include <vector>
+#include <memory>
 
 #include <TRACE/trace.h>
 /**
@@ -45,8 +45,8 @@ inline void
 tokenize(std::string const &str, const char delim,
          std::vector<std::string>& out)
 {
-  size_t start;
-  size_t end = 0;
+  std::size_t start;
+  std::size_t end = 0;
   while ((start = str.find_first_not_of(delim, end)) != std::string::npos) {
     end = str.find(delim, start);
     out.push_back(str.substr(start, end - start));
@@ -92,10 +92,10 @@ FelixCardReader::init(const data_t& args)
   m_card_wrapper->init(args);
 
   // Router function of block to appropriate ElinkHandlers
-  m_block_router = [&](uint64_t block_addr) {
+  m_block_router = [&](uint64_t block_addr) { // NOLINT
     //block_counter++;
     const auto* block = const_cast<felix::packetformat::block*>(
-      felix::packetformat::block_from_bytes(reinterpret_cast<const char*>(block_addr))
+      felix::packetformat::block_from_bytes(reinterpret_cast<const char*>(block_addr)) // NOLINT
     );
     auto elink = block->elink;
     if(m_elinks.count(elink) != 0) {

@@ -26,6 +26,6 @@ struct ParserStats {
   counter_t error_block_ctr{0};
 };
 
-} // namespace dunedaq::readout
+} // namespace dunedaq::flxlibs::stats
 
 #endif // FLXLIBS_SRC_FELIXSTATISTICS_HPP_

@@ -1,6 +1,5 @@
 /**
-* @file CreateRedout.hpp Specific readout creator
-* Thanks for Brett and Phil for the idea
+* @file CreateElink.hpp Specific ElinkConcept creator.
 *
 * This is part of the DUNE DAQ , copyright 2020.
 * Licensing/copyright details are in the COPYING file that you should have
@@ -13,6 +12,9 @@
 #include "flxlibs/AvailableParserOperations.hpp"
 #include "ElinkConcept.hpp"
 #include "ElinkModel.hpp"
+
+#include <memory>
+#include <string>
 
 namespace dunedaq {
 namespace flxlibs {

@@ -1,3 +1,11 @@
+/**
+ * @file DefaultParserImpl.cpp FELIX's packetformat default block/chunk parser
+ * implementation.
+ *
+ * This is part of the DUNE DAQ , copyright 2020.
+ * Licensing/copyright details are in the COPYING file that you should have
+ * received with this code.
+ */
 // From Module
 #include "DefaultParserImpl.hpp"
 

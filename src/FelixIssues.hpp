@@ -30,6 +30,10 @@ namespace dunedaq {
                       " FELIX queue timed out: " << queuename,
                       ((std::string)queuename))
 
+    ERS_DECLARE_ISSUE(flxlibs, ParserOperationQueuePushFailure,
+                      " ParserOps couldn't push to queue! Failed chunk: " << chunk,
+                      ((std::string)chunk))
+
     ERS_DECLARE_ISSUE_BASE(flxlibs,
                            ResourceQueueError,
                            flxlibs::ConfigurationError,

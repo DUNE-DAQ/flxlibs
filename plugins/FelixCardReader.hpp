@@ -1,8 +1,12 @@
 /**
- * @file FelixCardReader.hpp
+ * @file FelixCardReader.hpp FELIX card reader DAQ Module.
+ *
+ * This is part of the DUNE DAQ , copyright 2020.
+ * Licensing/copyright details are in the COPYING file that you should have
+ * received with this code.
  */
-#ifndef APPFWK_UDAQ_READOUT_FELIXCARDREADER_HPP_
-#define APPFWK_UDAQ_READOUT_FELIXCARDREADER_HPP_
+#ifndef FLXLIBS_PLUGINS_FELIXCARDREADER_HPP_
+#define FLXLIBS_PLUGINS_FELIXCARDREADER_HPP_
 
 #include "appfwk/cmd/Structs.hpp"
 #include "appfwk/cmd/Nljs.hpp"
@@ -27,6 +31,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <map>
 
 namespace dunedaq::flxlibs {
 
@@ -71,10 +76,10 @@ private:
   std::map<int, std::unique_ptr<ElinkConcept>> m_elinks;
 
   // Function for routing block addresses from card to elink handler
-  std::function<void(uint64_t)> m_block_router;
+  std::function<void(uint64_t)> m_block_router; // NOLINT
 
 };
 
 } // namespace dunedaq::flxlibs
 
-#endif // APPFWK_UDAQ_READOUT_FELIXCARDREADER_HPP_
+#endif // FLXLIBS_PLUGINS_FELIXCARDREADER_HPP_

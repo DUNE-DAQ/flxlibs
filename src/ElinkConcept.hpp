@@ -1,6 +1,7 @@
 /**
 * @file ElinkConcept.hpp ElinkConcept for constructors and
-* forwarding command args.
+* forwarding command args. Enforces the implementation to 
+* queue in block_addresses
 *
 * This is part of the DUNE DAQ , copyright 2020.
 * Licensing/copyright details are in the COPYING file that you should have
@@ -15,12 +16,14 @@
 
 #include <nlohmann/json.hpp>
 
+#include <memory>
+
 namespace dunedaq {
 namespace flxlibs {
 
 class ElinkConcept {
 public:
-  explicit ElinkConcept()
+  ElinkConcept()
     : m_parser_impl()
     , m_link_id(0)
     , m_link_tag(0)
@@ -43,13 +46,13 @@ public:
   virtual void start(const nlohmann::json& args) = 0;
   virtual void stop(const nlohmann::json& args) = 0;
 
-  virtual bool queue_in_block_address(uint64_t block_addr) = 0;
+  virtual bool queue_in_block_address(uint64_t block_addr) = 0; // NOLINT
 
   DefaultParserImpl& get_parser() { 
     return std::ref(m_parser_impl); 
   }
 
-  void set_ids(unsigned id, unsigned tag) {
+  void set_ids(int id, int tag) {
     m_link_id = id;
     m_link_tag = tag;
   }
@@ -60,14 +63,14 @@ protected:
   DefaultParserImpl m_parser_impl;
   std::unique_ptr<felix::packetformat::BlockParser<DefaultParserImpl>> m_parser;
 
-  unsigned m_link_id;
-  unsigned m_link_tag;
+  int m_link_id;
+  int m_link_tag;
 
 private:
 
 };
 
-} // namespace readout
+} // namespace flxlibs
 } // namespace dunedaq
 
 #endif // FLXLIBS_SRC_ELINKCONCEPT_HPP_

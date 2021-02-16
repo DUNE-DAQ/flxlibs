@@ -1,6 +1,12 @@
+/**
+ * @file CardWrapper.cpp FELIX's FlxCard library wrapper implementation
+ *
+ * This is part of the DUNE DAQ , copyright 2020.
+ * Licensing/copyright details are in the COPYING file that you should have
+ * received with this code.
+ */
 // From Module
 #include "CardWrapper.hpp"
-#include "CardConstants.hpp"
 #include "FelixIssues.hpp"
 
 #include "flxcard/FlxException.h"
@@ -11,17 +17,16 @@
 // From STD
 #include <iomanip>
 #include <chrono>
+#include <memory>
 
 namespace dunedaq {
 namespace flxlibs {
 
 CardWrapper::CardWrapper()
   : m_run_marker{false}
-  , m_configured(false)
   , m_run_lock{false}
   , m_dma_processor(0)
   , m_handle_block_addr(nullptr)
-  , m_block_addr_handler_available(false)
 {
   m_flx_card = std::make_unique<FlxCard>();
 }
@@ -142,7 +147,7 @@ CardWrapper::close_card()
 }
 
 int 
-CardWrapper::allocate_CMEM(uint8_t numa, u_long bsize, u_long* paddr, u_long* vaddr)
+CardWrapper::allocate_CMEM(uint8_t numa, u_long bsize, u_long* paddr, u_long* vaddr) // NOLINT
 {
   ERS_DEBUG(2, "Allocating CMEM buffer " << m_card_id_str << " dma id:" << std::to_string(m_dma_id));
   int handle;
@@ -192,7 +197,7 @@ CardWrapper::start_DMA()
 {
   ERS_DEBUG(2, "Issuing flxCard.dma_to_host for card " << m_card_id_str << " dma id:" << std::to_string(m_dma_id));
   m_card_mutex.lock();
-  m_flx_card->dma_to_host(m_dma_id, m_phys_addr, m_dma_memory_size, constant::dma_wraparound); // FlxCard.h
+  m_flx_card->dma_to_host(m_dma_id, m_phys_addr, m_dma_memory_size, m_dma_wraparound); // FlxCard.h
   m_card_mutex.unlock();
 }
 
@@ -205,11 +210,10 @@ CardWrapper::stop_DMA()
   m_card_mutex.unlock();
 }
 
-inline
-uint64_t 
+inline uint64_t // NOLINT
 CardWrapper::bytes_available()
 {
-  return (m_current_addr - ((m_read_index * constant::block_size) + m_phys_addr) + m_dma_memory_size)
+  return (m_current_addr - ((m_read_index * m_block_size) + m_phys_addr) + m_dma_memory_size)
           % m_dma_memory_size;
 }
 
@@ -228,7 +232,7 @@ CardWrapper::process_DMA()
   while (m_run_marker.load()) {
 
     // Loop until read address makes sense
-    while((m_current_addr < m_phys_addr) || (m_phys_addr+m_dma_memory_size < m_current_addr))
+    while((m_current_addr < m_phys_addr) || (m_phys_addr + m_dma_memory_size < m_current_addr))
     {
       if (m_run_marker.load()) {
         read_current_address();
@@ -239,7 +243,7 @@ CardWrapper::process_DMA()
       }
     }
     // Loop while there are not enough data
-    while (bytes_available() < constant::block_threshold * constant::block_size)
+    while (bytes_available() < m_block_threshold * m_block_size)
     {
       if (m_run_marker.load()) {
         std::this_thread::sleep_for(std::chrono::microseconds(5000)); // cfg.poll_time = 5000
@@ -251,10 +255,10 @@ CardWrapper::process_DMA()
     }
 
     // Set write index and start DMA advancing
-    u_long write_index = (m_current_addr - m_phys_addr) / constant::block_size;
-    uint64_t bytes = 0;
+    u_long write_index = (m_current_addr - m_phys_addr) / m_block_size;
+    uint64_t bytes = 0; // NOLINT
     while (m_read_index != write_index) {
-      uint64_t from_address = m_virt_addr + (m_read_index * constant::block_size);
+      uint64_t from_address = m_virt_addr + (m_read_index * m_block_size); // NOLINT
 
       // Handle block address
       if (m_block_addr_handler_available) {
@@ -262,12 +266,12 @@ CardWrapper::process_DMA()
       }
 
       // Advance
-      m_read_index = (m_read_index + 1) % (m_dma_memory_size / constant::block_size);
-      bytes += constant::block_size; 
+      m_read_index = (m_read_index + 1) % (m_dma_memory_size / m_block_size);
+      bytes += m_block_size; 
     }      
 
     // here check if we can move the read pointer in the circular buffer
-    m_destination = m_phys_addr + (write_index * constant::block_size) - (constant::margin_blocks * constant::block_size);
+    m_destination = m_phys_addr + (write_index * m_block_size) - (m_margin_blocks * m_block_size);
     if (m_destination < m_phys_addr) {
       m_destination += m_dma_memory_size;
     }
