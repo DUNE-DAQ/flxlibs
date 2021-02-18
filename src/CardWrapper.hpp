@@ -8,6 +8,9 @@
 #ifndef FLXLIBS_SRC_CARDWRAPPER_HPP_
 #define FLXLIBS_SRC_CARDWRAPPER_HPP_
 
+#include "flxlibs/felixcardreader/Structs.hpp"
+#include "flxlibs/felixcardreader/Nljs.hpp"
+
 #include "readout/ReusableThread.hpp"
 
 #include "flxcard/FlxCard.h"
@@ -53,6 +56,9 @@ public:
   }
 
 private:
+  // Types
+  using module_conf_t = dunedaq::flxlibs::felixcardreader::Conf;
+
   // Constants
   static constexpr size_t m_max_links_per_card = 6;
   static constexpr size_t m_margin_blocks = 4;
@@ -72,15 +78,14 @@ private:
   uint64_t bytes_available(); // NOLINT
   void read_current_address();
 
-  // Internals
+  // Configuration and internals
+  module_conf_t m_cfg;
   std::atomic<bool> m_run_marker;
   bool m_configured{false};
   uint8_t m_card_id; // NOLINT
   std::string m_card_id_str;
-  uint8_t m_card_offset; // NOLINT
   uint8_t m_dma_id; // NOLINT
   uint8_t m_numa_id; // NOLINT
-  uint8_t m_num_sources; // NOLINT
   uint8_t m_num_links; // NOLINT
   std::string m_info_str;
 

@@ -34,6 +34,14 @@ namespace dunedaq {
                       " ParserOps couldn't push to queue! Failed chunk: " << chunk,
                       ((std::string)chunk))
 
+    ERS_DECLARE_ISSUE(flxlibs, ElinkConfigurationInconsistency,
+                      " Inconsistent number of ELinks requested. Num links: " << num_links,
+                      ((int)num_links))
+
+    ERS_DECLARE_ISSUE(flxlibs, BlockSizeConfigurationInconsistency,
+                      " Invalid FELIX block size and 32b trailer configuration requested: " << block_size,
+                      ((int)block_size))
+
     ERS_DECLARE_ISSUE_BASE(flxlibs,
                            ResourceQueueError,
                            flxlibs::ConfigurationError,

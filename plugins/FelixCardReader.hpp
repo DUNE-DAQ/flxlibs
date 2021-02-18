@@ -56,6 +56,15 @@ public:
   void init(const data_t& args) override;
 
 private:
+  // Types
+  using module_conf_t = dunedaq::flxlibs::felixcardreader::Conf;
+
+  // Constants
+  static constexpr int m_elink_multiplier = 64;
+  static constexpr size_t m_block_queue_capacity = 1000000;
+  static constexpr size_t m_1kb_block_size = 1024;
+  static constexpr int m_32b_trailer_size = 32; 
+
   // Commands
   void do_configure(const data_t& args);
   void do_start(const data_t& args);
@@ -63,11 +72,12 @@ private:
 
   // Configuration
   bool m_configured;
-  using module_conf_t = dunedaq::flxlibs::felixcardreader::Conf;
   module_conf_t m_cfg;
 
-  int m_card_id = 0;
-  int m_num_links = 0;
+  int m_card_id;
+  int m_num_links;
+  std::size_t m_block_size;
+  int m_chunk_trailer_size;
 
   // FELIX Cards
   std::unique_ptr<CardWrapper> m_card_wrapper;

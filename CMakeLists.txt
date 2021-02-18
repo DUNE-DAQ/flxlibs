@@ -13,6 +13,7 @@ find_package(readout REQUIRED)
 ##############################################################################
 # Dependency sets
 set(FLXUTIL_DEPENDENCIES readout::readout dataformats::dataformats)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native")
 #set(FLXCARD_DEPENDENCIES udaq_readout_deps::FlxCard udaq_readout_deps::cmem_rcc udaq_readout_deps::packetformat)
 message("FELIX LIB -> " $ENV{FLX_LIB})
 message("FELIX INC -> " $ENV{FLX_INC})

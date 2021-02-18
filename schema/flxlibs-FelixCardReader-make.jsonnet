@@ -9,10 +9,13 @@
            "out-5"
 
     // Make a conf object for cardreader
-    conf(cid=0, coff=0, did=0, nid=0, nums=1, numl=6) :: {
-        card_id: cid, 
-        card_offset: coff, 
-        dma_id: did, 
+    conf(cid=0, coff=0, did=0, dbs=4, dms=4, cts=32, nid=0, nums=1, numl=6) :: {
+        card_id: cid,
+        card_offset: coff,
+        dma_id: did,
+        dma_block_size: dbs,
+        dma_memory_size: dms,
+        chunk_trailer_size: cts,
         numa_id: nid,
         num_sources: nums, 
         num_links: numl

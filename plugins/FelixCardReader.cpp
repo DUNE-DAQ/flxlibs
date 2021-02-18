@@ -5,6 +5,8 @@
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
+#include "flxlibs/felixcardreader/Nljs.hpp"
+
 #include "FelixCardReader.hpp"
 #include "FelixIssues.hpp"
 #include "CreateElink.hpp"
@@ -30,6 +32,9 @@ namespace flxlibs {
 FelixCardReader::FelixCardReader(const std::string& name)
   : DAQModule(name)
   , m_configured(false)
+  , m_card_id(0)
+  , m_num_links(0)
+  , m_block_size(0)
   , m_block_router(nullptr)
   //, block_ptr_sinks_{ } 
 
@@ -57,39 +62,22 @@ void
 FelixCardReader::init(const data_t& args)
 {
   auto ini = args.get<appfwk::cmd::ModInit>();
+  m_card_wrapper->init(args);
   for (const auto& qi : ini.qinfos) {
     if (qi.dir != "output") {
       //ers::error(InitializationError(ERS_HERE, "Only output queues are supported in this module!"));
       continue;
     } else {
-      ERS_INFO("CardReader output queue is " << qi.inst);
+      ERS_DEBUG(2, "CardReader output queue is " << qi.inst);
       const char delim = '-';
       std::string target = qi.inst;
       std::vector<std::string> words;
       tokenize(target, delim, words);
       auto linkid = std::stoi(words.back());
-      ERS_INFO(" -> ELINK id: " << linkid);
-      m_elinks[linkid*64] = createElinkModel(qi.inst);
-      m_elinks[linkid*64]->init(args);
+      m_elinks[linkid * m_elink_multiplier] = createElinkModel(qi.inst);
+      m_elinks[linkid * m_elink_multiplier]->init(args, m_block_queue_capacity);
     }
   }
-
-  //std::vector<std::string> queue_names = args["outputs"].get<std::vector<std::string>>();
-/*
-  if (queue_names.size() != m_num_links_) {
-    ers::error(readout::ConfigurationError(ERS_HERE, "Number of links does not match number of output queues."));
-  } else {
-    for (unsigned i=0; i<queue_names.size(); ++i){
-     block_ptr_sinks_[i] = std::make_unique<BlockPtrSink>(queue_names[i]);
-     ERS_INFO("Added BlockPtr DAQSink for link[" << i << "].");
-    }
-  }
-*/
-
-  m_card_id = 0; // from name?
-  m_num_links = 6; // from output sinks?
-
-  m_card_wrapper->init(args);
 
   // Router function of block to appropriate ElinkHandlers
   m_block_router = [&](uint64_t block_addr) { // NOLINT
@@ -123,11 +111,32 @@ FelixCardReader::init(const data_t& args)
 void
 FelixCardReader::do_configure(const data_t& args)
 {
-  m_num_links = 5;
+  m_cfg = args.get<felixcardreader::Conf>();
+  m_card_id = m_cfg.card_id;
+  m_num_links = m_cfg.num_links;
+  m_block_size = m_cfg.dma_block_size_kb * m_1kb_block_size;
+  m_chunk_trailer_size = m_cfg.chunk_trailer_size;
+  bool is_32b_trailer = false;
+  
+  // Config checks
+  if (m_num_links != m_elinks.size()) {
+    ers::fatal(ElinkConfigurationInconsistency(ERS_HERE, m_num_links));
+  } 
+  if (m_block_size % m_1kb_block_size != 0) {
+    ers::fatal(BlockSizeConfigurationInconsistency(ERS_HERE, m_block_size));
+  } else if (m_block_size != m_1kb_block_size 
+          && m_chunk_trailer_size != m_32b_trailer_size) {
+    ers::fatal(BlockSizeConfigurationInconsistency(ERS_HERE, m_block_size));
+  } else if (m_chunk_trailer_size == m_32b_trailer_size) {
+    is_32b_trailer = true;
+  }
+
+  // Configure components
+  ERS_INFO("Configuring components with Block size:" << m_block_size << " & trailer size: " << m_chunk_trailer_size);
   m_card_wrapper->configure(args);
   for (int lid=0; lid<m_num_links; ++lid) {
-    m_elinks[lid*64]->conf(args);
-  } 
+    m_elinks[lid * m_elink_multiplier]->conf(args, m_block_size, is_32b_trailer);
+  }
 }
 
 void
@@ -135,7 +144,7 @@ FelixCardReader::do_start(const data_t& args)
 {
   m_card_wrapper->start(args);
   for (int lid=0; lid<m_num_links; ++lid) {
-    m_elinks[lid*64]->start(args);
+    m_elinks[lid * m_elink_multiplier]->start(args);
   } 
 }
 
@@ -144,7 +153,7 @@ FelixCardReader::do_stop(const data_t& args)
 {
   m_card_wrapper->stop(args);
   for (int lid=0; lid<m_num_links; ++lid) {
-    m_elinks[lid*64]->stop(args);
+    m_elinks[lid * m_elink_multiplier]->stop(args);
   }
 }
 

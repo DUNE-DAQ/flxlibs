@@ -56,8 +56,8 @@ main(int /*argc*/, char** /*argv[]*/)
   for (int i=0; i<5; ++i) {
     elinks[i*64] = createElinkModel("wib");
     auto& handler = elinks[i*64];
-    handler->init(cmd_params);
-    handler->conf(cmd_params);
+    handler->init(cmd_params, 100000);
+    handler->conf(cmd_params, 4096, true);
     handler->start(cmd_params);
   }
 

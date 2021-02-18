@@ -11,7 +11,6 @@
 #include "ElinkConcept.hpp"
 
 #include "readout/ReusableThread.hpp"
-
 #include "appfwk/DAQSink.hpp"
 
 #include <nlohmann/json.hpp>
@@ -40,15 +39,13 @@ public:
   ElinkModel()
     : ElinkConcept()
     , m_run_marker{false}
-    , m_configured(false)
-    , m_sink_is_set(false)
     , m_parser_thread(0)
     , m_stats_thread(0)
   { }
   ~ElinkModel() { }
 
   void set_sink(const std::string& sink_name) {
-    if (!m_sink_is_set) { 
+    if (!m_sink_is_set) {
       m_sink_queue = std::make_unique<sink_t>(sink_name);
       m_sink_is_set = true;
     } else {
@@ -60,16 +57,19 @@ public:
     return m_sink_queue;
   }
 
-  void init(const data_t& /*args*/) {
-    m_block_addr_queue = std::make_unique<folly::ProducerConsumerQueue<uint64_t>>(1000000); // NOLINT 
+  void init(const data_t& /*args*/, const size_t block_queue_capacity) {
+    m_block_addr_queue = std::make_unique<folly::ProducerConsumerQueue<uint64_t>>(block_queue_capacity); // NOLINT
   }
 
-  void conf(const data_t& /*args*/) {
+  void conf(const data_t& /*args*/, size_t block_size, bool is_32b_trailers) {
     if (m_configured) {
       ERS_DEBUG(2, "ElinkModel is already configured!");
     } else {
-      //m_parser_thread.set_id(0);
-      m_parser->configure(4096, true); // unsigned bsize, bool trailer_is_32bit
+       
+      //if (inconsistency)
+      //ers::fatal(ElinkConfigurationInconsistency(ERS_HERE, m_num_links));
+
+      m_parser->configure(block_size, is_32b_trailers); // unsigned bsize, bool trailer_is_32bit
       m_configured=true;
     } 
   }
@@ -115,16 +115,19 @@ public:
   } 
 
 private:
+  // Types
+  using UniqueBlockAddrQueue = std::unique_ptr<folly::ProducerConsumerQueue<uint64_t>>; // NOLINT
+
   // Internals
   std::atomic<bool> m_run_marker;
-  bool m_configured;
+  bool m_configured{false};
+  int m_link_id;
 
   // Sink
-  bool m_sink_is_set;
+  bool m_sink_is_set{false};
   std::unique_ptr<sink_t> m_sink_queue;
 
   // blocks to process
-  using UniqueBlockAddrQueue = std::unique_ptr<folly::ProducerConsumerQueue<uint64_t>>; // NOLINT
   UniqueBlockAddrQueue m_block_addr_queue;
 
   // Processor

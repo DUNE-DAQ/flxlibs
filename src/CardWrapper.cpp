@@ -24,11 +24,17 @@ namespace flxlibs {
 
 CardWrapper::CardWrapper()
   : m_run_marker{false}
+  , m_card_id(0)
+  , m_card_id_str("")
+  , m_dma_id(0)
+  , m_numa_id(0)
+  , m_num_links(0)
+  , m_info_str("")
   , m_run_lock{false}
   , m_dma_processor(0)
   , m_handle_block_addr(nullptr)
 {
-  m_flx_card = std::make_unique<FlxCard>();
+
 }
 
 CardWrapper::~CardWrapper()
@@ -38,24 +44,28 @@ CardWrapper::~CardWrapper()
 
 void 
 CardWrapper::init(const data_t& /*args*/)
-{  
-  m_dma_memory_size = 4096*1024*1024UL;
-  m_card_id = 0; //init_data.get<uint8_t>("card_id", 0);
-  m_card_id_str = std::to_string(m_card_id);
-  m_card_offset = 0; //get_config().value<uint8_t>("card_offset", 0);
-  m_dma_id = 0; //get_config().value<uint8_t>("dma_id", 0);
-  m_numa_id = 0; //get_config().value<uint8_t>("numa_id", 0);
-  m_num_sources = 1; //get_config().value<uint8_t>("num_sources", 1);
-  m_num_links = 6; //get_config().value<uint8_t>("num_links", M_MAX_LINKS_PER_CARD);
+{ 
+  m_flx_card = std::make_unique<FlxCard>();
+  if (m_flx_card == nullptr) {
+    ers::fatal(flxlibs::CardError(ERS_HERE, "Couldn't create FlxCard object."));
+  }
 }
 
 void 
-CardWrapper::configure(const data_t& /*args*/)
+CardWrapper::configure(const data_t& args)
 {
   ERS_INFO("Configuring CardWrapper of card " << m_card_id_str);
   if (m_configured) {
     ERS_DEBUG(2, "Card is already configured! Won't touch it.");
   } else {
+    // Load config
+    m_cfg = args.get<felixcardreader::Conf>();
+    m_card_id = m_cfg.card_id;
+    m_card_id_str = std::to_string(m_card_id);
+    m_dma_id = m_cfg.dma_id;
+    m_dma_memory_size = m_cfg.dma_memory_size_gb * 1024*1024*1024UL;
+    m_numa_id = m_cfg.numa_id;
+
     // Open card
     open_card();
     ERS_DEBUG(2, "Card[" << m_card_id_str << "] opened.");
@@ -73,7 +83,6 @@ CardWrapper::configure(const data_t& /*args*/)
     ERS_DEBUG(2, "Card[" << m_card_id_str << "] is configured for datataking.");
     m_configured=true;
   }
-
 }
 
 void 

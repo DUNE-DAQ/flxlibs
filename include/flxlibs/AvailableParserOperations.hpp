@@ -39,12 +39,12 @@ print_bytes(std::ostream& ostr, const char *title, const unsigned char *data, st
 
 inline void
 dump_to_buffer(const char* data, std::size_t size,
-               void* buffer, uint_fast32_t buffer_pos, // NOLINT
+               void* buffer, uint32_t buffer_pos, // NOLINT
                const std::size_t& buffer_size)
 {
-  uint_fast32_t bytes_to_copy = size; // NOLINT
+  auto bytes_to_copy = size; // NOLINT
   while(bytes_to_copy > 0) {
-    uint_fast32_t n = std::min(bytes_to_copy, buffer_size-buffer_pos); // NOLINT
+    auto n = std::min(bytes_to_copy, buffer_size-buffer_pos); // NOLINT
     std::memcpy(static_cast<char*>(buffer)+buffer_pos, data, n);
     buffer_pos += n;
     bytes_to_copy -= n;
@@ -73,7 +73,7 @@ fixsizedChunkInto(std::unique_ptr<appfwk::DAQSink<TargetStruct>>& sink,
       // Can't throw, and can't print as it may flood output
     } else {
       TargetStruct payload;
-      uint_fast32_t bytes_copied_chunk = 0; // NOLINT
+      uint32_t bytes_copied_chunk = 0; // NOLINT
       for(unsigned i=0; i<n_subchunks; i++) {
         dump_to_buffer(subchunk_data[i], subchunk_sizes[i],
                        static_cast<void*>(&payload.data),

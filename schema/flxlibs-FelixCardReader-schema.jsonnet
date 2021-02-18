@@ -29,6 +29,15 @@ local felixcardreader = {
         s.field("dma_id", self.id, 0,
                 doc="DMA descriptor to use"),
 
+        s.field("chunk_trailer_size", self.count, 0,
+                doc="Are chunks with 32b trailer."),
+
+        s.field("dma_block_size_kb", self.count, 0,
+                doc="FELIX DMA Block size"),
+
+        s.field("dma_memory_size_gb", self.count, 0,
+                doc="CMEM_RCC memory to allocate in GBs."),
+
         s.field("numa_id", self.id, 0,
                 doc="CMEM_RCC NUMA region selector"),
 
@@ -36,7 +45,7 @@ local felixcardreader = {
                 doc="Read a single superlogic region, or both"),
 
         s.field("num_links", self.count, 5,
-                doc="Number of elinks configured"),       
+                doc="Number of elinks configured"), 
 
     ], doc="Upstream FELIX CardReader DAQ Module Configuration"),
 

@@ -38,27 +38,27 @@
             ],
             "queues": [
                 {
-                    "capacity": 100000,
+                    "capacity": 1000000,
                     "inst": "wib-0",
                     "kind": "FollySPSCQueue"
                 },
                 {
-                    "capacity": 100000,
+                    "capacity": 1000000,
                     "inst": "wib-1",
                     "kind": "FollySPSCQueue"
                 },
                 {
-                    "capacity": 100000,
+                    "capacity": 1000000,
                     "inst": "wib-2",
                     "kind": "FollySPSCQueue"
                 },
                 {
-                    "capacity": 100000,
+                    "capacity": 1000000,
                     "inst": "wib-3",
                     "kind": "FollySPSCQueue"
                 },
                 {
-                    "capacity": 100000,
+                    "capacity": 1000000,
                     "inst": "wib-4",
                     "kind": "FollySPSCQueue"
                 }
@@ -72,10 +72,11 @@
                 {
                     "data": {
                       "card_id": 0,
-                      "card_offset": 0,
                       "dma_id": 0,
+                      "chunk_trailer_size": 32,
+                      "dma_block_size_kb": 4,
+                      "dma_memory_size_gb": 4,
                       "numa_id": 0,
-                      "num_sources": 1,
                       "num_links": 5
                     },
                     "match": "felix-source"

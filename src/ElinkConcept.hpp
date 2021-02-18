@@ -41,8 +41,8 @@ public:
   ElinkConcept& operator=(ElinkConcept&&)
     = delete; ///< ElinkConcept is not move-assignable
 
-  virtual void init(const nlohmann::json& args) = 0;
-  virtual void conf(const nlohmann::json& args) = 0;
+  virtual void init(const nlohmann::json& args, const size_t block_queue_capacity) = 0;
+  virtual void conf(const nlohmann::json& args, size_t block_size, bool is_32b_trailers) = 0;
   virtual void start(const nlohmann::json& args) = 0;
   virtual void stop(const nlohmann::json& args) = 0;
 
