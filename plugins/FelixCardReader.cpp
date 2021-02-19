@@ -33,6 +33,7 @@ FelixCardReader::FelixCardReader(const std::string& name)
   : DAQModule(name)
   , m_configured(false)
   , m_card_id(0)
+  , m_logical_unit(0)
   , m_num_links(0)
   , m_block_size(0)
   , m_block_router(nullptr)
@@ -74,8 +75,9 @@ FelixCardReader::init(const data_t& args)
       std::vector<std::string> words;
       tokenize(target, delim, words);
       auto linkid = std::stoi(words.back());
-      m_elinks[linkid * m_elink_multiplier] = createElinkModel(qi.inst);
-      m_elinks[linkid * m_elink_multiplier]->init(args, m_block_queue_capacity);
+      auto tag = linkid * m_elink_multiplier;
+      m_elinks[tag] = createElinkModel(qi.inst);
+      m_elinks[tag]->init(args, m_block_queue_capacity);
     }
   }
 
@@ -113,6 +115,7 @@ FelixCardReader::do_configure(const data_t& args)
 {
   m_cfg = args.get<felixcardreader::Conf>();
   m_card_id = m_cfg.card_id;
+  m_logical_unit = m_cfg.logical_unit;
   m_num_links = m_cfg.num_links;
   m_block_size = m_cfg.dma_block_size_kb * m_1kb_block_size;
   m_chunk_trailer_size = m_cfg.chunk_trailer_size;
@@ -135,7 +138,9 @@ FelixCardReader::do_configure(const data_t& args)
   ERS_INFO("Configuring components with Block size:" << m_block_size << " & trailer size: " << m_chunk_trailer_size);
   m_card_wrapper->configure(args);
   for (int lid=0; lid<m_num_links; ++lid) {
-    m_elinks[lid * m_elink_multiplier]->conf(args, m_block_size, is_32b_trailer);
+    auto tag = lid * m_elink_multiplier;
+    m_elinks[tag]->conf(args, m_block_size, is_32b_trailer);
+    m_elinks[tag]->set_ids(m_card_id, m_logical_unit, lid, tag);
   }
 }
 

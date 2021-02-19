@@ -26,6 +26,7 @@ CardWrapper::CardWrapper()
   : m_run_marker{false}
   , m_card_id(0)
   , m_card_id_str("")
+  , m_logical_unit(0)
   , m_dma_id(0)
   , m_numa_id(0)
   , m_num_links(0)
@@ -54,18 +55,21 @@ CardWrapper::init(const data_t& /*args*/)
 void 
 CardWrapper::configure(const data_t& args)
 {
-  ERS_INFO("Configuring CardWrapper of card " << m_card_id_str);
   if (m_configured) {
     ERS_DEBUG(2, "Card is already configured! Won't touch it.");
   } else {
     // Load config
     m_cfg = args.get<felixcardreader::Conf>();
     m_card_id = m_cfg.card_id;
-    m_card_id_str = std::to_string(m_card_id);
+    std::ostringstream cardoss;
+    cardoss << "[id:" << std::to_string(m_card_id) << " slr:" << std::to_string(m_logical_unit) << "]";
+    m_logical_unit = m_cfg.logical_unit;
+    m_card_id_str = cardoss.str();
     m_dma_id = m_cfg.dma_id;
     m_dma_memory_size = m_cfg.dma_memory_size_gb * 1024*1024*1024UL;
     m_numa_id = m_cfg.numa_id;
 
+    ERS_INFO("Configuring CardWrapper of card " << m_card_id_str);
     // Open card
     open_card();
     ERS_DEBUG(2, "Card[" << m_card_id_str << "] opened.");
@@ -131,7 +135,8 @@ CardWrapper::open_card()
   ERS_DEBUG(2, "Opening FELIX card " << m_card_id_str);
   try {
     m_card_mutex.lock();
-    m_flx_card->card_open(static_cast<int>(m_card_id), LOCK_NONE); // FlxCard.h
+    auto absolute_card_id = m_card_id + m_logical_unit;
+    m_flx_card->card_open(static_cast<int>(absolute_card_id), LOCK_NONE); // FlxCard.h
     m_card_mutex.unlock();
   }
   catch(FlxException& ex) {

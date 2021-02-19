@@ -23,7 +23,7 @@ local felixcardreader = {
         s.field("card_id", self.id, 0,
                 doc="Physical card identifier (in the same host)"),
 
-        s.field("card_offset", self.count, 0,
+        s.field("logical_unit", self.count, 0,
                 doc="Superlogic region of selected card"),
 
         s.field("dma_id", self.id, 0,

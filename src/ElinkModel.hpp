@@ -121,7 +121,6 @@ private:
   // Internals
   std::atomic<bool> m_run_marker;
   bool m_configured{false};
-  int m_link_id;
 
   // Sink
   bool m_sink_is_set{false};
@@ -173,7 +172,8 @@ private:
       new_error_block_ctr = stats.error_block_ctr.exchange(0);
   
       double seconds =  std::chrono::duration_cast<std::chrono::microseconds>(now-t0).count()/1000000.;
-      ERS_INFO("Parser stats ->"
+      ERS_INFO(inherited::m_elink_str 
+            << " Parser stats ->"
             << " Blocks: " << new_block_ctr
             << " Block rate: " << new_block_ctr/seconds/1000. << " [kHz]"
             << " Chunks: " << new_chunk_ctr

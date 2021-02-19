@@ -72,6 +72,7 @@
                 {
                     "data": {
                       "card_id": 0,
+                      "logical_unit": 0,
                       "dma_id": 0,
                       "chunk_trailer_size": 32,
                       "dma_block_size_kb": 4,

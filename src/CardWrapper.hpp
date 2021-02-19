@@ -83,6 +83,7 @@ private:
   std::atomic<bool> m_run_marker;
   bool m_configured{false};
   uint8_t m_card_id; // NOLINT
+  uint8_t m_logical_unit; // NOLINT
   std::string m_card_id_str;
   uint8_t m_dma_id; // NOLINT
   uint8_t m_numa_id; // NOLINT
