@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$#" -ne 3 ] || [ "$1" == "-h" ]
+if [ "$#" -ne 1 ] || [ "$1" == "-h" ]
 then
   echo "Usage 'femu-enable.sh cardid' "
 else
