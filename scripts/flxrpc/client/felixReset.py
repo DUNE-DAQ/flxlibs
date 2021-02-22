@@ -1,7 +1,5 @@
-# Roland Sipos - rsipos@cern.ch
 import xmlrpclib
 import sys
-
 
 felix = xmlrpclib.ServerProxy('http://:9999/RPC2')
 

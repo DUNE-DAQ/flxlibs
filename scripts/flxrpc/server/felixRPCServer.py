@@ -1,6 +1,3 @@
-# Roland Sipos - rsipos@cern.ch
-# Expose FELIX tools through XMLRPC
-
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
 from subprocess import call, Popen, PIPE

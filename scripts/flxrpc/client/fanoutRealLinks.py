@@ -1,6 +1,3 @@
-# Roland Sipos - rsipos@cern.ch
-# Dummy FELIX BoardReader commander scripts.
-
 import xmlrpclib
 import sys
 import time
