@@ -19,7 +19,7 @@ And add the `udaq_readout_deps` package to your `dune_products` set:
 Please ensure the following:
    1. For the physical setup, please refer to the the [Initial setup of FELIX Wiki](https://github.com/DUNE-DAQ/flxlibs/wiki/Initial-setup-of-FELIX).
    2. For the card configuration, one needs compatible firmware and FELIX configuration sets. The list is under [FELIX Assets Wiki](https://github.com/DUNE-DAQ/flxlibs/wiki/FELIX-assets:-Firmware-and-config-files#compatility-list)
-   3. The manual assumes, that you have low-level FELIX tools in `$PATH`, and `<slr1-config-file>` and `<slr2-config-file>` downloaded to `/tmp`, and the card is programmed with a compatible firmware.
+   3. The manual assumes, that you have low-level FELIX tools in `$PATH`, and the SuperLogic Region (logical card) configuration files `<slr1-config-file>` and `<slr2-config-file>` are downloaded to `/tmp`, and the card is programmed with a compatible firmware.
 
 If the points above are succesfully verified, one can do the following from the cloned repository's directory:
     
