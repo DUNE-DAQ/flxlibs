@@ -15,6 +15,9 @@ And add the `udaq_readout_deps` package to your `dune_products` set:
 
     "udaq_readout_deps v0_0_1"
 
+## Configure the FELIX card
+   1. For the physical setup, please refer to the the [Initial setup of FELIX Wiki](https://github.com/DUNE-DAQ/flxlibs/wiki/Initial-setup-of-FELIX).
+   2. For the card configuration, one needs compatible firmware and FELIX configuration sets. The list is under [FELIX Assets Wiki](https://github.com/DUNE-DAQ/flxlibs/wiki/FELIX-assets:-Firmware-and-config-files#compatility-list)
 
 ## Examples
 After succesfully building the package, from another terminal go to your `workarea` directory and set up the runtime environment:
