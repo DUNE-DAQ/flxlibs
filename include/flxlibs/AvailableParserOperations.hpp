@@ -9,10 +9,12 @@
 #ifndef FLXLIBS_INCLUDE_FLXLIBS_AVAILABLEPARSEROPERATIONS_HPP_
 #define FLXLIBS_INCLUDE_FLXLIBS_AVAILABLEPARSEROPERATIONS_HPP_
 
+#include "FelixIssues.hpp"
+
 #include "appfwk/DAQSink.hpp"
 #include "readout/ReadoutTypes.hpp"
 
-#include "FelixIssues.hpp"
+#include "packetformat/block_format.hpp"
 
 #include <sstream>
 #include <cstdlib>

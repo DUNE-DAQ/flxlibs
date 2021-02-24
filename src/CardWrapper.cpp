@@ -9,15 +9,25 @@
 #include "CardWrapper.hpp"
 #include "FelixIssues.hpp"
 
+#include "logging/Logging.hpp"
+
 #include "flxcard/FlxException.h"
 #include "packetformat/block_format.hpp"
-
-#include <ers/ers.h>
 
 // From STD
 #include <iomanip>
 #include <chrono>
 #include <memory>
+
+/**
+ * @brief TRACE debug levels used in this source file
+ */
+enum
+{
+  TLVL_ENTER_EXIT_METHODS = 5,
+  TLVL_WORK_STEPS = 10,
+  TLVL_BOOKKEEPING = 15
+};
 
 namespace dunedaq {
 namespace flxlibs {
@@ -56,7 +66,7 @@ void
 CardWrapper::configure(const data_t& args)
 {
   if (m_configured) {
-    ERS_DEBUG(2, "Card is already configured! Won't touch it.");
+    TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << "Card is already configured! Won't touch it.";
   } else {
     // Load config
     m_cfg = args.get<felixcardreader::Conf>();
@@ -69,22 +79,22 @@ CardWrapper::configure(const data_t& args)
     m_dma_memory_size = m_cfg.dma_memory_size_gb * 1024*1024*1024UL;
     m_numa_id = m_cfg.numa_id;
 
-    ERS_INFO("Configuring CardWrapper of card " << m_card_id_str);
+    TLOG() << "Configuring CardWrapper of card " << m_card_id_str;
     // Open card
     open_card();
-    ERS_DEBUG(2, "Card[" << m_card_id_str << "] opened.");
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "Card[" << m_card_id_str << "] opened.";
     // Allocate CMEM
     m_cmem_handle = allocate_CMEM(m_numa_id, m_dma_memory_size, &m_phys_addr, &m_virt_addr);  
-    ERS_DEBUG(2, "Card[" << m_card_id_str << "] CMEM memory allocated with " 
-              << std::to_string(m_dma_memory_size) << " Bytes.");
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "Card[" << m_card_id_str << "] CMEM memory allocated with " 
+                                << std::to_string(m_dma_memory_size) << " Bytes.";
     // Stop currently running DMA
     stop_DMA();
-    ERS_DEBUG(2, "Card[" << m_card_id_str << "] DMA interactions force stopped.");
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "Card[" << m_card_id_str << "] DMA interactions force stopped.";
     // Init DMA between software and card
     init_DMA();
-    ERS_DEBUG(2, "Card[" << m_card_id_str << "] DMA access initialized.");
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "Card[" << m_card_id_str << "] DMA access initialized.";
     // The rest was some CPU pinning.
-    ERS_DEBUG(2, "Card[" << m_card_id_str << "] is configured for datataking.");
+    TLOG_DEBUG(TLVL_WORK_STEPS) << m_card_id_str << "] is configured for datataking.";
     m_configured=true;
   }
 }
@@ -92,33 +102,33 @@ CardWrapper::configure(const data_t& args)
 void 
 CardWrapper::start(const data_t& /*args*/)
 {
-  ERS_INFO("Starting CardWrapper of card " << m_card_id_str << "...");
+  TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << "Starting CardWrapper of card " << m_card_id_str << "...";
   if (!m_run_marker.load()) {
     if (!m_block_addr_handler_available) {
-      ERS_INFO("Block Address handler is not set! Is it intentional?");
+      TLOG() << "Block Address handler is not set! Is it intentional?";
     }
     start_DMA();
     set_running(true);
     m_dma_processor.set_work(&CardWrapper::process_DMA, this);
-    ERS_DEBUG(2, "Started CardWrapper of card " << m_card_id_str << "...");
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "Started CardWrapper of card " << m_card_id_str << "...";
   } else {
-    ERS_INFO("CardWrapper of card " << m_card_id_str << " is already running!");
+    TLOG() << "CardWrapper of card " << m_card_id_str << " is already running!";
   }
 }
 
 void 
 CardWrapper::stop(const data_t& /*args*/)
 {
-  ERS_INFO("Stopping CardWrapper of card " << m_card_id_str << "...");
+  TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << "Stopping CardWrapper of card " << m_card_id_str << "...";
   if (m_run_marker.load()) {
     stop_DMA();
     set_running(false);
     while (!m_dma_processor.get_readiness()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
-    ERS_DEBUG(2, "Stopped CardWrapper of card " << m_card_id_str << "!");
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "Stopped CardWrapper of card " << m_card_id_str << "!";
   } else {
-    ERS_INFO("CardWrapper of card " << m_card_id_str << " is already stopped!");
+    TLOG() << "CardWrapper of card " << m_card_id_str << " is already stopped!";
   }
 }
 
@@ -126,13 +136,13 @@ void
 CardWrapper::set_running(bool should_run)
 {
   bool was_running = m_run_marker.exchange(should_run);
-  ERS_DEBUG(2, "Active state was toggled from " << was_running << " to " << should_run);
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Active state was toggled from " << was_running << " to " << should_run;
 }
 
 void 
 CardWrapper::open_card()
 {
-  ERS_DEBUG(2, "Opening FELIX card " << m_card_id_str);
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Opening FELIX card " << m_card_id_str;
   try {
     m_card_mutex.lock();
     auto absolute_card_id = m_card_id + m_logical_unit;
@@ -148,7 +158,7 @@ CardWrapper::open_card()
 void 
 CardWrapper::close_card()
 {
-  ERS_DEBUG(2, "Closing FELIX card " << m_card_id_str);
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Closing FELIX card " << m_card_id_str;
   try {
     m_card_mutex.lock();
     m_flx_card->card_close();
@@ -163,7 +173,7 @@ CardWrapper::close_card()
 int 
 CardWrapper::allocate_CMEM(uint8_t numa, u_long bsize, u_long* paddr, u_long* vaddr) // NOLINT
 {
-  ERS_DEBUG(2, "Allocating CMEM buffer " << m_card_id_str << " dma id:" << std::to_string(m_dma_id));
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Allocating CMEM buffer " << m_card_id_str << " dma id:" << std::to_string(m_dma_id);
   int handle;
   unsigned ret = CMEM_Open(); // cmem_rcc.h
   if (!ret) {
@@ -192,24 +202,24 @@ CardWrapper::allocate_CMEM(uint8_t numa, u_long bsize, u_long* paddr, u_long* va
 void 
 CardWrapper::init_DMA()
 {
-  ERS_DEBUG(2, "InitDMA issued...");
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "InitDMA issued...";
   m_card_mutex.lock();
   m_flx_card->dma_reset();
-  ERS_DEBUG(2, "flxCard.dma_reset issued.");
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "flxCard.dma_reset issued.";
   m_flx_card->soft_reset();
-  ERS_DEBUG(2, "flxCard.soft_reset issued.");
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "flxCard.soft_reset issued.";
   m_card_mutex.unlock();
 
   m_current_addr = m_phys_addr;
   m_destination = m_phys_addr;
   m_read_index = 0;
-  ERS_DEBUG(2, "flxCard initDMA done card[" << m_card_id_str << "]");
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "flxCard initDMA done card[" << m_card_id_str << "]";
 }
 
 void 
 CardWrapper::start_DMA()
 {
-  ERS_DEBUG(2, "Issuing flxCard.dma_to_host for card " << m_card_id_str << " dma id:" << std::to_string(m_dma_id));
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Issuing flxCard.dma_to_host for card " << m_card_id_str << " dma id:" << std::to_string(m_dma_id);
   m_card_mutex.lock();
   m_flx_card->dma_to_host(m_dma_id, m_phys_addr, m_dma_memory_size, m_dma_wraparound); // FlxCard.h
   m_card_mutex.unlock();
@@ -218,7 +228,7 @@ CardWrapper::start_DMA()
 void 
 CardWrapper::stop_DMA()
 {
-  ERS_DEBUG(2, "Issuing flxCard.dma_stop for card " << m_card_id_str << " dma id:" << std::to_string(m_dma_id));
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Issuing flxCard.dma_stop for card " << m_card_id_str << " dma id:" << std::to_string(m_dma_id);
   m_card_mutex.lock();
   m_flx_card->dma_stop(m_dma_id);
   m_card_mutex.unlock();
@@ -242,7 +252,7 @@ CardWrapper::read_current_address()
 void
 CardWrapper::process_DMA()
 {
-  ERS_DEBUG(2, "CardWrapper starts processing blocks...");
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "CardWrapper starts processing blocks...";
   while (m_run_marker.load()) {
 
     // Loop until read address makes sense
@@ -252,7 +262,7 @@ CardWrapper::process_DMA()
         read_current_address();
         std::this_thread::sleep_for(std::chrono::microseconds(5000)); //cfg.poll_time = 5000
       } else {
-        ERS_DEBUG(2, "Stop issued during poll! Returning...");
+        TLOG_DEBUG(TLVL_WORK_STEPS) << "Stop issued during poll! Returning...";
         return;
       }
     }
@@ -263,7 +273,7 @@ CardWrapper::process_DMA()
         std::this_thread::sleep_for(std::chrono::microseconds(5000)); // cfg.poll_time = 5000
         read_current_address();
       } else {
-        ERS_DEBUG(2, "Stop issued during poll! Returning...");
+        TLOG_DEBUG(TLVL_WORK_STEPS) << "Stop issued during poll! Returning...";
         return;
       }
     }
@@ -296,7 +306,7 @@ CardWrapper::process_DMA()
     m_card_mutex.unlock();
 
   }
-  ERS_DEBUG(2, "CardWrapper processor thread finished.");
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "CardWrapper processor thread finished.";
 }
 
 } // namespace flxlibs

@@ -9,9 +9,10 @@
  */
 #include "CardWrapper.hpp"
 
+#include "logging/Logging.hpp"
+
 #include "packetformat/block_format.hpp"
 
-#include <ers/ers.h>
 #include <nlohmann/json.hpp>
 
 #include <atomic>
@@ -30,7 +31,7 @@ main(int /*argc*/, char** /*argv[]*/)
 
   // Killswitch that flips the run marker
   auto killswitch = std::thread([&]() {
-    ERS_INFO("Application will terminate in 10s...");
+    TLOG() << "Application will terminate in 10s...";
     std::this_thread::sleep_for(std::chrono::seconds(10));
     marker.store(false);
   });
@@ -38,7 +39,7 @@ main(int /*argc*/, char** /*argv[]*/)
   nlohmann::json cmd_params = "{}"_json;
 
   // CardWrapper
-  ERS_INFO("Creating CardWrapper...");
+  TLOG() << "Creating CardWrapper...";
   CardWrapper flx;
 
   // Set how block addresses should be handled
@@ -58,29 +59,29 @@ main(int /*argc*/, char** /*argv[]*/)
 
   flx.set_block_addr_handler(count_block_addr);
 
-  ERS_INFO("Init CardWrapper...");
+  TLOG() << "Init CardWrapper...";
   flx.init(cmd_params);
 
-  ERS_INFO("Configure CardWrapper...");
+  TLOG() << "Configure CardWrapper...";
   flx.configure(cmd_params);
 
-  ERS_INFO("Start CardWrapper...");
+  TLOG() << "Start CardWrapper...";
   flx.start(cmd_params);
 
-  ERS_INFO("Flipping killswitch in order to stop...");
+  TLOG() << "Flipping killswitch in order to stop...";
   if (killswitch.joinable()) {
     killswitch.join();
   }
 
-  ERS_INFO("Stop CardWrapper...");
+  TLOG() << "Stop CardWrapper...";
   flx.stop(cmd_params); 
 
-  ERS_INFO("Number of blocks DMA-d: " << block_counter);
-  ERS_INFO("-> Per elink: ");
+  TLOG() << "Number of blocks DMA-d: " << block_counter
+         << "-> Per elink: ";
   for (const auto& [elinkid, count]: elink_block_counters) {
-    ERS_INFO("  elink(" << std::to_string(elinkid) << "): " << std::to_string(count));
+    TLOG() << "  elink(" << std::to_string(elinkid) << "): " << std::to_string(count);
   }
 
-  ERS_INFO("Exiting.");
+  TLOG() << "Exiting.";
   return 0;
 }

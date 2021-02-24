@@ -12,6 +12,7 @@
 
 #include "readout/ReusableThread.hpp"
 #include "appfwk/DAQSink.hpp"
+#include "logging/Logging.hpp"
 
 #include <nlohmann/json.hpp>
 #include <folly/ProducerConsumerQueue.h>
@@ -63,7 +64,7 @@ public:
 
   void conf(const data_t& /*args*/, size_t block_size, bool is_32b_trailers) {
     if (m_configured) {
-      ERS_DEBUG(2, "ElinkModel is already configured!");
+      TLOG() << "ElinkModel is already configured!";
     } else {
        
       //if (inconsistency)
@@ -79,9 +80,9 @@ public:
       set_running(true);
       m_stats_thread.set_work(&ElinkModel::run_stats, this);
       m_parser_thread.set_work(&ElinkModel::process_elink, this);
-      ERS_DEBUG(2, "Started ElinkModel of link " << inherited::m_link_id << "...");
+      TLOG() << "Started ElinkModel of link " << inherited::m_link_id << "...";
     } else {
-      ERS_DEBUG(2, "ElinkModel of link " << inherited::m_link_id << " is already running!");
+      TLOG() << "ElinkModel of link " << inherited::m_link_id << " is already running!";
     }
   }
 
@@ -94,15 +95,15 @@ public:
       while (!m_stats_thread.get_readiness()) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
       }
-      ERS_DEBUG(2, "Stopped ElinkModel of link " << m_link_id << "!");
+      TLOG() << "Stopped ElinkModel of link " << m_link_id << "!";
     } else {
-      ERS_DEBUG(2, "ElinkModel of link " << m_link_id << " is already stopped!");
+      TLOG() << "ElinkModel of link " << m_link_id << " is already stopped!";
     }
   }
 
   void set_running(bool should_run) {
     bool was_running = m_run_marker.exchange(should_run);
-    ERS_DEBUG(2, "Active state was toggled from " << was_running << " to " << should_run);
+    TLOG() << "Active state was toggled from " << was_running << " to " << should_run;
   }
 
 
@@ -172,18 +173,18 @@ private:
       new_error_block_ctr = stats.error_block_ctr.exchange(0);
   
       double seconds =  std::chrono::duration_cast<std::chrono::microseconds>(now-t0).count()/1000000.;
-      ERS_INFO(inherited::m_elink_str 
-            << " Parser stats ->"
-            << " Blocks: " << new_block_ctr
-            << " Block rate: " << new_block_ctr/seconds/1000. << " [kHz]"
-            << " Chunks: " << new_chunk_ctr
-            << " Chunk rate: " << new_chunk_ctr/seconds/1000. << " [kHz]"
-            << " Shorts: " << new_short_ctr
-            << " Subchunks:" << new_subchunk_ctr
-            << " Error Chunks: " << new_error_chunk_ctr
-            << " Error Shorts: " << new_error_short_ctr
-            << " Error Subchunks: " << new_error_subchunk_ctr
-            << " Error Block: " << new_error_block_ctr);
+      TLOG() << inherited::m_elink_str 
+             << " Parser stats ->"
+             << " Blocks: " << new_block_ctr
+             << " Block rate: " << new_block_ctr/seconds/1000. << " [kHz]"
+             << " Chunks: " << new_chunk_ctr
+             << " Chunk rate: " << new_chunk_ctr/seconds/1000. << " [kHz]"
+             << " Shorts: " << new_short_ctr
+             << " Subchunks:" << new_subchunk_ctr
+             << " Error Chunks: " << new_error_chunk_ctr
+             << " Error Shorts: " << new_error_short_ctr
+             << " Error Subchunks: " << new_error_subchunk_ctr
+             << " Error Block: " << new_error_block_ctr;
   
       for (int i=0; i<50 && m_run_marker.load(); ++i) { // 100 x 100ms = 10s sleeps
         std::this_thread::sleep_for(std::chrono::milliseconds(100));

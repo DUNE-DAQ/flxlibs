@@ -6,17 +6,15 @@
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
+#include "flxlibs/AvailableParserOperations.hpp"
 #include "CardWrapper.hpp"
 #include "ElinkConcept.hpp"
 #include "CreateElink.hpp"
 
-#include "flxlibs/AvailableParserOperations.hpp"
-
+#include "logging/Logging.hpp"
 #include "readout/ReadoutTypes.hpp"
 
 #include "packetformat/block_format.hpp"
-
-#include <ers/ers.h>
 #include <nlohmann/json.hpp>
 
 #include <atomic>
@@ -36,7 +34,7 @@ main(int /*argc*/, char** /*argv[]*/)
 
   // Killswitch that flips the run marker
   auto killswitch = std::thread([&]() {
-    ERS_INFO("Application will terminate in 10s...");
+    TLOG() << "Application will terminate in 10s...";
     std::this_thread::sleep_for(std::chrono::seconds(10));
     marker.store(false);
   });
@@ -48,7 +46,7 @@ main(int /*argc*/, char** /*argv[]*/)
   std::atomic<int> block_counter{0};
 
   // CardWrapper
-  ERS_INFO("Creating CardWrapper...");
+  TLOG() << "Creating CardWrapper...";
   CardWrapper flx;
   std::map<int, std::unique_ptr<ElinkConcept>> elinks;
 
@@ -67,10 +65,10 @@ main(int /*argc*/, char** /*argv[]*/)
   parser0.process_subchunk_with_error_func = [&](const felix::packetformat::subchunk& subchunk) {
     // This specific implementation prints the first occurence of a subchunk with error on elink-0.
     if (first) {
-      ERS_INFO("First subchunk with error:"
-        << " Length=" << subchunk.length
-        << " ErrFlag=" << subchunk.err_flag
-        << " TrunFlag=" << subchunk.trunc_flag);
+      TLOG() << "First subchunk with error:"
+             << " Length=" << subchunk.length
+             << " ErrFlag=" << subchunk.err_flag
+             << " TrunFlag=" << subchunk.trunc_flag;
       first = false;
     }
   };
@@ -94,30 +92,30 @@ main(int /*argc*/, char** /*argv[]*/)
   // Set this function as the handler of blocks.
   flx.set_block_addr_handler(count_block_addr);
 
-  ERS_INFO("Init CardWrapper...");
+  TLOG() << "Init CardWrapper...";
   flx.init(cmd_params);
 
-  ERS_INFO("Configure CardWrapper...");
+  TLOG() << "Configure CardWrapper...";
   flx.configure(cmd_params);
 
-  ERS_INFO("Start CardWrapper...");
+  TLOG() << "Start CardWrapper...";
   flx.start(cmd_params);
 
-  ERS_INFO("Flipping killswitch in order to stop...");
+  TLOG() << "Flipping killswitch in order to stop...";
   if (killswitch.joinable()) {
     killswitch.join();
   }
 
-  ERS_INFO("Stop CardWrapper...");
+  TLOG() << "Stop CardWrapper...";
   flx.stop(cmd_params); 
 
-  ERS_INFO("Stop ElinkHandlers...");
+  TLOG() << "Stop ElinkHandlers...";
   for (auto const& [tag, handler] : elinks) {
     handler->stop(cmd_params);
   }
 
-  ERS_INFO("Number of blocks DMA-d: " << block_counter);
+  TLOG() << "Number of blocks DMA-d: " << block_counter;
 
-  ERS_INFO("Exiting.");
+  TLOG() << "Exiting.";
   return 0;
 }

@@ -11,6 +11,8 @@
 #include "FelixIssues.hpp"
 #include "CreateElink.hpp"
 
+#include "logging/Logging.hpp"
+
 #include "flxcard/FlxException.h"
 
 #include <chrono>
@@ -20,11 +22,20 @@
 #include <vector>
 #include <memory>
 
-#include <TRACE/trace.h>
 /**
  * @brief Name used by TRACE TLOG calls from this source file
  */
 #define TRACE_NAME "FelixCardReader" // NOLINT
+
+/**
+ * @brief TRACE debug levels used in this source file
+ */
+enum
+{
+  TLVL_ENTER_EXIT_METHODS = 5,
+  TLVL_WORK_STEPS = 10,
+  TLVL_BOOKKEEPING = 15
+};
 
 namespace dunedaq {
 namespace flxlibs {
@@ -69,7 +80,7 @@ FelixCardReader::init(const data_t& args)
       //ers::error(InitializationError(ERS_HERE, "Only output queues are supported in this module!"));
       continue;
     } else {
-      ERS_DEBUG(2, "CardReader output queue is " << qi.inst);
+      TLOG_DEBUG(TLVL_WORK_STEPS) << ": CardReader output queue is " << qi.inst;
       const char delim = '-';
       std::string target = qi.inst;
       std::vector<std::string> words;
@@ -102,7 +113,7 @@ FelixCardReader::init(const data_t& args)
       //   -> data corruption from FE
       //   -> data corruption from CR (really rare, last possible cause)
       
-      // NO ERS_DEBUG, but should count and periodically report corrupted DMA blocks.
+      // NO TLOG_DEBUG, but should count and periodically report corrupted DMA blocks.
     }
   };
 
@@ -135,7 +146,7 @@ FelixCardReader::do_configure(const data_t& args)
   }
 
   // Configure components
-  ERS_INFO("Configuring components with Block size:" << m_block_size << " & trailer size: " << m_chunk_trailer_size);
+  TLOG() << "Configuring components with Block size:" << m_block_size << " & trailer size: " << m_chunk_trailer_size;
   m_card_wrapper->configure(args);
   for (int lid=0; lid<m_num_links; ++lid) {
     auto tag = lid * m_elink_multiplier;
