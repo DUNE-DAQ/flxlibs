@@ -12,7 +12,7 @@
 
 namespace dunedaq::flxlibs::stats {
 
-typedef std::atomic<int> counter_t;
+using counter_t = std::atomic<int>;
 
 struct ParserStats {
   counter_t packet_ctr{0};
