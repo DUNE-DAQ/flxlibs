@@ -6,6 +6,7 @@ find_package(daq-cmake REQUIRED)
 daq_setup_environment()
 
 find_package(appfwk REQUIRED)
+find_package(logging REQUIRED)
 find_package(dataformats REQUIRED)
 find_package(readout REQUIRED)
 #find_package(udaq_readout_deps REQUIRED)
