@@ -8,7 +8,7 @@
 #ifndef FLXLIBS_SRC_FELIXISSUES_HPP_
 #define FLXLIBS_SRC_FELIXISSUES_HPP_
 
-#include <ers/Issue.h>
+#include <ers/Issue.hpp>
 
 #include <string>
 

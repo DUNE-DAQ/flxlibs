@@ -11,6 +11,8 @@ find_package(dataformats REQUIRED)
 find_package(readout REQUIRED)
 #find_package(felix REQUIRED)
 
+daq_codegen(*.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
+
 ##############################################################################
 # Dependency sets
 set(FLXUTIL_DEPENDENCIES readout::readout dataformats::dataformats)
@@ -42,7 +44,7 @@ target_include_directories(flxlibs PUBLIC $ENV{FLX_INC})
 
 ##############################################################################
 # Plugins
-daq_add_plugin(FelixCardReader duneDAQModule SCHEMA LINK_LIBRARIES appfwk::appfwk flxlibs)
+daq_add_plugin(FelixCardReader duneDAQModule LINK_LIBRARIES appfwk::appfwk flxlibs)
 
 ##############################################################################
 # Integration tests

@@ -10,6 +10,7 @@
 
 #include "appfwk/cmd/Structs.hpp"
 #include "appfwk/cmd/Nljs.hpp"
+#include "appfwk/app/Nljs.hpp"
 
 #include "flxlibs/felixcardreader/Structs.hpp"
 

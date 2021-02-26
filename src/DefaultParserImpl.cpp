@@ -9,8 +9,6 @@
 // From Module
 #include "DefaultParserImpl.hpp"
 
-#include <ers/ers.h>
-
 // From STD
 #include <iomanip>
 #include <chrono>

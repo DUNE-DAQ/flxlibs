@@ -73,7 +73,7 @@ tokenize(std::string const &str, const char delim,
 void
 FelixCardReader::init(const data_t& args)
 {
-  auto ini = args.get<appfwk::cmd::ModInit>();
+  auto ini = args.get<appfwk::app::ModInit>();
   m_card_wrapper->init(args);
   for (const auto& qi : ini.qinfos) {
     if (qi.dir != "output") {
