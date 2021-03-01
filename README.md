@@ -3,17 +3,13 @@ Appfwk DAQModules, utilities, and scripts for DUNE Upstream DAQ FELIX Readout So
 
 ## Building
 
-For the dependencies, you need the following external package that ships a build of a partial set of the ATLAS FELIX Software suite:
-
-    udaq_readout_deps v0_0_1
-
-Please modify your `dbt-settings` file in your work area, by enabling the following item to your `dune_products_dir` set:
+For the dependencies, you need the `felix` external package that ships a build of a partial set of the ATLAS FELIX Software suite. Please modify your `dbt-settings` file in your work area, by enabling the following item to your `dune_products_dir` set:
 
     "/cvmfs/dune.opensciencegrid.org/dunedaq/DUNE/products_dev"
 
-And add the `udaq_readout_deps` package to your `dune_products` set:
+And add the following line to your `dune_externals` set:
 
-    "udaq_readout_deps v0_0_1"
+    "felix v1_1_0 e19:prof"
 
 ## Configure the FELIX card
 Please ensure the following:
