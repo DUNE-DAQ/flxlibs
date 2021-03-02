@@ -81,10 +81,11 @@ FelixCardReader::init(const data_t& args)
       continue;
     } else {
       TLOG_DEBUG(TLVL_WORK_STEPS) << ": CardReader output queue is " << qi.inst;
-      const char delim = '-';
+      const char delim = '_';
       std::string target = qi.inst;
       std::vector<std::string> words;
       tokenize(target, delim, words);
+#warning RS FIXME -> Unhandled potential exception.
       auto linkid = std::stoi(words.back());
       auto tag = linkid * m_elink_multiplier;
       m_elinks[tag] = createElinkModel(qi.inst);
