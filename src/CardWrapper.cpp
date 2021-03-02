@@ -35,8 +35,8 @@ namespace flxlibs {
 CardWrapper::CardWrapper()
   : m_run_marker{false}
   , m_card_id(0)
-  , m_card_id_str("")
   , m_logical_unit(0)
+  , m_card_id_str("")
   , m_dma_id(0)
   , m_numa_id(0)
   , m_num_links(0)
