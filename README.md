@@ -9,7 +9,7 @@ For the dependencies, you need the `felix` external package that ships a build o
 
 And add the following line to your `dune_externals` set:
 
-    "felix v1_1_1 e19:prof"
+    "felix v1_1_0 e19:prof"
 
 ## Configure the FELIX card
 Please ensure the following:
