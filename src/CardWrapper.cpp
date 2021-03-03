@@ -71,15 +71,15 @@ CardWrapper::configure(const data_t& args)
     // Load config
     m_cfg = args.get<felixcardreader::Conf>();
     m_card_id = m_cfg.card_id;
-    std::ostringstream cardoss;
-    cardoss << "[id:" << std::to_string(m_card_id) << " slr:" << std::to_string(m_logical_unit) << "]";
     m_logical_unit = m_cfg.logical_unit;
-    m_card_id_str = cardoss.str();
     m_dma_id = m_cfg.dma_id;
     m_dma_memory_size = m_cfg.dma_memory_size_gb * 1024*1024*1024UL;
     m_numa_id = m_cfg.numa_id;
     m_dma_processor.set_name(m_dma_processor_name, m_card_id);
 
+    std::ostringstream cardoss;
+    cardoss << "[id:" << std::to_string(m_card_id) << " slr:" << std::to_string(m_logical_unit) << "]";
+    m_card_id_str = cardoss.str();
     TLOG() << "Configuring CardWrapper of card " << m_card_id_str;
     // Open card
     open_card();
