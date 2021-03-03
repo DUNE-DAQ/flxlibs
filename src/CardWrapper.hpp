@@ -63,7 +63,7 @@ private:
   static constexpr size_t m_max_links_per_card = 6;
   static constexpr size_t m_margin_blocks = 4;
   static constexpr size_t m_block_threshold = 256;
-  static constexpr size_t m_block_size = felix::packetformat::BLOCKSIZE;
+  static constexpr size_t m_block_size = 4096; //felix::packetformat::BLOCKSIZE;
   static constexpr size_t m_dma_wraparound = FLX_DMA_WRAPAROUND;
 
   // Card
