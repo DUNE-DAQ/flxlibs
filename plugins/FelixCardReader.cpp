@@ -87,13 +87,11 @@ FelixCardReader::init(const data_t& args)
       tokenize(target, delim, words);
 #warning RS FIXME -> Unhandled potential exception.
       auto linkid = std::stoi(words.back());
-      auto tag_offset = 0;
       auto link_offset = 0;
       if (linkid >= 5) { // RS FIXME: super ugly... queue names should contain tag for exact elink.
-        tag_offset = 2048;
         link_offset = 5;
       }
-      auto tag = (linkid - link_offset) * m_elink_multiplier + tag_offset;
+      auto tag = (linkid - link_offset) * m_elink_multiplier;
       TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << target << " elink tag: " << tag; 
       m_elinks[tag] = createElinkModel(qi.inst);
       m_elinks[tag]->init(args, m_block_queue_capacity);
@@ -157,7 +155,7 @@ FelixCardReader::do_configure(const data_t& args)
   TLOG(TLVL_WORK_STEPS) << "Configuring components with Block size:" << m_block_size << " & trailer size: " << m_chunk_trailer_size;
   m_card_wrapper->configure(args);
   for (int lid=0; lid<m_num_links; ++lid) {
-    auto tag = lid * m_elink_multiplier + (m_logical_unit * 2048); // RS FIXME: elink tag offset constant
+    auto tag = lid * m_elink_multiplier; 
     TLOG(TLVL_WORK_STEPS) << "Configuring ElinkHandler with elink tag: " << tag;
     m_elinks[tag]->set_ids(m_card_id, m_logical_unit, lid, tag);
     m_elinks[tag]->conf(args, m_block_size, is_32b_trailer);
