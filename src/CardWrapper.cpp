@@ -78,6 +78,7 @@ CardWrapper::configure(const data_t& args)
     m_dma_id = m_cfg.dma_id;
     m_dma_memory_size = m_cfg.dma_memory_size_gb * 1024*1024*1024UL;
     m_numa_id = m_cfg.numa_id;
+    m_dma_processor.set_name(m_dma_processor_name, m_card_id);
 
     TLOG() << "Configuring CardWrapper of card " << m_card_id_str;
     // Open card

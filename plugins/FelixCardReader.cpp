@@ -151,8 +151,8 @@ FelixCardReader::do_configure(const data_t& args)
   m_card_wrapper->configure(args);
   for (int lid=0; lid<m_num_links; ++lid) {
     auto tag = lid * m_elink_multiplier;
-    m_elinks[tag]->conf(args, m_block_size, is_32b_trailer);
     m_elinks[tag]->set_ids(m_card_id, m_logical_unit, lid, tag);
+    m_elinks[tag]->conf(args, m_block_size, is_32b_trailer);
   }
 }
 

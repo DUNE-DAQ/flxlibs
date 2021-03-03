@@ -66,7 +66,7 @@ public:
     if (m_configured) {
       TLOG() << "ElinkModel is already configured!";
     } else {
-       
+      m_parser_thread.set_name(m_parser_thread_name, inherited::m_link_tag);
       //if (inconsistency)
       //ers::fatal(ElinkConfigurationInconsistency(ERS_HERE, m_num_links));
 
