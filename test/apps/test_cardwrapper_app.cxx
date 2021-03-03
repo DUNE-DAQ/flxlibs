@@ -31,8 +31,8 @@ main(int /*argc*/, char** /*argv[]*/)
 
   // Killswitch that flips the run marker
   auto killswitch = std::thread([&]() {
-    TLOG() << "Application will terminate in 10s...";
-    std::this_thread::sleep_for(std::chrono::seconds(10));
+    TLOG() << "Application will terminate in 5s and show encountered ELink IDs in BLOCK headers...";
+    std::this_thread::sleep_for(std::chrono::seconds(5));
     marker.store(false);
   });
 

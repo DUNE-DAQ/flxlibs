@@ -32,10 +32,10 @@ local felixcardreader = {
         s.field("chunk_trailer_size", self.count, 0,
                 doc="Are chunks with 32b trailer."),
 
-        s.field("dma_block_size_kb", self.count, 0,
+        s.field("dma_block_size_kb", self.count, 4,
                 doc="FELIX DMA Block size"),
 
-        s.field("dma_memory_size_gb", self.count, 0,
+        s.field("dma_memory_size_gb", self.count, 1,
                 doc="CMEM_RCC memory to allocate in GBs."),
 
         s.field("numa_id", self.id, 0,
