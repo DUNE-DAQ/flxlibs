@@ -127,6 +127,7 @@ CardWrapper::stop(const data_t& /*args*/)
     while (!m_dma_processor.get_readiness()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
+    init_DMA();
     TLOG_DEBUG(TLVL_WORK_STEPS) << "Stopped CardWrapper of card " << m_card_id_str << "!";
   } else {
     TLOG() << "CardWrapper of card " << m_card_id_str << " is already stopped!";
