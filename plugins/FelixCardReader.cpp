@@ -154,7 +154,7 @@ FelixCardReader::do_configure(const data_t& args)
   // Configure components
   TLOG(TLVL_WORK_STEPS) << "Configuring components with Block size:" << m_block_size << " & trailer size: " << m_chunk_trailer_size;
   m_card_wrapper->configure(args);
-  for (int lid=0; lid<m_num_links; ++lid) {
+  for (unsigned lid=0; lid<m_num_links; ++lid) {
     auto tag = lid * m_elink_multiplier; 
     TLOG(TLVL_WORK_STEPS) << "Configuring ElinkHandler with elink tag: " << tag;
     m_elinks[tag]->set_ids(m_card_id, m_logical_unit, lid, tag);

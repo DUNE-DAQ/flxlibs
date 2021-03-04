@@ -77,7 +77,7 @@ private:
 
   int m_card_id;
   int m_logical_unit;
-  int m_num_links;
+  unsigned m_num_links;
   std::size_t m_block_size;
   int m_chunk_trailer_size;
 
