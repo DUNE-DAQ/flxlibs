@@ -32,6 +32,7 @@ public:
     , m_link_id(0)
     , m_link_tag(0)
     , m_elink_str("")
+    , m_elink_source_tid("")
   { 
     m_parser = std::make_unique<felix::packetformat::BlockParser<DefaultParserImpl>>( m_parser_impl );
   }
@@ -62,6 +63,7 @@ public:
     m_logical_unit = slr;
     m_link_id = id;
     m_link_tag = tag;
+
     std::ostringstream lidstrs;
     lidstrs << "Elink["
             << "cid:" << std::to_string(m_card_id) << "|"
@@ -69,6 +71,11 @@ public:
             << "lid:" << std::to_string(m_link_id) << "|"
             << "tag:" << std::to_string(m_link_tag) << "]";
     m_elink_str = lidstrs.str();
+
+    std::ostringstream tidstrs;
+    tidstrs << "ept-" << std::to_string(m_card_id) 
+            << "-" << std::to_string(m_logical_unit);
+    m_elink_source_tid = tidstrs.str();
   }
 
 protected:
@@ -81,6 +88,7 @@ protected:
   int m_link_id;
   int m_link_tag;
   std::string m_elink_str;
+  std::string m_elink_source_tid;
 
 private:
 
