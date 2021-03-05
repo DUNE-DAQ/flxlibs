@@ -176,7 +176,7 @@ FelixCardReader::do_stop(const data_t& args)
 {
   m_card_wrapper->stop(args);
   for (auto& [tag, elink] : m_elinks) {
-    elink->start(args);
+    elink->stop(args);
   }
 }
 
