@@ -64,7 +64,7 @@ public:
 
   void conf(const data_t& /*args*/, size_t block_size, bool is_32b_trailers) {
     if (m_configured) {
-      TLOG() << "ElinkModel is already configured!";
+      TLOG_DEBUG(5) << "ElinkModel is already configured!";
     } else {
       m_parser_thread.set_name(inherited::m_elink_source_tid, inherited::m_link_tag);
       //if (inconsistency)
@@ -80,9 +80,9 @@ public:
       set_running(true);
       m_stats_thread.set_work(&ElinkModel::run_stats, this);
       m_parser_thread.set_work(&ElinkModel::process_elink, this);
-      TLOG() << "Started ElinkModel of link " << inherited::m_link_id << "...";
+      TLOG_DEBUG(5) << "Started ElinkModel of link " << inherited::m_link_id << "...";
     } else {
-      TLOG() << "ElinkModel of link " << inherited::m_link_id << " is already running!";
+      TLOG_DEBUG(5) << "ElinkModel of link " << inherited::m_link_id << " is already running!";
     }
   }
 
@@ -95,15 +95,15 @@ public:
       while (!m_stats_thread.get_readiness()) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
       }
-      TLOG() << "Stopped ElinkModel of link " << m_link_id << "!";
+      TLOG_DEBUG(5) << "Stopped ElinkModel of link " << m_link_id << "!";
     } else {
-      TLOG() << "ElinkModel of link " << m_link_id << " is already stopped!";
+      TLOG_DEBUG(5) << "ElinkModel of link " << m_link_id << " is already stopped!";
     }
   }
 
   void set_running(bool should_run) {
     bool was_running = m_run_marker.exchange(should_run);
-    TLOG() << "Active state was toggled from " << was_running << " to " << should_run;
+    TLOG_DEBUG(5) << "Active state was toggled from " << was_running << " to " << should_run;
   }
 
 
