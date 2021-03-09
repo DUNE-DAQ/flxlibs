@@ -11,7 +11,7 @@ else
   flx-config -d $cardid load $rmfile1
   femu -d $cardid -n
 
-  echo "card id" $((cardid+1))
-  flx-config -d $((cardid+1)) load $rmfile2
-  femu -d $((cardid+1)) -n
+  #echo "card id" $((cardid+1))
+  #flx-config -d $((cardid+1)) load $rmfile2
+  #femu -d $((cardid+1)) -n
 fi

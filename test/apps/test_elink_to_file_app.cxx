@@ -31,7 +31,7 @@
 
 using namespace dunedaq::flxlibs;
 
-const constexpr std::size_t USER_PAYLOAD_SIZE = 5568; // for 12: 5568
+const constexpr std::size_t USER_PAYLOAD_SIZE = 8192; // for 12: 5568
 struct USER_PAYLOAD_STRUCT {
   char data[USER_PAYLOAD_SIZE];
 };
@@ -48,10 +48,12 @@ payloadToBuffer(std::unique_ptr<LatencyBuffer>& buffer)
     auto n_subchunks = chunk.subchunk_number();
 
     // Only dump if possible
-    if (chunk.length() != USER_PAYLOAD_SIZE) {
+    if (chunk.length() >= USER_PAYLOAD_SIZE) {
+	  TLOG() << "LEN: " << chunk.length();
       // scream?
     } else {
       USER_PAYLOAD_STRUCT payload;
+	  auto pl_size = chunk.length();
       uint32_t bytes_copied_chunk = 0; // NOLINT
       for(unsigned i=0; i<n_subchunks; i++) {
         parsers::dump_to_buffer(subchunk_data[i], subchunk_sizes[i],
@@ -102,7 +104,7 @@ main(int /*argc*/, char** /*argv[]*/)
   // Killswitch that flips the run marker
   auto killswitch = std::thread([&]() {
     TLOG() << "Application will terminate in 5s and show encountered ELink IDs in BLOCK headers...";
-    std::this_thread::sleep_for(std::chrono::seconds(5));
+    std::this_thread::sleep_for(std::chrono::seconds(30));
     marker.store(false);
   });
 
@@ -113,7 +115,7 @@ main(int /*argc*/, char** /*argv[]*/)
                                     "\"num_links\":5,\"num_sources\":1,\"numa_id\":0}"_json;
 
   nlohmann::json conf_params_slr2 = "{\"card_id\":0,\"chunk_trailer_size\":32,\"dma_block_size_kb\":4,"
-                                    "\"dma_id\":0,\"dma_memory_size_gb\":4,\"logical_unit\":1,"
+                                    "\"dma_id\":0,\"dma_memory_size_gb\":2,\"logical_unit\":1,"
                                     "\"num_links\":5,\"num_sources\":1,\"numa_id\":0}"_json;
 
   // CardWrapper
@@ -123,46 +125,46 @@ main(int /*argc*/, char** /*argv[]*/)
   flxs.second.init(def_params);
  
   BlockRouter slr1_router;
-  BlockRouter slr2_router;
-  for (unsigned i=0; i<5; ++i) {
+  //BlockRouter slr2_router;
+  for (unsigned i=0; i<6; ++i) {
     auto tag = i * 64;
     slr1_router.elinks[tag] = std::make_unique<ElinkModel<USER_PAYLOAD_STRUCT>>();
-    slr2_router.elinks[tag] = std::make_unique<ElinkModel<USER_PAYLOAD_STRUCT>>();
+    //slr2_router.elinks[tag] = std::make_unique<ElinkModel<USER_PAYLOAD_STRUCT>>();
     slr1_router.lbuffers[tag] = std::make_unique<LatencyBuffer>(1000000);
-    slr2_router.lbuffers[tag] = std::make_unique<LatencyBuffer>(1000000);
+    //slr2_router.lbuffers[tag] = std::make_unique<LatencyBuffer>(1000000);
     auto& parser1 = slr1_router.elinks[tag]->get_parser();
-    auto& parser2 = slr2_router.elinks[tag]->get_parser();
+    //auto& parser2 = slr2_router.elinks[tag]->get_parser();
     parser1.process_chunk_func = payloadToBuffer(std::ref(slr1_router.lbuffers[tag]));
-    parser2.process_chunk_func = payloadToBuffer(std::ref(slr2_router.lbuffers[tag]));
+    //parser2.process_chunk_func = payloadToBuffer(std::ref(slr2_router.lbuffers[tag]));
     slr1_router.elinks[tag]->init(def_params, 1000000);
-    slr2_router.elinks[tag]->init(def_params, 1000000);
+    //slr2_router.elinks[tag]->init(def_params, 1000000);
     slr1_router.elinks[tag]->set_ids(0, 0, i, tag);
-    slr2_router.elinks[tag]->set_ids(0, 1, i, tag);
+    //slr2_router.elinks[tag]->set_ids(0, 1, i, tag);
     slr1_router.elinks[tag]->conf(def_params, 4096, true);
-    slr2_router.elinks[tag]->conf(def_params, 4096, true);
+    //slr2_router.elinks[tag]->conf(def_params, 4096, true);
   }
 
   flxs.first.set_block_addr_handler(slr1_router.count_block_addr);
-  flxs.second.set_block_addr_handler(slr2_router.count_block_addr);
+  //flxs.second.set_block_addr_handler(slr2_router.count_block_addr);
 
   TLOG() << "Init CardWrappers...";
   flxs.first.init(def_params);
-  flxs.second.init(def_params);
+  //flxs.second.init(def_params);
 
   TLOG() << "Configure CardWrappers...";
   flxs.first.configure(conf_params_slr1);
-  flxs.second.configure(conf_params_slr2);
+  //flxs.second.configure(conf_params_slr2);
 
   TLOG() << "Start CardWrappers...";
   flxs.first.start(def_params);
-  flxs.second.start(def_params);
+  //flxs.second.start(def_params);
   TLOG() << "Start ElinkModels...";
   for (const auto& [id, elink]: slr1_router.elinks) {
     elink->start(def_params);
   }
-  for (const auto& [id, elink]: slr2_router.elinks) {
-    elink->start(def_params);
-  }
+  //for (const auto& [id, elink]: slr2_router.elinks) {
+  //  elink->start(def_params);
+  //}
 
   TLOG() << "Flipping killswitch in order to stop...";
   if (killswitch.joinable()) {
@@ -171,26 +173,26 @@ main(int /*argc*/, char** /*argv[]*/)
 
   TLOG() << "Stop CardWrapper...";
   flxs.first.stop(def_params); 
-  flxs.second.stop(def_params); 
+  //flxs.second.stop(def_params); 
   TLOG() << "Stop ElinkModels...";
   for (const auto& [id, elink]: slr1_router.elinks) {
     elink->stop(def_params);
   }
-  for (const auto& [id, elink]: slr2_router.elinks) {
-    elink->stop(def_params);
-  }
+  //for (const auto& [id, elink]: slr2_router.elinks) {
+  //  elink->stop(def_params);
+ // }
 
-  TLOG() << "Number of SLR1 blocks DMA-d: " << slr2_router.block_counter
+  TLOG() << "Number of SLR1 blocks DMA-d: " << slr1_router.block_counter
          << "-> Per elink: ";
   for (const auto& [elinkid, count]: slr1_router.elink_block_counters) {
     TLOG() << "  elink(" << std::to_string(elinkid) << "): " << std::to_string(count);
   }
 
-  TLOG() << "Number of SLR2 blocks DMA-d: " << slr2_router.block_counter
-         << "-> Per elink: ";
-  for (const auto& [elinkid, count]: slr2_router.elink_block_counters) {
-    TLOG() << "  elink(" << std::to_string(elinkid) << "): " << std::to_string(count);
-  }
+  //TLOG() << "Number of SLR2 blocks DMA-d: " << slr2_router.block_counter
+  //       << "-> Per elink: ";
+  //for (const auto& [elinkid, count]: slr2_router.elink_block_counters) {
+  //  TLOG() << "  elink(" << std::to_string(elinkid) << "): " << std::to_string(count);
+  //}
 
   // Filewriter
   std::function<size_t(std::string, std::unique_ptr<LatencyBuffer>&)> write_to_file = 
@@ -215,13 +217,15 @@ main(int /*argc*/, char** /*argv[]*/)
     std::string fname = fnamestr.str();
     done_futures[id] = std::async(std::launch::async, write_to_file, fname, std::ref(buffer));
   }
+
+  /*
   for (auto& [id, buffer]: slr2_router.lbuffers) {
     std::ostringstream fnamestr;
     fnamestr << "slr2-" << id << "-data.bin";
     TLOG() << "  -> Dropping data to file: " << fnamestr.str();
     std::string fname = fnamestr.str();
     done_futures[id+2048] = std::async(std::launch::async, write_to_file, fname, std::ref(buffer));
-  }
+  }*/
 
   TLOG() << "Wait for them. This might take a while...";
   for (auto& [id, fut] : done_futures) {
