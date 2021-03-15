@@ -173,7 +173,7 @@ private:
       new_error_block_ctr = stats.error_block_ctr.exchange(0);
   
       double seconds =  std::chrono::duration_cast<std::chrono::microseconds>(now-t0).count()/1000000.;
-      TLOG() << inherited::m_elink_str 
+      TLOG_DEBUG(5) << inherited::m_elink_str 
              << " Parser stats ->"
              << " Blocks: " << new_block_ctr
              << " Block rate: " << new_block_ctr/seconds/1000. << " [kHz]"

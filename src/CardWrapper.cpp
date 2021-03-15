@@ -80,7 +80,7 @@ CardWrapper::configure(const data_t& args)
     std::ostringstream cardoss;
     cardoss << "[id:" << std::to_string(m_card_id) << " slr:" << std::to_string(m_logical_unit) << "]";
     m_card_id_str = cardoss.str();
-    TLOG() << "Configuring CardWrapper of card " << m_card_id_str;
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "Configuring CardWrapper of card " << m_card_id_str;
     // Open card
     open_card();
     TLOG_DEBUG(TLVL_WORK_STEPS) << "Card[" << m_card_id_str << "] opened.";
@@ -113,7 +113,7 @@ CardWrapper::start(const data_t& /*args*/)
     m_dma_processor.set_work(&CardWrapper::process_DMA, this);
     TLOG_DEBUG(TLVL_WORK_STEPS) << "Started CardWrapper of card " << m_card_id_str << "...";
   } else {
-    TLOG() << "CardWrapper of card " << m_card_id_str << " is already running!";
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "CardWrapper of card " << m_card_id_str << " is already running!";
   }
 }
 
@@ -130,7 +130,7 @@ CardWrapper::stop(const data_t& /*args*/)
     init_DMA();
     TLOG_DEBUG(TLVL_WORK_STEPS) << "Stopped CardWrapper of card " << m_card_id_str << "!";
   } else {
-    TLOG() << "CardWrapper of card " << m_card_id_str << " is already stopped!";
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "CardWrapper of card " << m_card_id_str << " is already stopped!";
   }
 }
 
