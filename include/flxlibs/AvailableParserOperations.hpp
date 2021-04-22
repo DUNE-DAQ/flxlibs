@@ -131,6 +131,35 @@ fixsizedChunkViaHeap(std::unique_ptr<appfwk::DAQSink<TargetStruct*>>& sink,
   };
 }
 
+inline std::function<void(const felix::packetformat::chunk& chunk)>
+varsizedChunkIntoWrapper(std::unique_ptr<appfwk::DAQSink<readout::types::VariableSizePayloadWrapper>>& sink,
+                  std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
+{
+  return [&](const felix::packetformat::chunk& chunk) {
+    auto subchunk_data = chunk.subchunks();
+    auto subchunk_sizes = chunk.subchunk_lengths();
+    auto n_subchunks = chunk.subchunk_number();
+    auto chunk_length = chunk.length();
+
+    char* payload = static_cast<char*>( malloc(chunk_length * sizeof(char)) );
+    uint32_t bytes_copied_chunk = 0;
+    for (unsigned i=0; i<n_subchunks; ++i) {
+      dump_to_buffer(subchunk_data[i], subchunk_sizes[i],
+                     static_cast<void*>(payload),
+                     bytes_copied_chunk,
+                     chunk_length);
+      bytes_copied_chunk += subchunk_sizes[i];
+    }
+    readout::types::VariableSizePayloadWrapper payload_wrapper(chunk_length, payload);
+    try {
+      sink->push(std::move(payload_wrapper), timeout);
+    } catch (const dunedaq::appfwk::QueueTimeoutExpired& excpt) {
+      // ers 
+    }
+
+  };
+}
+
 //// Implement here any other DUNE specific FELIX chunk/block to User payload parsers
 
 } // namespace parsers

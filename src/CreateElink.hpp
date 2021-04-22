@@ -23,6 +23,7 @@ std::unique_ptr<ElinkConcept>
 createElinkModel(const std::string& target)
 {   
   if (target.find("wib") != std::string::npos) {
+    // WIB1 specific char arrays
     // Create Model
     auto elink_model = std::make_unique<ElinkModel<readout::types::WIB_SUPERCHUNK_STRUCT>>();
 
@@ -38,6 +39,15 @@ createElinkModel(const std::string& target)
     //parser.process_block_func = ...
 
     // Return with setup model
+    return elink_model;
+
+  } else if (target.find("varsize") != std::string::npos) {
+    // Variable sized user payloads
+    auto elink_model = std::make_unique<ElinkModel<readout::types::VariableSizePayloadWrapper>>();
+    elink_model->set_sink(target);
+    auto& parser = elink_model->get_parser();
+    auto& sink = elink_model->get_sink();
+    parser.process_chunk_func = parsers::varsizedChunkIntoWrapper(sink);
     return elink_model;
   }
 
