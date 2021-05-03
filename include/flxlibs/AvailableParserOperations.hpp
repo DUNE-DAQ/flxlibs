@@ -133,7 +133,7 @@ fixsizedChunkViaHeap(std::unique_ptr<appfwk::DAQSink<TargetStruct*>>& sink,
 
 inline std::function<void(const felix::packetformat::chunk& chunk)>
 varsizedChunkIntoWrapper(std::unique_ptr<appfwk::DAQSink<readout::types::VariableSizePayloadWrapper>>& sink,
-                  std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
+                         std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {
     auto subchunk_data = chunk.subchunks();
@@ -156,7 +156,23 @@ varsizedChunkIntoWrapper(std::unique_ptr<appfwk::DAQSink<readout::types::Variabl
     } catch (const dunedaq::appfwk::QueueTimeoutExpired& excpt) {
       // ers 
     }
+  };
+}
 
+inline std::function<void(const felix::packetformat::shortchunk& shortchunk)>
+varsizedShortchunkIntoWrapper(std::unique_ptr<appfwk::DAQSink<readout::types::VariableSizePayloadWrapper>>& sink,
+                              std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
+{
+  return [&](const felix::packetformat::shortchunk& shortchunk) {
+    auto shortchunk_length = shortchunk.length;
+    char* payload = static_cast<char*>( malloc(shortchunk_length * sizeof(char)) );
+    std::memcpy(payload, shortchunk.data, shortchunk_length);
+    readout::types::VariableSizePayloadWrapper payload_wrapper(shortchunk_length, payload);
+    try {
+      sink->push(std::move(payload_wrapper), timeout);
+    } catch (const dunedaq::appfwk::QueueTimeoutExpired& excpt) {
+      // ers 
+    }
   };
 }
 
