@@ -94,6 +94,31 @@ fixsizedChunkInto(std::unique_ptr<appfwk::DAQSink<TargetStruct>>& sink,
 }
 
 template<class TargetStruct>
+inline std::function<void(const felix::packetformat::shortchunk& shortchunk)>
+fixsizedShortchunkInto(std::unique_ptr<appfwk::DAQSink<TargetStruct>>& sink, 
+                       std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
+{
+  return [&](const felix::packetformat::shortchunk& shortchunk) { 
+    // Only dump to buffer if possible
+    std::size_t target_size = sizeof(TargetStruct);
+    if (shortchunk.length != target_size) {
+      // report? Add custom way of handling unexpected user payloads.
+      //  In this case -> not fixed size shortchunk -> shortchunk-to-userbuff not possible
+      // Can't throw, and can't print as it may flood output
+    } else {
+      TargetStruct payload;
+      std::memcpy(static_cast<char*>(payload), shortchunk.data, target_size);
+      try {
+        // finally, push to sink
+        sink->push(std::move(payload), timeout);
+      } catch (const dunedaq::appfwk::QueueTimeoutExpired& excpt) {
+        //ers::error(ParserOperationQueuePushFailure(ERS_HERE, " "));
+      }
+    }
+  };
+}
+
+template<class TargetStruct>
 inline std::function<void(const felix::packetformat::chunk& chunk)>
 fixsizedChunkViaHeap(std::unique_ptr<appfwk::DAQSink<TargetStruct*>>& sink,
                      //std::unique_ptr<appfwk::DAQSink<std::unique_ptr<TargetStruct>>>& sink, 
