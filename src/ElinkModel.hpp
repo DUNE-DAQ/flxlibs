@@ -45,12 +45,12 @@ public:
   { }
   ~ElinkModel() { }
 
-  void set_sink(const std::string& sink_name) {
-    if (!m_sink_is_set) {
+  void set_sink(const std::string& sink_name) override {
+    if (m_sink_is_set) {
+      TLOG_DEBUG(5) << "ElinkModel sink is already set in initialized!";
+    } else {
       m_sink_queue = std::make_unique<sink_t>(sink_name);
       m_sink_is_set = true;
-    } else {
-      //ers::error();
     }
   }
 

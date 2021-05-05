@@ -85,8 +85,13 @@ FelixCardReader::init(const data_t& args)
       std::string target = qi.inst;
       std::vector<std::string> words;
       tokenize(target, delim, words);
-#warning RS FIXME -> Unhandled potential exception.
-      auto linkid = std::stoi(words.back());
+      int linkid = -1;
+      try {
+        linkid = std::stoi(words.back());
+      } 
+      catch (const std::exception& ex) {
+        ers::fatal(InitializationError(ERS_HERE, "Link ID could not be parsed on queue instance name! "));
+      }
       auto link_offset = 0;
       if (linkid >= 5) { // RS FIXME: super ugly... queue names should contain tag for exact elink.
         link_offset = 5;
