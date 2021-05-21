@@ -8,9 +8,9 @@
 #ifndef FLXLIBS_PLUGINS_FELIXCARDREADER_HPP_
 #define FLXLIBS_PLUGINS_FELIXCARDREADER_HPP_
 
-#include "appfwk/cmd/Structs.hpp"
-#include "appfwk/cmd/Nljs.hpp"
 #include "appfwk/app/Nljs.hpp"
+#include "appfwk/cmd/Nljs.hpp"
+#include "appfwk/cmd/Structs.hpp"
 
 #include "flxlibs/felixcardreader/Structs.hpp"
 
@@ -29,10 +29,10 @@
 #include "ElinkConcept.hpp"
 
 #include <future>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
-#include <map>
 
 namespace dunedaq::flxlibs {
 
@@ -45,14 +45,10 @@ public:
    */
   explicit FelixCardReader(const std::string& name);
 
-  FelixCardReader(const FelixCardReader&) =
-    delete; ///< FelixCardReader is not copy-constructible
-  FelixCardReader& operator=(const FelixCardReader&) =
-    delete; ///< FelixCardReader is not copy-assignable
-  FelixCardReader(FelixCardReader&&) =
-    delete; ///< FelixCardReader is not move-constructible
-  FelixCardReader& operator=(FelixCardReader&&) =
-    delete; ///< FelixCardReader is not move-assignable
+  FelixCardReader(const FelixCardReader&) = delete;            ///< FelixCardReader is not copy-constructible
+  FelixCardReader& operator=(const FelixCardReader&) = delete; ///< FelixCardReader is not copy-assignable
+  FelixCardReader(FelixCardReader&&) = delete;                 ///< FelixCardReader is not move-constructible
+  FelixCardReader& operator=(FelixCardReader&&) = delete;      ///< FelixCardReader is not move-assignable
 
   void init(const data_t& args) override;
 
@@ -64,7 +60,7 @@ private:
   static constexpr int m_elink_multiplier = 64;
   static constexpr size_t m_block_queue_capacity = 1000000;
   static constexpr size_t m_1kb_block_size = 1024;
-  static constexpr int m_32b_trailer_size = 32; 
+  static constexpr int m_32b_trailer_size = 32;
 
   // Commands
   void do_configure(const data_t& args);
@@ -89,7 +85,6 @@ private:
 
   // Function for routing block addresses from card to elink handler
   std::function<void(uint64_t)> m_block_router; // NOLINT
-
 };
 
 } // namespace dunedaq::flxlibs

@@ -1,17 +1,17 @@
 /**
-* @file CreateElink.hpp Specific ElinkConcept creator.
-*
-* This is part of the DUNE DAQ , copyright 2020.
-* Licensing/copyright details are in the COPYING file that you should have
-* received with this code.
-*/
+ * @file CreateElink.hpp Specific ElinkConcept creator.
+ *
+ * This is part of the DUNE DAQ , copyright 2020.
+ * Licensing/copyright details are in the COPYING file that you should have
+ * received with this code.
+ */
 #ifndef FLXLIBS_SRC_CREATEELINK_HPP_
 #define FLXLIBS_SRC_CREATEELINK_HPP_
 
-#include "readout/ReadoutTypes.hpp"
-#include "flxlibs/AvailableParserOperations.hpp"
 #include "ElinkConcept.hpp"
 #include "ElinkModel.hpp"
+#include "flxlibs/AvailableParserOperations.hpp"
+#include "readout/ReadoutTypes.hpp"
 
 #include <memory>
 #include <string>
@@ -19,9 +19,9 @@
 namespace dunedaq {
 namespace flxlibs {
 
-std::unique_ptr<ElinkConcept> 
+std::unique_ptr<ElinkConcept>
 createElinkModel(const std::string& target)
-{   
+{
   if (target.find("wib") != std::string::npos) {
     // WIB1 specific char arrays
     // Create Model
@@ -36,7 +36,7 @@ createElinkModel(const std::string& target)
 
     // Modify parser as needed...
     parser.process_chunk_func = parsers::fixsizedChunkInto<readout::types::WIB_SUPERCHUNK_STRUCT>(sink);
-    //parser.process_block_func = ...
+    // parser.process_block_func = ...
 
     // Return with setup model
     return elink_model;

@@ -1,12 +1,12 @@
 /**
-* @file ElinkConcept.hpp ElinkConcept for constructors and
-* forwarding command args. Enforces the implementation to 
-* queue in block_addresses
-*
-* This is part of the DUNE DAQ , copyright 2020.
-* Licensing/copyright details are in the COPYING file that you should have
-* received with this code.
-*/
+ * @file ElinkConcept.hpp ElinkConcept for constructors and
+ * forwarding command args. Enforces the implementation to
+ * queue in block_addresses
+ *
+ * This is part of the DUNE DAQ , copyright 2020.
+ * Licensing/copyright details are in the COPYING file that you should have
+ * received with this code.
+ */
 #ifndef FLXLIBS_SRC_ELINKCONCEPT_HPP_
 #define FLXLIBS_SRC_ELINKCONCEPT_HPP_
 
@@ -23,7 +23,8 @@
 namespace dunedaq {
 namespace flxlibs {
 
-class ElinkConcept {
+class ElinkConcept
+{
 public:
   ElinkConcept()
     : m_parser_impl()
@@ -33,19 +34,15 @@ public:
     , m_link_tag(0)
     , m_elink_str("")
     , m_elink_source_tid("")
-  { 
-    m_parser = std::make_unique<felix::packetformat::BlockParser<DefaultParserImpl>>( m_parser_impl );
+  {
+    m_parser = std::make_unique<felix::packetformat::BlockParser<DefaultParserImpl>>(m_parser_impl);
   }
   ~ElinkConcept() {}
 
-  ElinkConcept(const ElinkConcept&)
-    = delete; ///< ElinkConcept is not copy-constructible
-  ElinkConcept& operator=(const ElinkConcept&)
-    = delete; ///< ElinkConcept is not copy-assginable
-  ElinkConcept(ElinkConcept&&)
-    = delete; ///< ElinkConcept is not move-constructible
-  ElinkConcept& operator=(ElinkConcept&&)
-    = delete; ///< ElinkConcept is not move-assignable
+  ElinkConcept(const ElinkConcept&) = delete;            ///< ElinkConcept is not copy-constructible
+  ElinkConcept& operator=(const ElinkConcept&) = delete; ///< ElinkConcept is not copy-assginable
+  ElinkConcept(ElinkConcept&&) = delete;                 ///< ElinkConcept is not move-constructible
+  ElinkConcept& operator=(ElinkConcept&&) = delete;      ///< ElinkConcept is not move-assignable
 
   virtual void init(const nlohmann::json& args, const size_t block_queue_capacity) = 0;
   virtual void set_sink(const std::string& sink_name) = 0;
@@ -55,11 +52,10 @@ public:
 
   virtual bool queue_in_block_address(uint64_t block_addr) = 0; // NOLINT
 
-  DefaultParserImpl& get_parser() { 
-    return std::ref(m_parser_impl); 
-  }
+  DefaultParserImpl& get_parser() { return std::ref(m_parser_impl); }
 
-  void set_ids(int card, int slr, int id, int tag) {
+  void set_ids(int card, int slr, int id, int tag)
+  {
     m_card_id = card;
     m_logical_unit = slr;
     m_link_id = id;
@@ -74,8 +70,7 @@ public:
     m_elink_str = lidstrs.str();
 
     std::ostringstream tidstrs;
-    tidstrs << "ept-" << std::to_string(m_card_id) 
-            << "-" << std::to_string(m_logical_unit);
+    tidstrs << "ept-" << std::to_string(m_card_id) << "-" << std::to_string(m_logical_unit);
     m_elink_source_tid = tidstrs.str();
   }
 
@@ -92,7 +87,6 @@ protected:
   std::string m_elink_source_tid;
 
 private:
-
 };
 
 } // namespace flxlibs

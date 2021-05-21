@@ -1,15 +1,15 @@
 /**
- * @file test_elinkhandler_app.cxx Test application for 
+ * @file test_elinkhandler_app.cxx Test application for
  * ElinkConcept and ElinkModel. Inits, starts, stops block parsers.
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
-#include "flxlibs/AvailableParserOperations.hpp"
 #include "CardWrapper.hpp"
-#include "ElinkConcept.hpp"
 #include "CreateElink.hpp"
+#include "ElinkConcept.hpp"
+#include "flxlibs/AvailableParserOperations.hpp"
 
 #include "logging/Logging.hpp"
 #include "readout/ReadoutTypes.hpp"
@@ -18,10 +18,10 @@
 #include <nlohmann/json.hpp>
 
 #include <atomic>
-#include <string>
 #include <chrono>
-#include <memory>
 #include <map>
+#include <memory>
+#include <string>
 
 using namespace dunedaq::flxlibs;
 using namespace dunedaq::readout;
@@ -30,7 +30,7 @@ int
 main(int /*argc*/, char** /*argv[]*/)
 {
   // Run marker
-  std::atomic<bool> marker{true};
+  std::atomic<bool> marker{ true };
 
   // Killswitch that flips the run marker
   auto killswitch = std::thread([&]() {
@@ -43,7 +43,7 @@ main(int /*argc*/, char** /*argv[]*/)
   nlohmann::json cmd_params = "{}"_json;
 
   // Counter
-  std::atomic<int> block_counter{0};
+  std::atomic<int> block_counter{ 0 };
 
   // CardWrapper
   TLOG() << "Creating CardWrapper...";
@@ -51,9 +51,9 @@ main(int /*argc*/, char** /*argv[]*/)
   std::map<int, std::unique_ptr<ElinkConcept>> elinks;
 
   // 5 elink handlers
-  for (int i=0; i<5; ++i) {
-    elinks[i*64] = createElinkModel("wib");
-    auto& handler = elinks[i*64];
+  for (int i = 0; i < 5; ++i) {
+    elinks[i * 64] = createElinkModel("wib");
+    auto& handler = elinks[i * 64];
     handler->init(cmd_params, 100000);
     handler->conf(cmd_params, 4096, true);
     handler->start(cmd_params);
@@ -66,8 +66,7 @@ main(int /*argc*/, char** /*argv[]*/)
     // This specific implementation prints the first occurence of a subchunk with error on elink-0.
     if (first) {
       TLOG() << "First subchunk with error:"
-             << " Length=" << subchunk.length
-             << " ErrFlag=" << subchunk.err_flag
+             << " Length=" << subchunk.length << " ErrFlag=" << subchunk.err_flag
              << " TrunFlag=" << subchunk.trunc_flag;
       first = false;
     }
@@ -86,7 +85,7 @@ main(int /*argc*/, char** /*argv[]*/)
       } else {
         // couldn't queue block
       }
-    } 
+    }
   };
 
   // Set this function as the handler of blocks.
@@ -107,7 +106,7 @@ main(int /*argc*/, char** /*argv[]*/)
   }
 
   TLOG() << "Stop CardWrapper...";
-  flx.stop(cmd_params); 
+  flx.stop(cmd_params);
 
   TLOG() << "Stop ElinkHandlers...";
   for (auto const& [tag, handler] : elinks) {

@@ -14,40 +14,35 @@
 
 namespace dunedaq {
 
-    ERS_DECLARE_ISSUE(flxlibs, CardError,
-                      " FELIX Card Internal Error: " << intererror,
-                      ((std::string)intererror))
+ERS_DECLARE_ISSUE(flxlibs, CardError, " FELIX Card Internal Error: " << intererror, ((std::string)intererror))
 
-    ERS_DECLARE_ISSUE(flxlibs, InitializationError,
-                      " FELIX Initialization Error: " << initerror,
-                      ((std::string)initerror)) 
+ERS_DECLARE_ISSUE(flxlibs, InitializationError, " FELIX Initialization Error: " << initerror, ((std::string)initerror))
 
-    ERS_DECLARE_ISSUE(flxlibs, ConfigurationError,
-                      " FELIX Configuration Error: " << conferror,
-                      ((std::string)conferror)) 
+ERS_DECLARE_ISSUE(flxlibs, ConfigurationError, " FELIX Configuration Error: " << conferror, ((std::string)conferror))
 
-    ERS_DECLARE_ISSUE(flxlibs, QueueTimeoutError,
-                      " FELIX queue timed out: " << queuename,
-                      ((std::string)queuename))
+ERS_DECLARE_ISSUE(flxlibs, QueueTimeoutError, " FELIX queue timed out: " << queuename, ((std::string)queuename))
 
-    ERS_DECLARE_ISSUE(flxlibs, ParserOperationQueuePushFailure,
-                      " ParserOps couldn't push to queue! Failed chunk: " << chunk,
-                      ((std::string)chunk))
+ERS_DECLARE_ISSUE(flxlibs,
+                  ParserOperationQueuePushFailure,
+                  " ParserOps couldn't push to queue! Failed chunk: " << chunk,
+                  ((std::string)chunk))
 
-    ERS_DECLARE_ISSUE(flxlibs, ElinkConfigurationInconsistency,
-                      " Inconsistent number of ELinks requested. Num links: " << num_links,
-                      ((int)num_links)) // NOLINT
+ERS_DECLARE_ISSUE(flxlibs,
+                  ElinkConfigurationInconsistency,
+                  " Inconsistent number of ELinks requested. Num links: " << num_links,
+                  ((int)num_links)) // NOLINT
 
-    ERS_DECLARE_ISSUE(flxlibs, BlockSizeConfigurationInconsistency,
-                      " Invalid FELIX block size and 32b trailer configuration requested: " << block_size,
-                      ((int)block_size)) // NOLINT
+ERS_DECLARE_ISSUE(flxlibs,
+                  BlockSizeConfigurationInconsistency,
+                  " Invalid FELIX block size and 32b trailer configuration requested: " << block_size,
+                  ((int)block_size)) // NOLINT
 
-    ERS_DECLARE_ISSUE_BASE(flxlibs,
-                           ResourceQueueError,
-                           flxlibs::ConfigurationError,
-                           " The " << queueType << " queue was not successfully created. ",
-                           ((std::string)name),
-                           ((std::string)queueType))
+ERS_DECLARE_ISSUE_BASE(flxlibs,
+                       ResourceQueueError,
+                       flxlibs::ConfigurationError,
+                       " The " << queueType << " queue was not successfully created. ",
+                       ((std::string)name),
+                       ((std::string)queueType))
 
 } // namespace dunedaq
 

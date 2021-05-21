@@ -15,8 +15,8 @@
 #include "packetformat/block_format.hpp"
 
 // From STD
-#include <iomanip>
 #include <chrono>
+#include <iomanip>
 #include <memory>
 
 /**
@@ -33,7 +33,7 @@ namespace dunedaq {
 namespace flxlibs {
 
 CardWrapper::CardWrapper()
-  : m_run_marker{false}
+  : m_run_marker{ false }
   , m_card_id(0)
   , m_logical_unit(0)
   , m_card_id_str("")
@@ -41,28 +41,23 @@ CardWrapper::CardWrapper()
   , m_numa_id(0)
   , m_num_links(0)
   , m_info_str("")
-  , m_run_lock{false}
+  , m_run_lock{ false }
   , m_dma_processor(0)
   , m_handle_block_addr(nullptr)
-{
+{}
 
-}
+CardWrapper::~CardWrapper() {}
 
-CardWrapper::~CardWrapper()
-{
-
-}
-
-void 
+void
 CardWrapper::init(const data_t& /*args*/)
-{ 
+{
   m_flx_card = std::make_unique<FlxCard>();
   if (m_flx_card == nullptr) {
     ers::fatal(flxlibs::CardError(ERS_HERE, "Couldn't create FlxCard object."));
   }
 }
 
-void 
+void
 CardWrapper::configure(const data_t& args)
 {
   if (m_configured) {
@@ -73,7 +68,7 @@ CardWrapper::configure(const data_t& args)
     m_card_id = m_cfg.card_id;
     m_logical_unit = m_cfg.logical_unit;
     m_dma_id = m_cfg.dma_id;
-    m_dma_memory_size = m_cfg.dma_memory_size_gb * 1024*1024*1024UL;
+    m_dma_memory_size = m_cfg.dma_memory_size_gb * 1024 * 1024 * 1024UL;
     m_numa_id = m_cfg.numa_id;
     m_dma_processor.set_name(m_dma_processor_name, m_card_id);
 
@@ -85,8 +80,8 @@ CardWrapper::configure(const data_t& args)
     open_card();
     TLOG_DEBUG(TLVL_WORK_STEPS) << "Card[" << m_card_id_str << "] opened.";
     // Allocate CMEM
-    m_cmem_handle = allocate_CMEM(m_numa_id, m_dma_memory_size, &m_phys_addr, &m_virt_addr);  
-    TLOG_DEBUG(TLVL_WORK_STEPS) << "Card[" << m_card_id_str << "] CMEM memory allocated with " 
+    m_cmem_handle = allocate_CMEM(m_numa_id, m_dma_memory_size, &m_phys_addr, &m_virt_addr);
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "Card[" << m_card_id_str << "] CMEM memory allocated with "
                                 << std::to_string(m_dma_memory_size) << " Bytes.";
     // Stop currently running DMA
     stop_DMA();
@@ -96,11 +91,11 @@ CardWrapper::configure(const data_t& args)
     TLOG_DEBUG(TLVL_WORK_STEPS) << "Card[" << m_card_id_str << "] DMA access initialized.";
     // The rest was some CPU pinning.
     TLOG_DEBUG(TLVL_WORK_STEPS) << m_card_id_str << "] is configured for datataking.";
-    m_configured=true;
+    m_configured = true;
   }
 }
 
-void 
+void
 CardWrapper::start(const data_t& /*args*/)
 {
   TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << "Starting CardWrapper of card " << m_card_id_str << "...";
@@ -117,7 +112,7 @@ CardWrapper::start(const data_t& /*args*/)
   }
 }
 
-void 
+void
 CardWrapper::stop(const data_t& /*args*/)
 {
   TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << "Stopping CardWrapper of card " << m_card_id_str << "...";
@@ -141,7 +136,7 @@ CardWrapper::set_running(bool should_run)
   TLOG_DEBUG(TLVL_WORK_STEPS) << "Active state was toggled from " << was_running << " to " << should_run;
 }
 
-void 
+void
 CardWrapper::open_card()
 {
   TLOG_DEBUG(TLVL_WORK_STEPS) << "Opening FELIX card " << m_card_id_str;
@@ -150,14 +145,13 @@ CardWrapper::open_card()
     auto absolute_card_id = m_card_id + m_logical_unit;
     m_flx_card->card_open(static_cast<int>(absolute_card_id), LOCK_NONE); // FlxCard.h
     m_card_mutex.unlock();
-  }
-  catch(FlxException& ex) {
+  } catch (FlxException& ex) {
     ers::error(flxlibs::CardError(ERS_HERE, ex.what()));
     exit(EXIT_FAILURE);
   }
 }
 
-void 
+void
 CardWrapper::close_card()
 {
   TLOG_DEBUG(TLVL_WORK_STEPS) << "Closing FELIX card " << m_card_id_str;
@@ -165,14 +159,13 @@ CardWrapper::close_card()
     m_card_mutex.lock();
     m_flx_card->card_close();
     m_card_mutex.unlock();
-  }
-  catch(FlxException& ex) {
+  } catch (FlxException& ex) {
     ers::error(flxlibs::CardError(ERS_HERE, ex.what()));
     exit(EXIT_FAILURE);
   }
 }
 
-int 
+int
 CardWrapper::allocate_CMEM(uint8_t numa, u_long bsize, u_long* paddr, u_long* vaddr) // NOLINT
 {
   TLOG_DEBUG(TLVL_WORK_STEPS) << "Allocating CMEM buffer " << m_card_id_str << " dma id:" << std::to_string(m_dma_id);
@@ -180,7 +173,7 @@ CardWrapper::allocate_CMEM(uint8_t numa, u_long bsize, u_long* paddr, u_long* va
   unsigned ret = CMEM_Open(); // cmem_rcc.h
   if (!ret) {
     ret = CMEM_NumaSegmentAllocate(bsize, numa, const_cast<char*>("FelixRO"), &handle); // NUMA aware
-    //ret = CMEM_GFPBPASegmentAllocate(bsize, const_cast<char*>("FelixRO"), &handle); // non NUMA aware
+    // ret = CMEM_GFPBPASegmentAllocate(bsize, const_cast<char*>("FelixRO"), &handle); // non NUMA aware
   }
   if (!ret) {
     ret = CMEM_SegmentPhysicalAddress(handle, paddr);
@@ -189,19 +182,20 @@ CardWrapper::allocate_CMEM(uint8_t numa, u_long bsize, u_long* paddr, u_long* va
     ret = CMEM_SegmentVirtualAddress(handle, vaddr);
   }
   if (ret) {
-    //rcc_error_print(stdout, ret);
+    // rcc_error_print(stdout, ret);
     m_card_mutex.lock();
     m_flx_card->card_close();
     m_card_mutex.unlock();
-    ers::fatal(flxlibs::CardError(ERS_HERE, 
-      "Not enough CMEM memory allocated or the application demands too much CMEM memory.\n"
-      "Fix the CMEM memory reservation in the driver or change the module's configuration."));
+    ers::fatal(
+      flxlibs::CardError(ERS_HERE,
+                         "Not enough CMEM memory allocated or the application demands too much CMEM memory.\n"
+                         "Fix the CMEM memory reservation in the driver or change the module's configuration."));
     exit(EXIT_FAILURE);
   }
   return handle;
 }
 
-void 
+void
 CardWrapper::init_DMA()
 {
   TLOG_DEBUG(TLVL_WORK_STEPS) << "InitDMA issued...";
@@ -218,19 +212,21 @@ CardWrapper::init_DMA()
   TLOG_DEBUG(TLVL_WORK_STEPS) << "flxCard initDMA done card[" << m_card_id_str << "]";
 }
 
-void 
+void
 CardWrapper::start_DMA()
 {
-  TLOG_DEBUG(TLVL_WORK_STEPS) << "Issuing flxCard.dma_to_host for card " << m_card_id_str << " dma id:" << std::to_string(m_dma_id);
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Issuing flxCard.dma_to_host for card " << m_card_id_str
+                              << " dma id:" << std::to_string(m_dma_id);
   m_card_mutex.lock();
   m_flx_card->dma_to_host(m_dma_id, m_phys_addr, m_dma_memory_size, m_dma_wraparound); // FlxCard.h
   m_card_mutex.unlock();
 }
 
-void 
+void
 CardWrapper::stop_DMA()
 {
-  TLOG_DEBUG(TLVL_WORK_STEPS) << "Issuing flxCard.dma_stop for card " << m_card_id_str << " dma id:" << std::to_string(m_dma_id);
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Issuing flxCard.dma_stop for card " << m_card_id_str
+                              << " dma id:" << std::to_string(m_dma_id);
   m_card_mutex.lock();
   m_flx_card->dma_stop(m_dma_id);
   m_card_mutex.unlock();
@@ -239,11 +235,10 @@ CardWrapper::stop_DMA()
 inline uint64_t // NOLINT
 CardWrapper::bytes_available()
 {
-  return (m_current_addr - ((m_read_index * m_block_size) + m_phys_addr) + m_dma_memory_size)
-          % m_dma_memory_size;
+  return (m_current_addr - ((m_read_index * m_block_size) + m_phys_addr) + m_dma_memory_size) % m_dma_memory_size;
 }
 
-void 
+void
 CardWrapper::read_current_address()
 {
   m_card_mutex.lock();
@@ -258,19 +253,17 @@ CardWrapper::process_DMA()
   while (m_run_marker.load()) {
 
     // Loop until read address makes sense
-    while((m_current_addr < m_phys_addr) || (m_phys_addr + m_dma_memory_size < m_current_addr))
-    {
+    while ((m_current_addr < m_phys_addr) || (m_phys_addr + m_dma_memory_size < m_current_addr)) {
       if (m_run_marker.load()) {
         read_current_address();
-        std::this_thread::sleep_for(std::chrono::microseconds(5000)); //cfg.poll_time = 5000
+        std::this_thread::sleep_for(std::chrono::microseconds(5000)); // cfg.poll_time = 5000
       } else {
         TLOG_DEBUG(TLVL_WORK_STEPS) << "Stop issued during poll! Returning...";
         return;
       }
     }
     // Loop while there are not enough data
-    while (bytes_available() < m_block_threshold * m_block_size)
-    {
+    while (bytes_available() < m_block_threshold * m_block_size) {
       if (m_run_marker.load()) {
         std::this_thread::sleep_for(std::chrono::microseconds(5000)); // cfg.poll_time = 5000
         read_current_address();
@@ -293,8 +286,8 @@ CardWrapper::process_DMA()
 
       // Advance
       m_read_index = (m_read_index + 1) % (m_dma_memory_size / m_block_size);
-      bytes += m_block_size; 
-    }      
+      bytes += m_block_size;
+    }
 
     // here check if we can move the read pointer in the circular buffer
     m_destination = m_phys_addr + (write_index * m_block_size) - (m_margin_blocks * m_block_size);
@@ -306,7 +299,6 @@ CardWrapper::process_DMA()
     m_card_mutex.lock();
     m_flx_card->dma_set_ptr(m_dma_id, m_destination);
     m_card_mutex.unlock();
-
   }
   TLOG_DEBUG(TLVL_WORK_STEPS) << "CardWrapper processor thread finished.";
 }
