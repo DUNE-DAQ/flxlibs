@@ -1,6 +1,6 @@
 /**
- * @file test_cardwrapper_app.cxx Test application for 
- * CardWrapper. Inits, starts, stops the DMA transfer. 
+ * @file test_cardwrapper_app.cxx Test application for
+ * CardWrapper. Inits, starts, stops the DMA transfer.
  * Also demonstrates the most basic block interpretation/handler callback.
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
@@ -16,10 +16,10 @@
 #include <nlohmann/json.hpp>
 
 #include <atomic>
-#include <string>
 #include <chrono>
-#include <memory>
 #include <map>
+#include <memory>
+#include <string>
 
 using namespace dunedaq::flxlibs;
 
@@ -27,7 +27,7 @@ int
 main(int /*argc*/, char** /*argv[]*/)
 {
   // Run marker
-  std::atomic<bool> marker{true};
+  std::atomic<bool> marker{ true };
 
   // Killswitch that flips the run marker
   auto killswitch = std::thread([&]() {
@@ -45,14 +45,14 @@ main(int /*argc*/, char** /*argv[]*/)
   // Set how block addresses should be handled
   std::map<unsigned, size_t> elink_block_counters;
   size_t block_counter = 0;
-  std::function<void(uint64_t)> count_block_addr = [&](uint64_t block_addr) { // NOLINT 
+  std::function<void(uint64_t)> count_block_addr = [&](uint64_t block_addr) { // NOLINT
     block_counter++;
     const auto* block = const_cast<felix::packetformat::block*>(
       felix::packetformat::block_from_bytes(reinterpret_cast<const char*>(block_addr)) // NOLINT
     );
     auto elink = block->elink;
-    if(elink_block_counters.count(elink) == 0) {
-       elink_block_counters[elink] = 0;
+    if (elink_block_counters.count(elink) == 0) {
+      elink_block_counters[elink] = 0;
     }
     elink_block_counters[elink]++;
   };
@@ -74,11 +74,10 @@ main(int /*argc*/, char** /*argv[]*/)
   }
 
   TLOG() << "Stop CardWrapper...";
-  flx.stop(cmd_params); 
+  flx.stop(cmd_params);
 
-  TLOG() << "Number of blocks DMA-d: " << block_counter
-         << "-> Per elink: ";
-  for (const auto& [elinkid, count]: elink_block_counters) {
+  TLOG() << "Number of blocks DMA-d: " << block_counter << "-> Per elink: ";
+  for (const auto& [elinkid, count] : elink_block_counters) {
     TLOG() << "  elink(" << std::to_string(elinkid) << "): " << std::to_string(count);
   }
 

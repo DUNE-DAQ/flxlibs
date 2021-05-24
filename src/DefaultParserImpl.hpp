@@ -20,8 +20,8 @@
 #include "FelixStatistics.hpp"
 
 // From STD
-#include <iomanip>
 #include <functional>
+#include <iomanip>
 
 namespace dunedaq::flxlibs {
 
@@ -30,14 +30,10 @@ class DefaultParserImpl : public felix::packetformat::ParserOperations
 public:
   DefaultParserImpl();
   ~DefaultParserImpl();
-  DefaultParserImpl(const DefaultParserImpl&) =
-    delete; ///< DefaultParserImpl is not copy-constructible
-  DefaultParserImpl& operator=(const DefaultParserImpl&) =
-    delete; ///< DefaultParserImpl is not copy-assignable
-  DefaultParserImpl(DefaultParserImpl&&) =
-    delete; ///< DefaultParserImpl is not move-constructible
-  DefaultParserImpl& operator=(DefaultParserImpl&&) =
-    delete; ///< DefaultParserImpl is not move-assignable
+  DefaultParserImpl(const DefaultParserImpl&) = delete;            ///< DefaultParserImpl is not copy-constructible
+  DefaultParserImpl& operator=(const DefaultParserImpl&) = delete; ///< DefaultParserImpl is not copy-assignable
+  DefaultParserImpl(DefaultParserImpl&&) = delete;                 ///< DefaultParserImpl is not move-constructible
+  DefaultParserImpl& operator=(DefaultParserImpl&&) = delete;      ///< DefaultParserImpl is not move-assignable
 
   stats::ParserStats& get_stats();
 
@@ -59,7 +55,7 @@ public:
   void chunk_processed_with_error(const felix::packetformat::chunk& chunk);
   void subchunk_processed_with_error(const felix::packetformat::subchunk& subchunk);
   void shortchunk_process_with_error(const felix::packetformat::shortchunk& shortchunk);
-  void block_processed_with_error(const felix::packetformat::block& block); 
+  void block_processed_with_error(const felix::packetformat::block& block);
 
 private:
   // Default/empty implementations: No-op "processing"
@@ -70,11 +66,10 @@ private:
   void process_chunk_with_error(const felix::packetformat::chunk& /*chunk*/) {}
   void process_subchunk_with_error(const felix::packetformat::subchunk& /*subchunk*/) {}
   void process_shortchunk_with_error(const felix::packetformat::shortchunk& /*shortchunk*/) {}
-  void process_block_with_error(const felix::packetformat::block& /*block*/) {} 
+  void process_block_with_error(const felix::packetformat::block& /*block*/) {}
 
   // Statistics
   stats::ParserStats m_stats;
-
 };
 
 } // namespace dunedaq::flxlibs

@@ -7,20 +7,20 @@
  */
 #include "flxlibs/felixcardreader/Nljs.hpp"
 
+#include "CreateElink.hpp"
 #include "FelixCardReader.hpp"
 #include "FelixIssues.hpp"
-#include "CreateElink.hpp"
 
 #include "logging/Logging.hpp"
 
 #include "flxcard/FlxException.h"
 
 #include <chrono>
+#include <memory>
 #include <string>
 #include <thread>
 #include <utility>
 #include <vector>
-#include <memory>
 
 /**
  * @brief Name used by TRACE TLOG calls from this source file
@@ -48,7 +48,7 @@ FelixCardReader::FelixCardReader(const std::string& name)
   , m_num_links(0)
   , m_block_size(0)
   , m_block_router(nullptr)
-  //, block_ptr_sinks_{ } 
+//, block_ptr_sinks_{ }
 
 {
   m_card_wrapper = std::make_unique<CardWrapper>();
@@ -59,8 +59,7 @@ FelixCardReader::FelixCardReader(const std::string& name)
 }
 
 inline void
-tokenize(std::string const &str, const char delim,
-         std::vector<std::string>& out)
+tokenize(std::string const& str, const char delim, std::vector<std::string>& out)
 {
   std::size_t start;
   std::size_t end = 0;
@@ -77,7 +76,7 @@ FelixCardReader::init(const data_t& args)
   m_card_wrapper->init(args);
   for (const auto& qi : ini.qinfos) {
     if (qi.dir != "output") {
-      //ers::error(InitializationError(ERS_HERE, "Only output queues are supported in this module!"));
+      // ers::error(InitializationError(ERS_HERE, "Only output queues are supported in this module!"));
       continue;
     } else {
       TLOG_DEBUG(TLVL_WORK_STEPS) << ": CardReader output queue is " << qi.inst;
@@ -88,8 +87,7 @@ FelixCardReader::init(const data_t& args)
       int linkid = -1;
       try {
         linkid = std::stoi(words.back());
-      } 
-      catch (const std::exception& ex) {
+      } catch (const std::exception& ex) {
         ers::fatal(InitializationError(ERS_HERE, "Link ID could not be parsed on queue instance name! "));
       }
       auto link_offset = 0;
@@ -97,7 +95,7 @@ FelixCardReader::init(const data_t& args)
         link_offset = 5;
       }
       auto tag = (linkid - link_offset) * m_elink_multiplier;
-      TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << target << " elink tag: " << tag; 
+      TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << target << " elink tag: " << tag;
       m_elinks[tag] = createElinkModel(qi.inst);
       m_elinks[tag]->init(args, m_block_queue_capacity);
     }
@@ -105,12 +103,12 @@ FelixCardReader::init(const data_t& args)
 
   // Router function of block to appropriate ElinkHandlers
   m_block_router = [&](uint64_t block_addr) { // NOLINT
-    //block_counter++;
+    // block_counter++;
     const auto* block = const_cast<felix::packetformat::block*>(
       felix::packetformat::block_from_bytes(reinterpret_cast<const char*>(block_addr)) // NOLINT
     );
     auto elink = block->elink;
-    if(m_elinks.count(elink) != 0) {
+    if (m_elinks.count(elink) != 0) {
       m_elinks[elink]->queue_in_block_address(block_addr);
     } else {
       // Really bad -> unexpeced ELINK ID in Block.
@@ -123,7 +121,7 @@ FelixCardReader::init(const data_t& args)
       //   -> unexpected format (fw/sw version missmatch)
       //   -> data corruption from FE
       //   -> data corruption from CR (really rare, last possible cause)
-      
+
       // NO TLOG_DEBUG, but should count and periodically report corrupted DMA blocks.
     }
   };
@@ -142,25 +140,25 @@ FelixCardReader::do_configure(const data_t& args)
   m_block_size = m_cfg.dma_block_size_kb * m_1kb_block_size;
   m_chunk_trailer_size = m_cfg.chunk_trailer_size;
   bool is_32b_trailer = false;
-  
+
   // Config checks
   if (m_num_links != m_elinks.size()) {
     ers::fatal(ElinkConfigurationInconsistency(ERS_HERE, m_num_links));
-  } 
+  }
   if (m_block_size % m_1kb_block_size != 0) {
     ers::fatal(BlockSizeConfigurationInconsistency(ERS_HERE, m_block_size));
-  } else if (m_block_size != m_1kb_block_size 
-          && m_chunk_trailer_size != m_32b_trailer_size) {
+  } else if (m_block_size != m_1kb_block_size && m_chunk_trailer_size != m_32b_trailer_size) {
     ers::fatal(BlockSizeConfigurationInconsistency(ERS_HERE, m_block_size));
   } else if (m_chunk_trailer_size == m_32b_trailer_size) {
     is_32b_trailer = true;
   }
 
   // Configure components
-  TLOG(TLVL_WORK_STEPS) << "Configuring components with Block size:" << m_block_size << " & trailer size: " << m_chunk_trailer_size;
+  TLOG(TLVL_WORK_STEPS) << "Configuring components with Block size:" << m_block_size
+                        << " & trailer size: " << m_chunk_trailer_size;
   m_card_wrapper->configure(args);
-  for (unsigned lid=0; lid<m_num_links; ++lid) {
-    auto tag = lid * m_elink_multiplier; 
+  for (unsigned lid = 0; lid < m_num_links; ++lid) {
+    auto tag = lid * m_elink_multiplier;
     TLOG(TLVL_WORK_STEPS) << "Configuring ElinkHandler with elink tag: " << tag;
     m_elinks[tag]->set_ids(m_card_id, m_logical_unit, lid, tag);
     m_elinks[tag]->conf(args, m_block_size, is_32b_trailer);
