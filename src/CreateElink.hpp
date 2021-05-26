@@ -57,6 +57,7 @@ createElinkModel(const std::string& target)
     auto& parser = elink_model->get_parser();
     auto& sink = elink_model->get_sink();
     parser.process_chunk_func = parsers::fixsizedChunkInto<readout::types::PDS_SUPERCHUNK_STRUCT>(sink);
+    return elink_model;
 
   } else if (target.find("varsize") != std::string::npos) {
     // Variable sized user payloads

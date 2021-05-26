@@ -97,6 +97,9 @@ FelixCardReader::init(const data_t& args)
       auto tag = (linkid - link_offset) * m_elink_multiplier;
       TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << target << " elink tag: " << tag;
       m_elinks[tag] = createElinkModel(qi.inst);
+      if (m_elinks[tag] == nullptr) {
+        ers::fatal(InitializationError(ERS_HERE, "CreateElink failed to provide an appropriate model for queue!"));
+      }
       m_elinks[tag]->init(args, m_block_queue_capacity);
     }
   }
