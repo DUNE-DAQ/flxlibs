@@ -16,6 +16,7 @@ _DS stands for: Dual Socket with 2 CPUs_
 
 _SNC stands for: Sub-NUMA Clustering. SNC2 means 2 cluster per socket._
 
+<a name="firmware_versions"></a>
 ## Currently used FELIX firmware versions
 Commit hashes, build timestamps can be found based on the name and in the firmware itself.
 
@@ -35,6 +36,7 @@ The location of configuration files for elinks and emulators can be found here: 
    1. [rm5-emu-5links-slr1](https://cernbox.cern.ch/index.php/s/o1u6HLtpS6yC0OZ/download) - Enables on SLR 5 x FM links and uploads 464B, 1Idle, Incremental pattern emulation. (Fanout selector unlocked, toggle possible between real and EMU data.)
    2. [rm5-emu-5links-slr2](https://cernbox.cern.ch/index.php/s/tUSn0gjehHfvca7/download) - Enables on SLR 5 x FM links and uploads 464B, 1Idle, Incremental pattern emulation. (Fanout selector unlocked, toggle possible between real and EMU data.)
 
+<a name="compatibility_list"></a>
 ## Compatibility list
 This section describes which DUNE-DAQ software and `flxlibs` version are compatible with which firmware and configuration set.
 
