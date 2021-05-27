@@ -5,6 +5,9 @@ Appfwk DAQModules, utilities, and scripts for DUNE Upstream DAQ FELIX Readout So
 
 For the dependencies, you need the `felix` external package that ships a build of a partial set of the ATLAS FELIX Software suite. You'll want to use a work area created using daq-buildtools from the dunedaq-v2.4.0 DAQ Suite or later, otherwise this package won't be in your area's `dbt-settings` file. 
 
+## Disclaimer
+The [Initial setup of FELIX page](Initial-setup-of-FELIX.md) doesn't mean to be a replacement for the official FELIX User Manual. For a much more detailed documentation, always refer to that appropriate RegisterMap version and device's user manual, that are found under the official [FELIX Project Webpage](https://atlas-project-felix.web.cern.ch/atlas-project-felix/).
+
 ## Configure the FELIX card
 Please ensure the following:
    1. For the physical setup, please refer to the [Initial setup of FELIX](Initial-setup-of-FELIX.md).
