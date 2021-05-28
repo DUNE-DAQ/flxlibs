@@ -1,20 +1,23 @@
 This short manual assumes:
-* That you have low-level FELIX tools in `$PATH`. The `dbt-setup-runtime-environment` should take care of that if `flxlibs` is present in your `dbt-settings`. 
-* That SuperLogic Region (SLR) configuration files `<slr1-config-file>` and `<slr2-config-file>` are downloaded to `/tmp`, and the card is programmed with a compatible firmware. The viable combinations can be found under the [FELIX Assets Wiki](https://github.com/DUNE-DAQ/flxlibs/wiki/FELIX-assets:-Firmware-and-config-files).
+* That you have low-level FELIX tools in `$PATH`. This is the case if you've set up your DUNE DAQ software development area using `daq-buildtools`' dunedaq-v2.4.0 tag or later
+* That SuperLogic Region (SLR) configuration files `<slr1-config-file>` and `<slr2-config-file>` are downloaded to `/tmp`, and the card is programmed with a compatible firmware. The viable combinations can be found under [FELIX Assets]([FELIX Assets](FELIX-assets.md#compatibility_list).
 
 If the card is programmed with the firmware and the SLR config files are successfully verified, one can do the following from the cloned repository's directory:
-    
-    ./scripts/ccm-scripts/init.sh <physical-card-id> # card IDs start from 0
-    ./scripts/ccm-scripts/linkconfig.sh <physical-card-id> /tmp/<slr1-config-file> /tmp/<slr2-config-file>
-    
+
+```    
+./scripts/ccm-scripts/init.sh <physical-card-id> # card IDs start from 0
+./scripts/ccm-scripts/linkconfig.sh <physical-card-id> /tmp/<slr1-config-file> /tmp/<slr2-config-file>
+```    
 In case you want to enable the emulator in the FELIX, make sure that the SLR config files contain EMU config. After that, you also need to:
 
-    ./scripts/ccm-scripts/femu-enable.sh <physical-card-id>
-
+```
+./scripts/ccm-scripts/femu-enable.sh <physical-card-id>
+```
 From this point, the FELIX dataflow can be started, and `flxlibs` modules can read the memory blocks that contain data produced by the FELIX card. In order to be sure that the configuration step was successful, one can try to run the `CardWrapper` test app:
 
-    flxlibs_test_cardwrapper
-
+```
+flxlibs_test_cardwrapper
+```
 The expected output is something similar to the following:
 
 ```

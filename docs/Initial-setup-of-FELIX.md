@@ -19,7 +19,7 @@ This documentation assumes that you are using an FLX-712 card, on a Linux CentOS
    ```
    If there is no output, ensure the following: The card is powered correctly, there is a valid firmware flashed on the partitions.
 
-4. In order to program a different firmware (e.g.: DUNE specific JumboBlocks/SuperChunks variant FULLMODE, that are discussed under the [FELIX Assets Wiki](https://github.com/DUNE-DAQ/flxlibs/wiki/FELIX-assets:-Firmware-and-config-files)) to the FELIX, connect the JTAG programmer to the card, and the USB side to a machine where you have Vivado Labs installed. (For further and in-depth description, please refer to the [User Manual's Firmware Programming section](https://atlas-project-felix.web.cern.ch/atlas-project-felix/user/felix-user-manual/versions/4.0.6/4_firmware_programming.html#_4_2_firmware_programming)!) After programming, reboot the machine in order for the firmware in the volatile memory to load:
+4. In order to program a different firmware (e.g.: DUNE specific JumboBlocks/SuperChunks variant FULLMODE, that are discussed under the [FELIX Assets](FELIX-assets.md#firmware_versions)) to the FELIX, connect the JTAG programmer to the card, and the USB side to a machine where you have Vivado Labs installed. (For further and in-depth description, please refer to the [User Manual's Firmware Programming section](https://atlas-project-felix.web.cern.ch/atlas-project-felix/user/felix-user-manual/versions/4.0.6/4_firmware_programming.html#_4_2_firmware_programming)!) After programming, reboot the machine in order for the firmware in the volatile memory to load:
    ```
    reboot
    ```
