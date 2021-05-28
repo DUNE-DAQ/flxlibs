@@ -10,9 +10,12 @@ The [Initial setup of FELIX page](Initial-setup-of-FELIX.md) doesn't mean to be 
 
 ## Configure the FELIX card
 Please ensure the following:
-   1. For the physical setup, please refer to the [Initial setup of FELIX](Initial-setup-of-FELIX.md).
-   2. For the card configuration, one needs compatible firmware and FELIX configuration sets. The list is under [FELIX Assets](FELIX-assets.md#compatibility_list)
-   3. Configure the FELIX card, as explained in the [Configure the FELIX card](Configure-the-FELIX-card.md) short manual.
+
+1. For the physical setup, please refer to the [Initial setup of FELIX](Initial-setup-of-FELIX.md).
+
+2. For the card configuration, one needs compatible firmware and FELIX configuration sets. The list is under [FELIX Assets](FELIX-assets.md#compatibility_list)
+
+3. Configure the FELIX card, as explained in the [Configure the FELIX card](Configure-the-FELIX-card.md) short manual.
 
 ## Examples
 After successfully building the package, you can try passing the readout package's `felixreadout-commands.json` to `daq_application`. I.e., assuming you've cloned `readout` into your source area, launch a readout emulation via:
