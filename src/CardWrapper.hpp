@@ -11,7 +11,7 @@
 #include "flxlibs/felixcardreader/Nljs.hpp"
 #include "flxlibs/felixcardreader/Structs.hpp"
 
-#include "readout/ReusableThread.hpp"
+#include "readout/utils/ReusableThread.hpp"
 
 #include "flxcard/FlxCard.h"
 #include "packetformat/block_format.hpp"
