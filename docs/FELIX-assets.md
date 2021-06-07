@@ -10,7 +10,7 @@ Testing and development hosts with a FELIX card are the following:
    * epdtdi105 - RM5 based development platform (DS AMD EPYC with PCIe SSD and NVMe)
 
 * **Bristol Lab**
-   * ??? - (Host with WIB to FELIX connectivity)
+   * it043261 - Host with ZCU102 to FELIX connectivity (Intel Xeon Bronze 3204 CPU with NVMe)
 
 _DS stands for: Dual Socket with 2 CPUs_
 
