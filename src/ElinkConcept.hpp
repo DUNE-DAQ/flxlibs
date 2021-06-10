@@ -13,7 +13,7 @@
 #include "DefaultParserImpl.hpp"
 
 #include "packetformat/detail/block_parser.hpp"
-
+#include "appfwk/DAQModule.hpp"
 #include <nlohmann/json.hpp>
 
 #include <memory>
@@ -49,6 +49,7 @@ public:
   virtual void conf(const nlohmann::json& args, size_t block_size, bool is_32b_trailers) = 0;
   virtual void start(const nlohmann::json& args) = 0;
   virtual void stop(const nlohmann::json& args) = 0;
+  virtual void get_info(opmonlib::InfoCollector& ci, int level) = 0;
 
   virtual bool queue_in_block_address(uint64_t block_addr) = 0; // NOLINT
 

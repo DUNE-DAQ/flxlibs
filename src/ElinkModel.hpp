@@ -16,6 +16,7 @@
 
 #include <folly/ProducerConsumerQueue.h>
 #include <nlohmann/json.hpp>
+#include "flxlibs/felixcardreaderinfo/InfoNljs.hpp"
 
 #include <atomic>
 #include <memory>
@@ -120,6 +121,23 @@ public:
     }
   }
 
+  void get_info(opmonlib::InfoCollector& ci, int /*level*/)
+  {
+    felixcardreaderinfo::Info info;
+    auto& stats = m_parser_impl.get_stats();
+
+    info.short_chunks_processed = stats.short_ctr;
+    info.chunks_processed = stats.chunk_ctr;
+    info.subchunks_processed = stats.subchunk_ctr;
+    info.blocks_processed = stats.block_ctr;
+    info.short_chunks_processed_with_error = stats.error_short_ctr;
+    info.chunks_processed_with_error = stats.error_chunk_ctr;
+    info.subchunks_processed_with_error = stats.error_subchunk_ctr;
+    info.blocks_processed_with_error = stats.error_block_ctr;
+
+    ci.add(info);
+  }
+
 private:
   // Types
   using UniqueBlockAddrQueue = std::unique_ptr<folly::ProducerConsumerQueue<uint64_t>>; // NOLINT(build/unsigned)
@@ -157,36 +175,36 @@ private:
   readout::ReusableThread m_stats_thread;
   void run_stats()
   {
-    int new_short_ctr = 0;
-    int new_chunk_ctr = 0;
-    int new_subchunk_ctr = 0;
-    int new_block_ctr = 0;
-    int new_error_short_ctr = 0;
-    int new_error_chunk_ctr = 0;
-    int new_error_subchunk_ctr = 0;
-    int new_error_block_ctr = 0;
+    uint64_t last_short_ctr = 0;
+    uint64_t last_chunk_ctr = 0;
+    uint64_t last_subchunk_ctr = 0;
+    uint64_t last_block_ctr = 0;
+    uint64_t last_error_short_ctr = 0;
+    uint64_t last_error_chunk_ctr = 0;
+    uint64_t last_error_subchunk_ctr = 0;
+    uint64_t last_error_block_ctr = 0;
 
     auto& stats = m_parser_impl.get_stats();
     auto t0 = std::chrono::high_resolution_clock::now();
     while (m_run_marker.load()) {
       auto now = std::chrono::high_resolution_clock::now();
-      new_short_ctr = stats.short_ctr.exchange(0);
-      new_chunk_ctr = stats.chunk_ctr.exchange(0);
-      new_subchunk_ctr = stats.subchunk_ctr.exchange(0);
-      new_block_ctr = stats.block_ctr.exchange(0);
-      new_error_short_ctr = stats.error_short_ctr.exchange(0);
-      new_error_chunk_ctr = stats.error_chunk_ctr.exchange(0);
-      new_error_subchunk_ctr = stats.error_subchunk_ctr.exchange(0);
-      new_error_block_ctr = stats.error_block_ctr.exchange(0);
+      last_short_ctr = stats.short_ctr - last_short_ctr;
+      last_chunk_ctr = stats.chunk_ctr - last_chunk_ctr;
+      last_subchunk_ctr = stats.subchunk_ctr - last_subchunk_ctr;
+      last_block_ctr = stats.block_ctr - last_block_ctr;
+      last_error_short_ctr = stats.error_short_ctr - last_error_short_ctr;
+      last_error_chunk_ctr = stats.error_chunk_ctr - last_error_chunk_ctr;
+      last_error_subchunk_ctr = stats.error_subchunk_ctr - last_error_subchunk_ctr;
+      last_error_block_ctr = stats.error_block_ctr - last_error_block_ctr;
 
       double seconds = std::chrono::duration_cast<std::chrono::microseconds>(now - t0).count() / 1000000.;
       TLOG_DEBUG(2) << inherited::m_elink_str // Move to TLVL_TAKE_NOTE from readout
                     << " Parser stats ->"
-                    << " Blocks: " << new_block_ctr << " Block rate: " << new_block_ctr / seconds / 1000. << " [kHz]"
-                    << " Chunks: " << new_chunk_ctr << " Chunk rate: " << new_chunk_ctr / seconds / 1000. << " [kHz]"
-                    << " Shorts: " << new_short_ctr << " Subchunks:" << new_subchunk_ctr
-                    << " Error Chunks: " << new_error_chunk_ctr << " Error Shorts: " << new_error_short_ctr
-                    << " Error Subchunks: " << new_error_subchunk_ctr << " Error Block: " << new_error_block_ctr;
+                    << " Blocks: " << last_block_ctr << " Block rate: " << last_block_ctr / seconds / 1000. << " [kHz]"
+                    << " Chunks: " << last_chunk_ctr << " Chunk rate: " << last_chunk_ctr / seconds / 1000. << " [kHz]"
+                    << " Shorts: " << last_short_ctr << " Subchunks:" << last_subchunk_ctr
+                    << " Error Chunks: " << last_error_chunk_ctr << " Error Shorts: " << last_error_short_ctr
+                    << " Error Subchunks: " << last_error_subchunk_ctr << " Error Block: " << last_error_block_ctr;
 
       for (int i = 0; i < 50 && m_run_marker.load(); ++i) { // 100 x 100ms = 10s sleeps
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
