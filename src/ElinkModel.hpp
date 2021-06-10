@@ -126,6 +126,11 @@ public:
     felixcardreaderinfo::Info info;
     auto& stats = m_parser_impl.get_stats();
 
+    info.card_id = m_card_id;
+    info.logical_unit = m_logical_unit;
+    info.link_id = m_link_id;
+    info.link_tag = m_link_tag;
+
     info.short_chunks_processed = stats.short_ctr;
     info.chunks_processed = stats.chunk_ctr;
     info.subchunks_processed = stats.subchunk_ctr;

@@ -10,6 +10,10 @@ uint8  : s.number("uint8", "u8",
     doc="An unsigned of 8 bytes"),
 
 info: s.record("Info", [
+    s.field("card_id", self.uint8, 0, doc="Card ID"),
+    s.field("logical_unit", self.uint8, 0, doc="Logical unit number"),
+    s.field("link_id", self.uint8, 0, doc="Link ID"),
+    s.field("link_tag", self.uint8, 0, doc="Link tag"),
     s.field("short_chunks_processed", self.uint8, 0, doc="Short chunks processed"),
     s.field("chunks_processed", self.uint8, 0, doc="Cunks processed"),
     s.field("subchunks_processed", self.uint8, 0, doc="Subchunks processed"),
