@@ -52,11 +52,11 @@ createElinkModel(const std::string& target)
 
   } else if (target.find("pds") != std::string::npos) {
     // PDS specific char arrays
-    auto elink_model = std::make_unique<ElinkModel<readout::types::PDS_SUPERCHUNK_STRUCT>>();
+    auto elink_model = std::make_unique<ElinkModel<readout::types::DAPHNE_SUPERCHUNK_STRUCT>>();
     elink_model->set_sink(target);
     auto& parser = elink_model->get_parser();
     auto& sink = elink_model->get_sink();
-    parser.process_chunk_func = parsers::fixsizedChunkInto<readout::types::PDS_SUPERCHUNK_STRUCT>(sink);
+    parser.process_chunk_func = parsers::fixsizedChunkInto<readout::types::DAPHNE_SUPERCHUNK_STRUCT>(sink);
     return elink_model;
 
   } else if (target.find("varsize") != std::string::npos) {

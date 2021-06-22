@@ -46,10 +46,5 @@ daq_add_application(flxlibs_test_elink_to_file test_elink_to_file_app.cxx TEST L
 daq_add_application(flxlibs_test_elink_to_heap test_elink_to_heap_app.cxx TEST LINK_LIBRARIES flxlibs)
 
 ##############################################################################
-# Test configurations
-file(COPY test/felix_wib_readout.json DESTINATION test)
-file(COPY test/felix_wib2_readout.json DESTINATION test)
-
-##############################################################################
 # Installation
 daq_install()
