@@ -18,7 +18,7 @@ daq_codegen(*.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
 set(DUNEDAQ_DEPENDENCIES readout::readout dataformats::dataformats)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native")
 
-option(WITH_FELIX_AS_PACKAGE "FELIX externals as a dunedaq package" OFF)
+option(WITH_FELIX_AS_PACKAGE "FELIX externals as a dunedaq package" ON)
 
 if(WITH_FELIX_AS_PACKAGE)
   set(FELIX_DEPENDENCIES 
