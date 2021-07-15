@@ -18,21 +18,45 @@ daq_codegen(*.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
 set(DUNEDAQ_DEPENDENCIES readout::readout dataformats::dataformats)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native")
 
-set(FELIX_DEPENDENCIES 
-  felix::regmap
-  felix::packetformat
-  felix::drivers_rcc
-  felix::getinput
-  #felix::io_rcc
-  felix::rcc_error
-  felix::cmem_rcc
-  felix::DFDebug
-  felix::FlxCard
-)
+option(WITH_FELIX_AS_PACKAGE "FELIX externals as a dunedaq package" OFF)
+
+if(WITH_FELIX_AS_PACKAGE)
+  set(FELIX_DEPENDENCIES 
+    felix::regmap
+    felix::packetformat
+    felix::drivers_rcc
+    felix::getinput
+    #felix::io_rcc
+    felix::rcc_error
+    felix::cmem_rcc
+    felix::DFDebug
+    felix::FlxCard
+  )
+else()
+  # From env
+  set(FELIX_DEPENDENCIES 
+    $ENV{FLX_LIB}/libregmap.so
+    $ENV{FLX_LIB}/libpacketformat.so
+    $ENV{FLX_LIB}/libdrivers_rcc.so
+    $ENV{FLX_LIB}/libgetinput.so
+    #$ENV{FLX_LIB}/libio_rcc.so
+    $ENV{FLX_LIB}/librcc_error.so
+    $ENV{FLX_LIB}/libcmem_rcc.so
+    $ENV{FLX_LIB}/libDFDebug.so
+    $ENV{FLX_LIB}/libFlxCard.so
+  )
+endif()
 
 ##############################################################################
 # Main library
 daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp LINK_LIBRARIES appfwk::appfwk ${FELIX_DEPENDENCIES} ${DUNEDAQ_DEPENDENCIES})
+
+if(WITH_FELIX_AS_PACKAGE)
+  # All good
+else()
+  # Hack target
+  target_include_directories(flxlibs PUBLIC $ENV{FLX_INC})
+endif()
 
 ##############################################################################
 # Plugins
