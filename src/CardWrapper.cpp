@@ -117,11 +117,11 @@ CardWrapper::stop(const data_t& /*args*/)
 {
   TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << "Stopping CardWrapper of card " << m_card_id_str << "...";
   if (m_run_marker.load()) {
-    stop_DMA();
     set_running(false);
     while (!m_dma_processor.get_readiness()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
+    stop_DMA();
     init_DMA();
     TLOG_DEBUG(TLVL_WORK_STEPS) << "Stopped CardWrapper of card " << m_card_id_str << "!";
   } else {
