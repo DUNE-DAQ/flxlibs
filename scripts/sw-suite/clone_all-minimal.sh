@@ -29,7 +29,9 @@ fi
 
 git --version
 
-listOfExternals="external/catch"
+listOfExternals="external/catch
+external/yaml-cpp
+external/json"
 
 
 listOfPackages="client-template
@@ -37,7 +39,8 @@ cmake_tdaq
 drivers_rcc
 flxcard
 packetformat
-regmap"
+regmap
+ftools"
 
 for dir in $listOfExternals
 do
