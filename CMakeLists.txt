@@ -16,8 +16,8 @@ daq_codegen(*.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
 ##############################################################################
 # Dependency sets
 set(DUNEDAQ_DEPENDENCIES readout::readout dataformats::dataformats)
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native")
 
+# Provide override functionality for FELIX dependencies
 option(WITH_FELIX_AS_PACKAGE "FELIX externals as a dunedaq package" ON)
 
 if(WITH_FELIX_AS_PACKAGE)
@@ -26,7 +26,6 @@ if(WITH_FELIX_AS_PACKAGE)
     felix::packetformat
     felix::drivers_rcc
     felix::getinput
-    #felix::io_rcc
     felix::rcc_error
     felix::cmem_rcc
     felix::DFDebug
@@ -39,7 +38,6 @@ else()
     $ENV{FLX_LIB}/libpacketformat.so
     $ENV{FLX_LIB}/libdrivers_rcc.so
     $ENV{FLX_LIB}/libgetinput.so
-    #$ENV{FLX_LIB}/libio_rcc.so
     $ENV{FLX_LIB}/librcc_error.so
     $ENV{FLX_LIB}/libcmem_rcc.so
     $ENV{FLX_LIB}/libDFDebug.so
@@ -68,6 +66,10 @@ daq_add_application(flxlibs_test_cardwrapper test_cardwrapper_app.cxx TEST LINK_
 daq_add_application(flxlibs_test_elinkhandler test_elinkhandler_app.cxx TEST LINK_LIBRARIES flxlibs)
 daq_add_application(flxlibs_test_elink_to_file test_elink_to_file_app.cxx TEST LINK_LIBRARIES flxlibs)
 daq_add_application(flxlibs_test_elink_to_heap test_elink_to_heap_app.cxx TEST LINK_LIBRARIES flxlibs)
+
+##############################################################################
+# Applications
+daq_add_application(flxlibs_emu_confgen emu_confgen.cxx LINK_LIBRARIES flxlibs)
 
 ##############################################################################
 # Installation
