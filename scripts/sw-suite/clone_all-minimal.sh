@@ -31,7 +31,8 @@ git --version
 
 listOfExternals="external/catch
 external/yaml-cpp
-external/json"
+external/json
+external/pybind11"
 
 
 listOfPackages="client-template
@@ -40,7 +41,8 @@ drivers_rcc
 flxcard
 packetformat
 regmap
-ftools"
+ftools
+flxcard_py"
 
 for dir in $listOfExternals
 do
