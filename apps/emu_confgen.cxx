@@ -225,7 +225,7 @@ main(int argc, char* argv[])
                                              argv + argc }; // store arguments, options and flags from the command line
 
   // set default values
-  uint32_t emusize = 1024;
+  uint32_t emusize = 8192;
   uint32_t req_chunksize = 464;
   uint32_t pattern_id = 0;
   uint32_t idle_chars = 1;
