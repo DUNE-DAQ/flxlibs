@@ -50,5 +50,6 @@ cp x86_64-centos7-gcc8-opt/flxcard/lib* ${TARGET_DIR}/lib
 cp x86_64-centos7-gcc8-opt/packetformat/lib* ${TARGET_DIR}/lib
 cp x86_64-centos7-gcc8-opt/regmap/lib* ${TARGET_DIR}/lib
 cp x86_64-centos7-gcc8-opt/drivers_rcc/lib* ${TARGET_DIR}/lib
+cp x86_64-centos7-gcc8-opt/flxcard_py/lib* ${TARGET_DIR}/lib
 
 
