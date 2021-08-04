@@ -296,10 +296,8 @@ CardWrapper::process_DMA()
           m_flx_card->irq_wait(IRQ_DATA_AVAILABLE + m_dma_id);
 #endif // REGMAP_VERSION
           m_card_mutex.unlock();
-          //read_current_address();
         } else { // poll mode
           std::this_thread::sleep_for(std::chrono::microseconds(m_poll_time));
-          //read_current_address();
         }
         read_current_address();
       } else {
