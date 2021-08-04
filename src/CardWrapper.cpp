@@ -8,6 +8,7 @@
 // From Module
 #include "CardWrapper.hpp"
 #include "FelixIssues.hpp"
+#include "FelixDefinitions.hpp"
 
 #include "logging/Logging.hpp"
 
@@ -38,6 +39,10 @@ CardWrapper::CardWrapper()
   , m_logical_unit(0)
   , m_card_id_str("")
   , m_dma_id(0)
+  , m_margin_blocks(0)
+  , m_block_threshold(0)
+  , m_interrupt_mode(false)
+  , m_poll_time(0)
   , m_numa_id(0)
   , m_num_links(0)
   , m_info_str("")
@@ -68,6 +73,10 @@ CardWrapper::configure(const data_t& args)
     m_card_id = m_cfg.card_id;
     m_logical_unit = m_cfg.logical_unit;
     m_dma_id = m_cfg.dma_id;
+    m_margin_blocks = m_cfg.dma_margin_blocks;
+    m_block_threshold = m_cfg.dma_block_threshold;
+    m_interrupt_mode = m_cfg.interrupt_mode;
+    m_poll_time = m_cfg.poll_time;
     m_dma_memory_size = m_cfg.dma_memory_size_gb * 1024 * 1024 * 1024UL;
     m_numa_id = m_cfg.numa_id;
     m_dma_processor.set_name(m_dma_processor_name, m_card_id);
@@ -204,8 +213,21 @@ CardWrapper::init_DMA()
   TLOG_DEBUG(TLVL_WORK_STEPS) << "flxCard.dma_reset issued.";
   m_flx_card->soft_reset();
   TLOG_DEBUG(TLVL_WORK_STEPS) << "flxCard.soft_reset issued.";
+  m_flx_card->irq_reset_counters();
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "flxCard.irq_reset_counters issued.";
+  // interrupted or polled DMA processing
+  if (m_interrupt_mode) {
+#if REGMAP_VERSION < 0x500
+    m_flx_card->irq_enable(IRQ_DATA_AVAILABLE);
+#else
+    m_flx_card->irq_enable(IRQ_DATA_AVAILABLE + m_dma_id);
+#endif
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "flxCard.irq_enable issued.";
+  } else {
+    m_flx_card->irq_disable();
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "flxCard.irq_disable issued.";
+  }
   m_card_mutex.unlock();
-
   m_current_addr = m_phys_addr;
   m_destination = m_phys_addr;
   m_read_index = 0;
@@ -252,23 +274,36 @@ CardWrapper::process_DMA()
   TLOG_DEBUG(TLVL_WORK_STEPS) << "CardWrapper starts processing blocks...";
   while (m_run_marker.load()) {
 
-    // Loop until read address makes sense
+    // First fix us poll until read address makes sense
     while ((m_current_addr < m_phys_addr) || (m_phys_addr + m_dma_memory_size < m_current_addr)) {
       if (m_run_marker.load()) {
         read_current_address();
-        std::this_thread::sleep_for(std::chrono::microseconds(5000)); // cfg.poll_time = 5000
+        std::this_thread::sleep_for(std::chrono::microseconds(5000)); // fix 5ms initial poll
       } else {
         TLOG_DEBUG(TLVL_WORK_STEPS) << "Stop issued during poll! Returning...";
         return;
       }
     }
-    // Loop while there are not enough data
+
+    // Loop or wait for interrupt while there are not enough data
     while (bytes_available() < m_block_threshold * m_block_size) {
       if (m_run_marker.load()) {
-        std::this_thread::sleep_for(std::chrono::microseconds(5000)); // cfg.poll_time = 5000
+        if (m_interrupt_mode) {
+          m_card_mutex.lock();
+#if REGMAP_VERSION < 0x500
+          m_flx_card->irq_wait(IRQ_DATA_AVAILABLE);
+#else
+          m_flx_card->irq_wait(IRQ_DATA_AVAILABLE + m_dma_id);
+#endif // REGMAP_VERSION
+          m_card_mutex.unlock();
+          //read_current_address();
+        } else { // poll mode
+          std::this_thread::sleep_for(std::chrono::microseconds(m_poll_time));
+          //read_current_address();
+        }
         read_current_address();
       } else {
-        TLOG_DEBUG(TLVL_WORK_STEPS) << "Stop issued during poll! Returning...";
+        TLOG_DEBUG(TLVL_WORK_STEPS) << "Stop issued during waiting for data! Returning...";
         return;
       }
     }

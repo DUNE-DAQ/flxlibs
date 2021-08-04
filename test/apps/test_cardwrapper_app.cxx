@@ -11,6 +11,7 @@
 
 #include "logging/Logging.hpp"
 
+#include "regmap/regmap.h"
 #include "packetformat/block_format.hpp"
 
 #include <nlohmann/json.hpp>
@@ -20,6 +21,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <ios>
 
 using namespace dunedaq::flxlibs;
 
@@ -37,6 +39,9 @@ main(int /*argc*/, char** /*argv[]*/)
   });
 
   nlohmann::json cmd_params = "{}"_json;
+
+  // REGMAP version
+  TLOG() << "Regmap version is: 0x0" << std::hex << REGMAP_VERSION << std::dec;
 
   // CardWrapper
   TLOG() << "Creating CardWrapper...";
