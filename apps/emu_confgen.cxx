@@ -155,7 +155,7 @@ generateFm(uint64_t* emudata,      // NOLINT
                           (chunk_datasz & 0xF00) | ((chunk_datasz & 0x0FF) << 16) | ((chunkcntr & 0xFF) << 24));
     } else {
       emudata[index++] = // NOLINT
-        (0xAA | (chunk_datasz & 0xF00) | ((chunk_datasz & 0x0FF) << 16) | ((chunkcntr & 0xFF) << 24)); 
+        (0xAA | (chunk_datasz & 0xF00) | ((chunk_datasz & 0x0FF) << 16) | ((chunkcntr & 0xFF) << 24));
     }
 
     emudata[index++] = 0x10AABB00; // ewidth=0x10=16 bits // NOLINT
@@ -177,7 +177,7 @@ generateFm(uint64_t* emudata,      // NOLINT
       unsigned int cntr = 0; // NOLINT
       for (i = 0; i < chunk_datasz / 4; ++i, cntr += 4) {
         emudata[index++] = // NOLINT
-          ((((cntr + 3) & 0xFF) << 24) | (((cntr + 2) & 0xFF) << 16) | (((cntr + 1) & 0xFF) << 8) | 
+          ((((cntr + 3) & 0xFF) << 24) | (((cntr + 2) & 0xFF) << 16) | (((cntr + 1) & 0xFF) << 8) |
            (((cntr + 0) & 0xFF) << 0));
       }
     }

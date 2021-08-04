@@ -14,18 +14,18 @@ namespace dunedaq {
 namespace flxlibs {
 
 // define not bound by namespace
-#define MAX_IRQ 8                      // NOLINT(build/define_used)
+#define MAX_IRQ 8 // NOLINT(build/define_used)
 
 #if REGMAP_VERSION < 0x500
-  #define IRQ_WRAP_AROUND_FROM_HOST 0  // NOLINT(build/define_used)
-  #define IRQ_WRAP_AROUND_TO_HOST 1    // NOLINT(build/define_used)
-  #define IRQ_DATA_AVAILABLE 2         // NOLINT(build/define_used)
-  #define IRQ_FIFO_FULL_FROM_HOST 3    // NOLINT(build/define_used)
-  #define IRQ_PROG_FULL_TO_HOST 6      // NOLINT(build/define_used)
-  #define IRQ_FIFO_FULL_TO_HOST 7      // NOLINT(build/define_used)
+#define IRQ_WRAP_AROUND_FROM_HOST 0 // NOLINT(build/define_used)
+#define IRQ_WRAP_AROUND_TO_HOST 1   // NOLINT(build/define_used)
+#define IRQ_DATA_AVAILABLE 2        // NOLINT(build/define_used)
+#define IRQ_FIFO_FULL_FROM_HOST 3   // NOLINT(build/define_used)
+#define IRQ_PROG_FULL_TO_HOST 6     // NOLINT(build/define_used)
+#define IRQ_FIFO_FULL_TO_HOST 7     // NOLINT(build/define_used)
 #else
-  #define IRQ_DATA_AVAILABLE 0         // NOLINT(build/define_used)
-#endif // REGMAP_VERSION
+#define IRQ_DATA_AVAILABLE 0 // NOLINT(build/define_used)
+#endif                       // REGMAP_VERSION
 
 } // namespace flxlibs
 } // namespace dunedaq

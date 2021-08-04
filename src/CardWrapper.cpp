@@ -7,8 +7,8 @@
  */
 // From Module
 #include "CardWrapper.hpp"
-#include "FelixIssues.hpp"
 #include "FelixDefinitions.hpp"
+#include "FelixIssues.hpp"
 
 #include "logging/Logging.hpp"
 
