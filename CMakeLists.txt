@@ -11,7 +11,8 @@ find_package(dataformats REQUIRED)
 find_package(readout REQUIRED)
 find_package(felix REQUIRED)
 
-daq_codegen(*.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
+daq_codegen(felixcardreader.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
+daq_codegen( *info.jsonnet DEP_PKGS opmonlib TEMPLATES opmonlib/InfoStructs.hpp.j2 opmonlib/InfoNljs.hpp.j2 )
 
 ##############################################################################
 # Dependency sets

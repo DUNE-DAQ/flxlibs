@@ -12,7 +12,7 @@
 
 namespace dunedaq::flxlibs::stats {
 
-using counter_t = std::atomic<int>;
+using counter_t = std::atomic<uint64_t>; // NOLINT(build/unsigned)
 
 struct ParserStats
 {

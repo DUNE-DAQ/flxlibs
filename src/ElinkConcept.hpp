@@ -12,8 +12,8 @@
 
 #include "DefaultParserImpl.hpp"
 
+#include "appfwk/DAQModule.hpp"
 #include "packetformat/detail/block_parser.hpp"
-
 #include <nlohmann/json.hpp>
 
 #include <memory>
@@ -49,6 +49,7 @@ public:
   virtual void conf(const nlohmann::json& args, size_t block_size, bool is_32b_trailers) = 0;
   virtual void start(const nlohmann::json& args) = 0;
   virtual void stop(const nlohmann::json& args) = 0;
+  virtual void get_info(opmonlib::InfoCollector& ci, int level) = 0;
 
   virtual bool queue_in_block_address(uint64_t block_addr) = 0; // NOLINT
 
@@ -72,6 +73,9 @@ public:
     std::ostringstream tidstrs;
     tidstrs << "ept-" << std::to_string(m_card_id) << "-" << std::to_string(m_logical_unit);
     m_elink_source_tid = tidstrs.str();
+
+    m_opmon_str =
+      "elink_" + std::to_string(m_card_id) + "_" + std::to_string(m_logical_unit) + "_" + std::to_string(m_link_id);
   }
 
 protected:
@@ -84,7 +88,9 @@ protected:
   int m_link_id;
   int m_link_tag;
   std::string m_elink_str;
+  std::string m_opmon_str;
   std::string m_elink_source_tid;
+  std::chrono::time_point<std::chrono::high_resolution_clock> m_t0;
 
 private:
 };
