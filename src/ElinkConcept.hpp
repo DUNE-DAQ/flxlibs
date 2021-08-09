@@ -12,8 +12,8 @@
 
 #include "DefaultParserImpl.hpp"
 
-#include "packetformat/detail/block_parser.hpp"
 #include "appfwk/DAQModule.hpp"
+#include "packetformat/detail/block_parser.hpp"
 #include <nlohmann/json.hpp>
 
 #include <memory>

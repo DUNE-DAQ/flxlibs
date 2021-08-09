@@ -11,12 +11,12 @@
 #include "ElinkConcept.hpp"
 
 #include "appfwk/DAQSink.hpp"
+#include "flxlibs/felixcardreaderinfo/InfoNljs.hpp"
 #include "logging/Logging.hpp"
 #include "readout/utils/ReusableThread.hpp"
 
 #include <folly/ProducerConsumerQueue.h>
 #include <nlohmann/json.hpp>
-#include "flxlibs/felixcardreaderinfo/InfoNljs.hpp"
 
 #include <atomic>
 #include <memory>
@@ -143,11 +143,15 @@ public:
 
     TLOG_DEBUG(2) << inherited::m_elink_str // Move to TLVL_TAKE_NOTE from readout
                   << " Parser stats ->"
-                  << " Blocks: " << info.num_blocks_processed << " Block rate: " << info.rate_blocks_processed << " [kHz]"
-                  << " Chunks: " << info.num_chunks_processed << " Chunk rate: " << info.rate_chunks_processed << " [kHz]"
+                  << " Blocks: " << info.num_blocks_processed << " Block rate: " << info.rate_blocks_processed
+                  << " [kHz]"
+                  << " Chunks: " << info.num_chunks_processed << " Chunk rate: " << info.rate_chunks_processed
+                  << " [kHz]"
                   << " Shorts: " << info.num_short_chunks_processed << " Subchunks:" << info.num_subchunks_processed
-                  << " Error Chunks: " << info.num_chunks_processed_with_error << " Error Shorts: " << info.num_short_chunks_processed_with_error
-                  << " Error Subchunks: " << info.num_subchunks_processed_with_error << " Error Block: " << info.num_blocks_processed_with_error;
+                  << " Error Chunks: " << info.num_chunks_processed_with_error
+                  << " Error Shorts: " << info.num_short_chunks_processed_with_error
+                  << " Error Subchunks: " << info.num_subchunks_processed_with_error
+                  << " Error Block: " << info.num_blocks_processed_with_error;
 
     m_t0 = now;
 
