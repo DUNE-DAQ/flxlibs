@@ -46,6 +46,8 @@ public:
   void stop(const data_t& args);
   void set_running(bool should_run);
 
+  void graceful_stop();
+
   void set_block_addr_handler(std::function<void(uint64_t)>& handle) // NOLINT(build/unsigned)
   {                                                                  // NOLINT
     m_handle_block_addr = std::bind(handle, std::placeholders::_1);

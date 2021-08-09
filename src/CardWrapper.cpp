@@ -51,7 +51,13 @@ CardWrapper::CardWrapper()
   , m_handle_block_addr(nullptr)
 {}
 
-CardWrapper::~CardWrapper() {}
+CardWrapper::~CardWrapper() 
+{
+  TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << "CardWrapper destructor called. First stop check, then closing card.";
+  graceful_stop();
+  close_card();
+  TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << "CardWrapper destroyed.";
+}
 
 void
 CardWrapper::init(const data_t& /*args*/)
@@ -121,8 +127,8 @@ CardWrapper::start(const data_t& /*args*/)
   }
 }
 
-void
-CardWrapper::stop(const data_t& /*args*/)
+void 
+CardWrapper::graceful_stop() 
 {
   TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << "Stopping CardWrapper of card " << m_card_id_str << "...";
   if (m_run_marker.load()) {
@@ -135,7 +141,13 @@ CardWrapper::stop(const data_t& /*args*/)
     TLOG_DEBUG(TLVL_WORK_STEPS) << "Stopped CardWrapper of card " << m_card_id_str << "!";
   } else {
     TLOG_DEBUG(TLVL_WORK_STEPS) << "CardWrapper of card " << m_card_id_str << " is already stopped!";
-  }
+  } 
+}
+
+void
+CardWrapper::stop(const data_t& /*args*/)
+{
+  graceful_stop();
 }
 
 void
