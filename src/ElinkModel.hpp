@@ -43,7 +43,6 @@ public:
     : ElinkConcept()
     , m_run_marker{ false }
     , m_parser_thread(0)
-    , m_stats_thread(0)
   {}
   ~ElinkModel() {}
 
@@ -80,9 +79,9 @@ public:
 
   void start(const data_t& /*args*/)
   {
+    m_t0 = std::chrono::high_resolution_clock::now();
     if (!m_run_marker.load()) {
       set_running(true);
-      m_stats_thread.set_work(&ElinkModel::run_stats, this);
       m_parser_thread.set_work(&ElinkModel::process_elink, this);
       TLOG_DEBUG(5) << "Started ElinkModel of link " << inherited::m_link_id << "...";
     } else {
@@ -95,9 +94,6 @@ public:
     if (m_run_marker.load()) {
       set_running(false);
       while (!m_parser_thread.get_readiness()) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-      }
-      while (!m_stats_thread.get_readiness()) {
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
       }
       TLOG_DEBUG(5) << "Stopped ElinkModel of link " << m_link_id << "!";
@@ -123,7 +119,8 @@ public:
 
   void get_info(opmonlib::InfoCollector& ci, int /*level*/)
   {
-    felixcardreaderinfo::Info info;
+    felixcardreaderinfo::ELinkInfo info;
+    auto now = std::chrono::high_resolution_clock::now();
     auto& stats = m_parser_impl.get_stats();
 
     info.card_id = m_card_id;
@@ -131,14 +128,28 @@ public:
     info.link_id = m_link_id;
     info.link_tag = m_link_tag;
 
-    info.short_chunks_processed = stats.short_ctr;
-    info.chunks_processed = stats.chunk_ctr;
-    info.subchunks_processed = stats.subchunk_ctr;
-    info.blocks_processed = stats.block_ctr;
-    info.short_chunks_processed_with_error = stats.error_short_ctr;
-    info.chunks_processed_with_error = stats.error_chunk_ctr;
-    info.subchunks_processed_with_error = stats.error_subchunk_ctr;
-    info.blocks_processed_with_error = stats.error_block_ctr;
+    double seconds = std::chrono::duration_cast<std::chrono::microseconds>(now - m_t0).count() / 1000000.;
+
+    info.num_short_chunks_processed = stats.short_ctr.exchange(0);
+    info.num_chunks_processed = stats.chunk_ctr.exchange(0);
+    info.num_subchunks_processed = stats.subchunk_ctr.exchange(0);
+    info.num_blocks_processed = stats.block_ctr.exchange(0);
+    info.num_short_chunks_processed_with_error = stats.error_short_ctr.exchange(0);
+    info.num_chunks_processed_with_error = stats.error_chunk_ctr.exchange(0);
+    info.num_subchunks_processed_with_error = stats.error_subchunk_ctr.exchange(0);
+    info.num_blocks_processed_with_error = stats.error_block_ctr.exchange(0);
+    info.rate_blocks_processed = info.num_blocks_processed / seconds / 1000.;
+    info.rate_chunks_processed = info.num_chunks_processed / seconds / 1000.;
+
+    TLOG_DEBUG(2) << inherited::m_elink_str // Move to TLVL_TAKE_NOTE from readout
+                  << " Parser stats ->"
+                  << " Blocks: " << info.num_blocks_processed << " Block rate: " << info.rate_blocks_processed << " [kHz]"
+                  << " Chunks: " << info.num_chunks_processed << " Chunk rate: " << info.rate_chunks_processed << " [kHz]"
+                  << " Shorts: " << info.num_short_chunks_processed << " Subchunks:" << info.num_subchunks_processed
+                  << " Error Chunks: " << info.num_chunks_processed_with_error << " Error Shorts: " << info.num_short_chunks_processed_with_error
+                  << " Error Subchunks: " << info.num_subchunks_processed_with_error << " Error Block: " << info.num_blocks_processed_with_error;
+
+    m_t0 = now;
 
     opmonlib::InfoCollector child_ci;
     child_ci.add(info);
@@ -176,48 +187,6 @@ private:
       } else { // couldn't read from queue
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
       }
-    }
-  }
-
-  // Statistics
-  readout::ReusableThread m_stats_thread;
-  void run_stats()
-  {
-    uint64_t last_short_ctr = 0;
-    uint64_t last_chunk_ctr = 0;
-    uint64_t last_subchunk_ctr = 0;
-    uint64_t last_block_ctr = 0;
-    uint64_t last_error_short_ctr = 0;
-    uint64_t last_error_chunk_ctr = 0;
-    uint64_t last_error_subchunk_ctr = 0;
-    uint64_t last_error_block_ctr = 0;
-
-    auto& stats = m_parser_impl.get_stats();
-    auto t0 = std::chrono::high_resolution_clock::now();
-    while (m_run_marker.load()) {
-      auto now = std::chrono::high_resolution_clock::now();
-      last_short_ctr = stats.short_ctr - last_short_ctr;
-      last_chunk_ctr = stats.chunk_ctr - last_chunk_ctr;
-      last_subchunk_ctr = stats.subchunk_ctr - last_subchunk_ctr;
-      last_block_ctr = stats.block_ctr - last_block_ctr;
-      last_error_short_ctr = stats.error_short_ctr - last_error_short_ctr;
-      last_error_chunk_ctr = stats.error_chunk_ctr - last_error_chunk_ctr;
-      last_error_subchunk_ctr = stats.error_subchunk_ctr - last_error_subchunk_ctr;
-      last_error_block_ctr = stats.error_block_ctr - last_error_block_ctr;
-
-      double seconds = std::chrono::duration_cast<std::chrono::microseconds>(now - t0).count() / 1000000.;
-      TLOG_DEBUG(2) << inherited::m_elink_str // Move to TLVL_TAKE_NOTE from readout
-                    << " Parser stats ->"
-                    << " Blocks: " << last_block_ctr << " Block rate: " << last_block_ctr / seconds / 1000. << " [kHz]"
-                    << " Chunks: " << last_chunk_ctr << " Chunk rate: " << last_chunk_ctr / seconds / 1000. << " [kHz]"
-                    << " Shorts: " << last_short_ctr << " Subchunks:" << last_subchunk_ctr
-                    << " Error Chunks: " << last_error_chunk_ctr << " Error Shorts: " << last_error_short_ctr
-                    << " Error Subchunks: " << last_error_subchunk_ctr << " Error Block: " << last_error_block_ctr;
-
-      for (int i = 0; i < 50 && m_run_marker.load(); ++i) { // 100 x 100ms = 10s sleeps
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-      }
-      t0 = now;
     }
   }
 };
