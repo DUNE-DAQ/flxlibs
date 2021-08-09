@@ -78,11 +78,11 @@ def generate(
                             app.QueueInfo(name="raw_recording", inst=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="input")
                             ]) for idx in range(NUMBER_OF_DATA_PRODUCERS)
         ] + [
-                mspec(f"timesync_consumer", "DummyConsumerTimeSync", [
+                mspec(f"timesync_consumer", "TimeSyncConsumer", [
                                             app.QueueInfo(name="input_queue", inst=f"time_sync_q", dir="input")
                                             ])
         ] + [
-                mspec(f"fragment_consumer", "DummyConsumerFragment", [
+                mspec(f"fragment_consumer", "FragmentConsumer", [
                                             app.QueueInfo(name="input_queue", inst=f"data_fragments_q", dir="input")
                                             ])
         ]

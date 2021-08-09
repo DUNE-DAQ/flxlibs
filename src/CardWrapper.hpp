@@ -11,7 +11,7 @@
 #include "flxlibs/felixcardreader/Nljs.hpp"
 #include "flxlibs/felixcardreader/Structs.hpp"
 
-#include "readout/ReusableThread.hpp"
+#include "readout/utils/ReusableThread.hpp"
 
 #include "flxcard/FlxCard.h"
 #include "packetformat/block_format.hpp"
@@ -58,8 +58,8 @@ private:
 
   // Constants
   static constexpr size_t m_max_links_per_card = 6;
-  static constexpr size_t m_margin_blocks = 4;
-  static constexpr size_t m_block_threshold = 256;
+  // static constexpr size_t m_margin_blocks = 4;
+  // static constexpr size_t m_block_threshold = 256;
   static constexpr size_t m_block_size = 4096; // felix::packetformat::BLOCKSIZE;
   static constexpr size_t m_dma_wraparound = FLX_DMA_WRAPAROUND;
 
@@ -82,9 +82,13 @@ private:
   uint8_t m_card_id;      // NOLINT
   uint8_t m_logical_unit; // NOLINT
   std::string m_card_id_str;
-  uint8_t m_dma_id;    // NOLINT
-  uint8_t m_numa_id;   // NOLINT
-  uint8_t m_num_links; // NOLINT
+  uint8_t m_dma_id;         // NOLINT
+  size_t m_margin_blocks;   // NOLINT
+  size_t m_block_threshold; // NOLINT
+  bool m_interrupt_mode;    // NOLINT
+  size_t m_poll_time;       // NOLINT
+  uint8_t m_numa_id;        // NOLINT
+  uint8_t m_num_links;      // NOLINT
   std::string m_info_str;
 
   // Card object

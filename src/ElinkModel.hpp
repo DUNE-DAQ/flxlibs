@@ -12,7 +12,7 @@
 
 #include "appfwk/DAQSink.hpp"
 #include "logging/Logging.hpp"
-#include "readout/ReusableThread.hpp"
+#include "readout/utils/ReusableThread.hpp"
 
 #include <folly/ProducerConsumerQueue.h>
 #include <nlohmann/json.hpp>

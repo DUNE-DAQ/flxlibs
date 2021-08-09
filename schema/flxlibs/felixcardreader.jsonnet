@@ -19,6 +19,8 @@ local felixcardreader = {
     id : s.number("Identifier", "i4",
                   doc="An ID of a thingy"),
 
+    choice : s.boolean("Choice"),
+
     conf: s.record("Conf", [
         s.field("card_id", self.id, 0,
                 doc="Physical card identifier (in the same host)"),
@@ -37,6 +39,18 @@ local felixcardreader = {
 
         s.field("dma_memory_size_gb", self.count, 1,
                 doc="CMEM_RCC memory to allocate in GBs."),
+
+        s.field("dma_margin_blocks", self.count, 4,
+                doc="DMA parser safe margin block count"),
+
+        s.field("dma_block_threshold", self.count, 10,
+                doc="DMA parser activates at number of available new blocks"),
+
+        s.field("interrupt_mode", self.choice, false,
+                doc="Use device interrupts or polling for DMA parsing"),
+
+        s.field("poll_time", self.count, 5000,
+                doc="Poll time in us. Ignored if interrupt mode is on."),
 
         s.field("numa_id", self.id, 0,
                 doc="CMEM_RCC NUMA region selector"),

@@ -29,7 +29,10 @@ fi
 
 git --version
 
-listOfExternals="external/catch"
+listOfExternals="external/catch
+external/yaml-cpp
+external/json
+external/pybind11"
 
 
 listOfPackages="client-template
@@ -37,7 +40,9 @@ cmake_tdaq
 drivers_rcc
 flxcard
 packetformat
-regmap"
+regmap
+ftools
+flxcard_py"
 
 for dir in $listOfExternals
 do

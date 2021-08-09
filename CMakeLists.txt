@@ -17,23 +17,45 @@ daq_codegen( *info.jsonnet DEP_PKGS opmonlib TEMPLATES opmonlib/InfoStructs.hpp.
 ##############################################################################
 # Dependency sets
 set(DUNEDAQ_DEPENDENCIES readout::readout dataformats::dataformats)
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native -mtune=native")
 
-set(FELIX_DEPENDENCIES 
-  felix::regmap
-  felix::packetformat
-  felix::drivers_rcc
-  felix::getinput
-  #felix::io_rcc
-  felix::rcc_error
-  felix::cmem_rcc
-  felix::DFDebug
-  felix::FlxCard
-)
+# Provide override functionality for FELIX dependencies
+option(WITH_FELIX_AS_PACKAGE "FELIX externals as a dunedaq package" ON)
+
+if(WITH_FELIX_AS_PACKAGE)
+  set(FELIX_DEPENDENCIES 
+    felix::regmap
+    felix::packetformat
+    felix::drivers_rcc
+    felix::getinput
+    felix::rcc_error
+    felix::cmem_rcc
+    felix::DFDebug
+    felix::FlxCard
+  )
+else()
+  # From env
+  set(FELIX_DEPENDENCIES 
+    $ENV{FLX_LIB}/libregmap.so
+    $ENV{FLX_LIB}/libpacketformat.so
+    $ENV{FLX_LIB}/libdrivers_rcc.so
+    $ENV{FLX_LIB}/libgetinput.so
+    $ENV{FLX_LIB}/librcc_error.so
+    $ENV{FLX_LIB}/libcmem_rcc.so
+    $ENV{FLX_LIB}/libDFDebug.so
+    $ENV{FLX_LIB}/libFlxCard.so
+  )
+endif()
 
 ##############################################################################
 # Main library
 daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp LINK_LIBRARIES appfwk::appfwk ${FELIX_DEPENDENCIES} ${DUNEDAQ_DEPENDENCIES})
+
+if(WITH_FELIX_AS_PACKAGE)
+  # All good
+else()
+  # Hack target
+  target_include_directories(flxlibs PUBLIC $ENV{FLX_INC})
+endif()
 
 ##############################################################################
 # Plugins
@@ -47,9 +69,8 @@ daq_add_application(flxlibs_test_elink_to_file test_elink_to_file_app.cxx TEST L
 daq_add_application(flxlibs_test_elink_to_heap test_elink_to_heap_app.cxx TEST LINK_LIBRARIES flxlibs)
 
 ##############################################################################
-# Test configurations
-file(COPY test/felix_wib_readout.json DESTINATION test)
-file(COPY test/felix_wib2_readout.json DESTINATION test)
+# Applications
+daq_add_application(flxlibs_emu_confgen emu_confgen.cxx LINK_LIBRARIES flxlibs)
 
 ##############################################################################
 # Installation
