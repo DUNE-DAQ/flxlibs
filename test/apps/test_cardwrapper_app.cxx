@@ -40,8 +40,8 @@ main(int /*argc*/, char** /*argv[]*/)
 
   nlohmann::json cmd_params = "{}"_json;
 
-  // REGMAP version
-  TLOG() << "Regmap version is: 0x0" << std::hex << REGMAP_VERSION << std::dec;
+  // REGMAP version. Who sets this!? Ask Mark why it's not redefined in the appropriate regmap header?
+  // TLOG() << "Regmap version is: 0x0" << std::hex << REGMAP_VERSION << std::dec;
 
   // CardWrapper
   TLOG() << "Creating CardWrapper...";
