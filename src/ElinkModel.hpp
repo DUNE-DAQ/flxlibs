@@ -140,7 +140,10 @@ public:
     info.subchunks_processed_with_error = stats.error_subchunk_ctr;
     info.blocks_processed_with_error = stats.error_block_ctr;
 
-    ci.add(info);
+    opmonlib::InfoCollector child_ci;
+    child_ci.add(info);
+
+    ci.add("elink_" + std::to_string(m_link_id), child_ci);
   }
 
 private:
