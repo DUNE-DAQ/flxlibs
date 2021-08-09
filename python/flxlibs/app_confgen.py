@@ -167,6 +167,7 @@ def generate(
     
     jstr = json.dumps(confcmd.pod(), indent=4, sort_keys=True)
     print(jstr)
+    print(USE_FELIX)
 
     startpars = rccmd.StartParams(run=RUN_NUMBER)
     startcmd = mrccmd("start", "CONFIGURED", "RUNNING", [
@@ -231,7 +232,7 @@ if __name__ == '__main__':
     @click.option('-t', '--number-of-tp-producers', default=0)
     @click.option('-s', '--data-rate-slowdown-factor', default=10)
     @click.option('-r', '--run-number', default=333)
-    @click.option('-x', '--use-felix', is_flag=True)
+    @click.option('-x', '--use-felix', is_flag=True, default=False)
     @click.option('-d', '--data-file', type=click.Path(), default='./frames.bin')
     @click.argument('json_file', type=click.Path(), default='flx_readout.json')
     def cli(frontend_type, number_of_data_producers, number_of_tp_producers, data_rate_slowdown_factor, run_number, use_felix, data_file, json_file):
