@@ -158,7 +158,7 @@ public:
     opmonlib::InfoCollector child_ci;
     child_ci.add(info);
 
-    ci.add("elink_" + std::to_string(m_link_id), child_ci);
+    ci.add(m_opmon_str, child_ci);
   }
 
 private:
