@@ -18,9 +18,14 @@ Please ensure the following:
 3. Configure the FELIX card, as explained in the [Configure the FELIX card](Configure-the-FELIX-card.md) short manual.
 
 ## Examples
-After successfully building the package, you can try passing the readout package's `felixreadout-commands.json` to `daq_application`. I.e., assuming you've cloned `readout` into your source area, launch a readout emulation via:
+After successfully following the configuration instructions, you can try to run a test app that uses the FELIX.
+First, create a configuration file:
 
-    daq_application -n pippo -c stdin://sourcecode/readout/test/felixreadout-commands.json
+    python -m flxlibs.app_confgen -x -n 10 felix-app.json
     
-Then start typing commands as usual. 
+Then run it with:
+
+    daq_application -c stdin://felix-app.json -n felix_10_links
+    
+You can now issue commands by typing their name and pressing enter. Use `init`, `conf` and then `start`. You should see periodic operational info as json printed out every 10 seconds. Verify that `rate_payloads_consumed` is around 166 for the links.
 
