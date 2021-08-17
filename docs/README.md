@@ -13,6 +13,8 @@ Please ensure the following:
 
 1. For the physical setup, please refer to the [Initial setup of FELIX](Initial-setup-of-FELIX.md).
 
+2. Use the [Local driver](Local-driver.md) from the appropriate dunedaq release.
+
 2. For the card configuration, one needs compatible firmware and FELIX configuration sets. The list is under [FELIX Assets](FELIX-assets.md#compatibility_list)
 
 3. Configure the FELIX card, as explained in the [Configure the FELIX card](Configure-the-FELIX-card.md) short manual.
