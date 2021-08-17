@@ -26,7 +26,7 @@ Commit hashes, build timestamps can be found based on the name and in the firmwa
    1. As on ATLAS FELIX firmware [Espace](https://espace.cern.ch/ATLAS-FELIX/Shared%20Documents/Bitfiles_development/FLX712_FULLMODE_24CH_CLKSELECT_GIT_phase2-FLX-1368_PEXInitForEPYC_rm-5.0_1070_201113_11_29.tar.gz) 
    2. Built-in JumboBlock/Superchunk support,
    3. Contains AMD EPYC architecture specific fixes
-3. ** RM5 DUNE Phase2**: https://cernbox.cern.ch/index.php/s/243sMHSlQt9qfND
+3. **RM5 DUNE Phase2**: https://cernbox.cern.ch/index.php/s/243sMHSlQt9qfND
    1. In-house built firmware, with the previous features of ATLAS Phase2
    2. Superchunk factor can be set by link
 
