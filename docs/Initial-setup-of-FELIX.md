@@ -9,7 +9,7 @@ This documentation assumes that you are using an FLX-712 card, on a Linux CentOS
 2. **Warning:** The card requires 12V auxiliary power, connected from either the power supply unit (PSU), or directly from the motherboard. This is typically the same cable that feeds power for GPUs. Always check your motherboard's user-manual, as many vendors have proprietary pinouts on the motherboard side!
    * The Supermicro boards usually need this particular cable: SM CBL-PWEX-0665
    * Intel WolfPass (2600WF series) servers need GPU power cable: iPC – AXXGPGPUCABLE
-   * DELL PowerEdge R740 01YM03 servers need GPU power cable: 
+   * DELL PowerEdge R740 01YM03 servers need GPU power cable from the DELL GPU enablement kit (with mini MOLEX to motherboard).
 
 3. Start the machine, and after logging in, depending on the firmware loaded or flashed on the card, the device should be visible under 
    `lspci`. One of the two commands should result with PCIe endpoints visible:
