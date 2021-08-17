@@ -34,7 +34,10 @@ flx-config -d 1 load emuconfigreg_464_1_0
 
 ```
 
-Then toggle the fanout selector to use the emulated links instead of the optical links:
+### Fanout selector between real and emulated links
+The fanout selector tool is called `femu` that can toggle the emulator mode on and off.
+
+In order to toggle the fanout selector to use the emulated links instead of the optical links:
 ```
 femu -d 0 -e 
 femu -d 0 -e
