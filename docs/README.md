@@ -17,7 +17,7 @@ Please ensure the following:
 
 2. For the card configuration, one needs compatible firmware and FELIX configuration sets. The list is under [FELIX Assets](FELIX-assets.md#compatibility_list)
 
-3. Configure the FELIX card, as explained in the [Configure the FELIX card](Configure-the-FELIX-card.md) short manual.
+3. Configure the FELIX card, as explained in the [Enabling links and setting up the FELIX card](Enabling-links-and-setting-the-superchunk-factor.md) manual.
 
 ## Examples
 After successfully following the configuration instructions, you can try to run a test app that uses the FELIX.
