@@ -42,6 +42,7 @@ This section describes which DUNE-DAQ software and `flxlibs` version are compati
 
 
 ## Register Map configuration files (SLR config files)
+DEPRECATED. Only use this configuration method, for firmware (2.)!
 _(SLR stands for: "SuperLogic Region", which represent a "half" physical card a.k.a. logical unit.)_
 
 The location of configuration files for elinks and emulators can be found here: https://cernbox.cern.ch/index.php/s/uUi31McesqajCR6
