@@ -8,7 +8,7 @@ For the dependencies, you need the `felix` external package that ships a build o
 ## Disclaimer
 The [Initial setup of FELIX page](Initial-setup-of-FELIX.md) doesn't mean to be a replacement for the official FELIX User Manual. For a much more detailed documentation, always refer to that appropriate RegisterMap version and device's user manual, that are found under the official [FELIX Project Webpage](https://atlas-project-felix.web.cern.ch/atlas-project-felix/).
 
-## Configure the FELIX card
+## FELIX setup
 Please ensure the following:
 
 1. For the physical setup, please refer to the [Initial setup of FELIX](Initial-setup-of-FELIX.md).
