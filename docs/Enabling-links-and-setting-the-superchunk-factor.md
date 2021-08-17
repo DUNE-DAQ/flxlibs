@@ -14,9 +14,11 @@ In order to enable links, the corresponding registers need to be set: `DECODING_
 echo Disabling every link on SLR 0...
 for i in $(seq 0 9); do flx-config -d 0 set DECODING_LINK0${i}_EGROUP0_CTRL_EPATH_ENA=0; done;
 for i in $(seq 10 11); do flx-config -d 0 set DECODING_LINK${i}_EGROUP0_CTRL_EPATH_ENA=0; done;
+
 echo Disabling every link on SLR 1...
 for i in $(seq 0 9); do flx-config -d 1 set DECODING_LINK0${i}_EGROUP0_CTRL_EPATH_ENA=0; done;
 for i in $(seq 10 11); do flx-config -d 1 set DECODING_LINK${i}_EGROUP0_CTRL_EPATH_ENA=0; done;
+
 echo Enable 5-5 links on the 2 SLRs
 for i in $(seq 0 4); do flx-config -d 0 set DECODING_LINK0${i}_EGROUP0_CTRL_EPATH_ENA=1; done;
 for i in $(seq 0 4); do flx-config -d 1 set DECODING_LINK0${i}_EGROUP0_CTRL_EPATH_ENA=1; done;
