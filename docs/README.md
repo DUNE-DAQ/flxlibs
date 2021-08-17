@@ -19,6 +19,8 @@ Please ensure the following:
 
 3. Configure the FELIX card, as explained in the [Enabling links and setting up the FELIX card](Enabling-links-and-setting-the-superchunk-factor.md) manual.
 
+4. Run basic tests explained in the [Basic tests](Basic-tests.md) manual to ensure that the card is properly set up.
+
 ## Examples
 After successfully following the configuration instructions, you can try to run a test app that uses the FELIX.
 First, create a configuration file:
