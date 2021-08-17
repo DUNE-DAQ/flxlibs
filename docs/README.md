@@ -13,13 +13,13 @@ Please ensure the following:
 
 1. For the physical setup, please refer to the [Initial setup of FELIX](Initial-setup-of-FELIX.md).
 
-2. Use the [Local driver](Local-driver.md) from the appropriate dunedaq release.
-
 2. For the card configuration, one needs compatible firmware and FELIX configuration sets. The list is under [FELIX Assets](FELIX-assets.md#compatibility_list).
 
-3. Configure the FELIX card, as explained in the [Enabling links and setting up the FELIX card](Enabling-links-and-setting-the-superchunk-factor.md) manual.
+3. Use the [Local driver](Local-driver.md) from the appropriate dunedaq release.
 
-4. Run basic tests explained in the [Basic tests](Basic-tests.md) manual to ensure that the card is properly set up.
+4. Configure the FELIX card, as explained in the [Enabling links and setting up the FELIX card](Enabling-links-and-setting-the-superchunk-factor.md) manual.
+
+5. Run basic tests explained in the [Basic tests](Basic-tests.md) manual to ensure that the card is properly set up.
 
 ## Examples
 After successfully following the configuration instructions, you can try to run a test app that uses the FELIX.
