@@ -42,4 +42,6 @@ This section describes which DUNE-DAQ software and `flxlibs` version are compati
 
    | DUNE-DAQ      | flxlibs       | `felix` external | Firmware     | Configuration |
    |:-------------:|:-------------:|:----------------:|:------------:|:-------------:|
-   |  v2.4.0       | develop       | v1_1_1 e19:prof  | RM5 (2.)     | 1.1 & 1.2     |
+   |  v2.4.0       | v1.0.0        | v1_1_1 e19:prof  | RM5 (2.)     | 1.1 & 1.2     |
+   |  v2.6.0       | v1.1.0        | v1_1_1 e19:prof  | RM5 (2.)     | 1.1 & 1.2     |
+   |  v2.8.0       | v1.2.0        | v1_2_0 e19:prof  | RM5 (3.)     | [Follow this](Enabling-links-and-setting-the-superchunk-factor.md) |
