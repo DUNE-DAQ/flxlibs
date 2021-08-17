@@ -1,4 +1,10 @@
 ## Basic tests
+You can do this either using the felix UPS product in the dune-daq software or a custom build of the felix software suite provided by ATLAS TDAQ.
+
+To use the UPS product, you can use these tools where you did run:
+```
+dbt-workarea-env
+```
 
 ### Low level FELIX tools
 `fdaq` is a tool that reads data from the FELIX card, and is provided by FELIX software suite. For running 5 seconds the emulator on SLR0, do the following:
