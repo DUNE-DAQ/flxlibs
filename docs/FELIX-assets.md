@@ -6,8 +6,8 @@ Testing and development hosts with a FELIX card are the following:
    * np04-srv-030 - RM5 based test platform (DS Intel Cascade Lake Silver)
 
 * **CERN DT-DI DAQ-lab**
-   * epdtdi104 - RM5 based development platform (DS Intel Cascade Lake Gold, SNC2, with PMEM and NVMe)
-   * epdtdi105 - RM5 based development platform (DS AMD EPYC with PCIe SSD and NVMe)
+   * epdtdi104 - RM5 based development platform (DS Intel Cascade Lake Gold, SNC2, with 1.5TB PMEM and 4TB NVMe)
+   * epdtdi105 - RM5 based development platform (DS AMD EPYC with 20TB+ NVMe)
 
 * **Bristol Lab**
    * it043261 - Host with ZCU102 to FELIX connectivity (Intel Xeon Bronze 3204 CPU with NVMe)
