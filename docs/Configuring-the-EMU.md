@@ -12,7 +12,14 @@ to setup the workspace including the ups product.
 ### Generating a flx-config loadable file
 First a configuration file needs to be generated or acquired. These files have lines of data in the 33b format as well as register values which the command `flx-config` uses to configure the internal emulator.
 
-To generate simple configurations (incremental data, constant value etc.), you can run the `flxlibs_emu_confgen` app in flxlibs. By default it produces an emulator configuration files which had incremental data with a chunk size of 464 and 1 idle character between chunks. You can see the specifications of the data generated in the config when running the app, below shows the output after running with default settings:
+To generate simple configurations (incremental data, constant value etc.), you can run the `flxlibs_emu_confgen` app in flxlibs. By default it produces an emulator configuration files which had incremental data with a chunk size of 464 and 1 idle character between chunks. You can see the specifications of the data generated in the config when running the app, below shows the output after running with default settings.
+
+So if you run:
+```
+flxlibs_emu_confgen
+```
+
+The output should be similar to this:
 ```
 number of lines : 8192
 chunk size      : 464
