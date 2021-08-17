@@ -18,7 +18,9 @@ Please ensure the following:
 
 4. Configure the FELIX card, as explained in the [Enabling links and setting up the FELIX card](Enabling-links-and-setting-the-superchunk-factor.md) manual.
 
-5. Run basic tests explained in the [Basic tests](Basic-tests.md) manual to ensure that the card is properly set up.
+5. Load data into the emulator of the FELIX card based on the [Configuring the EMU](Configuring-the-emu.md) manual.
+
+6. Run basic tests explained in the [Basic tests](Basic-tests.md) manual to ensure that the card is properly set up.
 
 ## Examples
 After successfully following the configuration instructions, you can try to run a test app that uses the FELIX.
