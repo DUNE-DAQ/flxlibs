@@ -47,13 +47,13 @@ The fanout selector tool is called `femu` that can toggle the emulator mode on a
 In order to toggle the fanout selector to use the emulated links instead of the optical links:
 ```
 femu -d 0 -e 
-femu -d 0 -e
+femu -d 1 -e
 
 ```
 
 In order to toggle back to real optical links from the MTP connectors, disable the emulator fanout via:
 ```
 femu -d 0 -n
-femu -d 0 -n
+femu -d 1 -n
 
 ```
