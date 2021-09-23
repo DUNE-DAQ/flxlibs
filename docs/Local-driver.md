@@ -5,7 +5,7 @@ In order to ensure absolute consistency with the software externals, the DUNE re
 With `sudo` rights or as `root` one needs to do the following steps:
 ```
 mkdir /opt/felix
-cp -r /cvmfs/dune.opensciencegrid.org/dunedaq/DUNE/products/felix/v1_2_0 /opt/felix/
+cp -r /cvmfs/dunedaq.opensciencegrid.org/products/felix/v1_2_0 /opt/felix/
 cd /opt/felix/Linux64bit+3.10-2.17-e19-prof/drivers_rcc/src/
 make -j
 cd ../script
