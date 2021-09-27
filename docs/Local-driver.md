@@ -1,6 +1,9 @@
 ## What is the "local" driver?
 In order to ensure absolute consistency with the software externals, the DUNE readout external packages from the ATLAS FELIX Software Suite are built in-house and deployed as external products. Hence the reason, the driver being a foundation that connects firmware with software, it is also part of this product.
 
+## Support for CentOS 8 Stream
+At the moment there is no available `felix` product that has driver pathes for kernel 4.10+ and mainline 5.10+. The new `felix` product release will have the necessary patches for the new and with backward compatibility for older kernels.
+
 ## How to build and start it
 With `sudo` rights or as `root` one needs to do the following steps:
 ```
