@@ -10,7 +10,7 @@ moo.otypes.load_types('rcif/cmd.jsonnet')
 moo.otypes.load_types('appfwk/cmd.jsonnet')
 moo.otypes.load_types('appfwk/app.jsonnet')
 moo.otypes.load_types('readout/fakecardreader.jsonnet')
-moo.otypes.load_types('readout/datalinkhandler.jsonnet')
+moo.otypes.load_types('readout/readoutconfig.jsonnet')
 moo.otypes.load_types('readout/datarecorder.jsonnet')
 moo.otypes.load_types('flxlibs/felixcardreader.jsonnet')
 
@@ -20,7 +20,7 @@ import dunedaq.rcif.cmd as rccmd # AddressedCmd,
 import dunedaq.appfwk.app as app # AddressedCmd, 
 import dunedaq.appfwk.cmd as cmd # AddressedCmd, 
 import dunedaq.readout.fakecardreader as fcr
-import dunedaq.readout.datalinkhandler as dlh
+import dunedaq.readout.readoutconfig as rconf 
 import dunedaq.readout.datarecorder as bfs
 import dunedaq.flxlibs.felixcardreader as flxcr
 
@@ -38,6 +38,7 @@ def generate(
         NUMBER_OF_DATA_PRODUCERS=1,          
         NUMBER_OF_TP_PRODUCERS=1,          
         DATA_RATE_SLOWDOWN_FACTOR = 1,
+        ENABLE_SOFTWARE_TPG=False,
         RUN_NUMBER = 333,
         USE_FELIX=False,
         DATA_FILE="./frames.bin"
@@ -148,15 +149,33 @@ def generate(
 			                set_t0_to = 0
                         )),
             ] + [
-                (f"datahandler_{idx}", dlh.Conf(
-                        emulator_mode = True,
-                        source_queue_timeout_ms= QUEUE_POP_WAIT_MS,
-                        fake_trigger_flag=1,
-                        latency_buffer_size = 3*CLOCK_SPEED_HZ/(25*12*DATA_RATE_SLOWDOWN_FACTOR),
-                        pop_limit_pct = 0.8,
-                        pop_size_pct = 0.1,
-                        apa_number = 0,
-                        link_number = idx
+                (f"datahandler_{idx}", rconf.Conf(
+                        readoutmodelconf= rconf.ReadoutModelConf(
+                            source_queue_timeout_ms= QUEUE_POP_WAIT_MS,
+                            fake_trigger_flag=1,
+                            region_id = 0,
+                            element_id = idx,
+                        ),
+                        latencybufferconf= rconf.LatencyBufferConf(
+                            latency_buffer_size = 3*CLOCK_SPEED_HZ/(25*12*DATA_RATE_SLOWDOWN_FACTOR),
+                            region_id = 0,
+                            element_id = idx,
+                        ),
+                        rawdataprocessorconf= rconf.RawDataProcessorConf(
+                            region_id = 0,
+                            element_id = idx,
+                            enable_software_tpg = ENABLE_SOFTWARE_TPG,
+                        ),
+                        requesthandlerconf= rconf.RequestHandlerConf(
+                            latency_buffer_size = 3*CLOCK_SPEED_HZ/(25*12*DATA_RATE_SLOWDOWN_FACTOR),
+                            pop_limit_pct = 0.8,
+                            pop_size_pct = 0.1,
+                            region_id = 0,
+                            element_id = idx,
+                            output_file = f"output_{idx}.out",
+                            stream_buffer_size = 8388608,
+                            enable_raw_recording = True
+                        )
                         )) for idx in range(NUMBER_OF_DATA_PRODUCERS)
             ] + [
                 (f"data_recorder_{idx}", bfs.Conf(
@@ -206,7 +225,7 @@ def generate(
     cmd_seq = [initcmd, confcmd, startcmd, stopcmd, scrapcmd]
 
     record_cmd = mrccmd("record", "RUNNING", "RUNNING", [
-        ("datahandler_.*", dlh.RecordingParams(
+        ("datahandler_.*", rconf.RecordingParams(
             duration=10
         ))
     ])
@@ -231,11 +250,12 @@ if __name__ == '__main__':
     @click.option('-n', '--number-of-data-producers', default=1)
     @click.option('-t', '--number-of-tp-producers', default=0)
     @click.option('-s', '--data-rate-slowdown-factor', default=10)
+    @click.option('-g', '--enable-software-tpg', is_flag=True)
     @click.option('-r', '--run-number', default=333)
     @click.option('-x', '--use-felix', is_flag=True, default=False)
     @click.option('-d', '--data-file', type=click.Path(), default='./frames.bin')
     @click.argument('json_file', type=click.Path(), default='flx_readout.json')
-    def cli(frontend_type, number_of_data_producers, number_of_tp_producers, data_rate_slowdown_factor, run_number, use_felix, data_file, json_file):
+    def cli(frontend_type, number_of_data_producers, number_of_tp_producers, data_rate_slowdown_factor, enable_software_tpg, run_number, use_felix, data_file, json_file):
         """
           JSON_FILE: Input raw data file.
           JSON_FILE: Output json configuration file.
@@ -247,6 +267,7 @@ if __name__ == '__main__':
                     NUMBER_OF_DATA_PRODUCERS = number_of_data_producers,
                     NUMBER_OF_TP_PRODUCERS = number_of_tp_producers,
                     DATA_RATE_SLOWDOWN_FACTOR = data_rate_slowdown_factor,
+                    ENABLE_SOFTWARE_TPG = enable_software_tpg,
                     RUN_NUMBER = run_number,
                     USE_FELIX = use_felix,
                     DATA_FILE = data_file,
