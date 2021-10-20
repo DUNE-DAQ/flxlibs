@@ -9,7 +9,6 @@ moo.otypes.load_types('cmdlib/cmd.jsonnet')
 moo.otypes.load_types('rcif/cmd.jsonnet')
 moo.otypes.load_types('appfwk/cmd.jsonnet')
 moo.otypes.load_types('appfwk/app.jsonnet')
-moo.otypes.load_types('readout/fakecardreader.jsonnet')
 moo.otypes.load_types('readout/readoutconfig.jsonnet')
 moo.otypes.load_types('readout/datarecorder.jsonnet')
 moo.otypes.load_types('flxlibs/felixcardreader.jsonnet')
@@ -19,7 +18,6 @@ import dunedaq.cmdlib.cmd as basecmd # AddressedCmd,
 import dunedaq.rcif.cmd as rccmd # AddressedCmd, 
 import dunedaq.appfwk.app as app # AddressedCmd, 
 import dunedaq.appfwk.cmd as cmd # AddressedCmd, 
-import dunedaq.readout.fakecardreader as fcr
 import dunedaq.readout.readoutconfig as rconf 
 import dunedaq.readout.datarecorder as bfs
 import dunedaq.flxlibs.felixcardreader as flxcr
@@ -38,9 +36,9 @@ def generate(
         NUMBER_OF_DATA_PRODUCERS=1,          
         NUMBER_OF_TP_PRODUCERS=1,          
         DATA_RATE_SLOWDOWN_FACTOR = 1,
+        EMULATOR_MODE = False,
         ENABLE_SOFTWARE_TPG=False,
         RUN_NUMBER = 333,
-        USE_FELIX=False,
         DATA_FILE="./frames.bin"
     ):
 
@@ -88,20 +86,15 @@ def generate(
                                             ])
         ]
 
-    if USE_FELIX:
-        mod_specs.append(mspec("flxcard_0", "FelixCardReader", [
+
+    mod_specs.append(mspec("flxcard_0", "FelixCardReader", [
+                    app.QueueInfo(name=f"output_{idx}", inst=f"{FRONTEND_TYPE}_link_{idx}", dir="output")
+                        for idx in range(min(5, NUMBER_OF_DATA_PRODUCERS))
+                    ]))
+    if NUMBER_OF_DATA_PRODUCERS > 5 :
+        mod_specs.append(mspec("flxcard_1", "FelixCardReader", [
                         app.QueueInfo(name=f"output_{idx}", inst=f"{FRONTEND_TYPE}_link_{idx}", dir="output")
-                            for idx in range(min(5, NUMBER_OF_DATA_PRODUCERS))
-                        ]))
-        if NUMBER_OF_DATA_PRODUCERS > 5 :
-            mod_specs.append(mspec("flxcard_1", "FelixCardReader", [
-                            app.QueueInfo(name=f"output_{idx}", inst=f"{FRONTEND_TYPE}_link_{idx}", dir="output")
-                                for idx in range(5, NUMBER_OF_DATA_PRODUCERS)
-                            ]))
-    else:
-        mod_specs.append(mspec("fake_source", "FakeCardReader", [
-                        app.QueueInfo(name=f"output_{idx}", inst=f"{FRONTEND_TYPE}_link_{idx}", dir="output")
-                            for idx in range(NUMBER_OF_DATA_PRODUCERS)
+                            for idx in range(5, NUMBER_OF_DATA_PRODUCERS)
                         ]))
 
 
@@ -137,17 +130,6 @@ def generate(
                             numa_id=0,
                             num_links=max(0, NUMBER_OF_DATA_PRODUCERS - 5))),
 
-
-                ("fake_source",fcr.Conf(
-                            link_confs=[fcr.LinkConfiguration(
-                                geoid=fcr.GeoID(system="TPC", region=0, element=idx),
-                                slowdown=DATA_RATE_SLOWDOWN_FACTOR,
-                                queue_name=f"output_{idx}"
-                            ) for idx in range(NUMBER_OF_DATA_PRODUCERS)],
-                            # input_limit=10485100, # default
-                            queue_timeout_ms = QUEUE_POP_WAIT_MS,
-			                set_t0_to = 0
-                        )),
             ] + [
                 (f"datahandler_{idx}", rconf.Conf(
                         readoutmodelconf= rconf.ReadoutModelConf(
@@ -165,6 +147,7 @@ def generate(
                             region_id = 0,
                             element_id = idx,
                             enable_software_tpg = ENABLE_SOFTWARE_TPG,
+                            emulator_mode = EMULATOR_MODE,
                         ),
                         requesthandlerconf= rconf.RequestHandlerConf(
                             latency_buffer_size = 3*CLOCK_SPEED_HZ/(25*12*DATA_RATE_SLOWDOWN_FACTOR),
@@ -186,12 +169,10 @@ def generate(
     
     jstr = json.dumps(confcmd.pod(), indent=4, sort_keys=True)
     print(jstr)
-    print(USE_FELIX)
 
     startpars = rccmd.StartParams(run=RUN_NUMBER)
     startcmd = mrccmd("start", "CONFIGURED", "RUNNING", [
             ("datahandler_.*", startpars),
-            ("fake_source", startpars),
             ("flxcard.*", startpars),
             ("data_recorder_.*", startpars),
             ("timesync_consumer", startpars),
@@ -203,7 +184,6 @@ def generate(
 
 
     stopcmd = mrccmd("stop", "RUNNING", "CONFIGURED", [
-            ("fake_source", None),
             ("flxcard.*", None),
             ("datahandler_.*", None),
             ("data_recorder_.*", None),
@@ -250,12 +230,12 @@ if __name__ == '__main__':
     @click.option('-n', '--number-of-data-producers', default=1)
     @click.option('-t', '--number-of-tp-producers', default=0)
     @click.option('-s', '--data-rate-slowdown-factor', default=10)
+    @click.option('-e', '--emulator_mode', is_flag=True)   
     @click.option('-g', '--enable-software-tpg', is_flag=True)
     @click.option('-r', '--run-number', default=333)
-    @click.option('-x', '--use-felix', is_flag=True, default=False)
     @click.option('-d', '--data-file', type=click.Path(), default='./frames.bin')
     @click.argument('json_file', type=click.Path(), default='flx_readout.json')
-    def cli(frontend_type, number_of_data_producers, number_of_tp_producers, data_rate_slowdown_factor, enable_software_tpg, run_number, use_felix, data_file, json_file):
+    def cli(frontend_type, number_of_data_producers, number_of_tp_producers, data_rate_slowdown_factor, emulator_mode, enable_software_tpg, run_number, data_file, json_file):
         """
           JSON_FILE: Input raw data file.
           JSON_FILE: Output json configuration file.
@@ -267,9 +247,9 @@ if __name__ == '__main__':
                     NUMBER_OF_DATA_PRODUCERS = number_of_data_producers,
                     NUMBER_OF_TP_PRODUCERS = number_of_tp_producers,
                     DATA_RATE_SLOWDOWN_FACTOR = data_rate_slowdown_factor,
+                    EMULATOR_MODE = emulator_mode,
                     ENABLE_SOFTWARE_TPG = enable_software_tpg,
                     RUN_NUMBER = run_number,
-                    USE_FELIX = use_felix,
                     DATA_FILE = data_file,
                 ))
 
