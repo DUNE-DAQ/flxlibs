@@ -27,6 +27,8 @@ public:
   FelixCardController(FelixCardController&&) = delete;                 ///< FelixCardController is not move-constructible
   FelixCardController& operator=(FelixCardController&&) = delete;      ///< FelixCardController is not move-assignable
 
+  void init(const data_t&) override;
+
 private:
   void set_register();
   void read_register();

@@ -15,10 +15,13 @@ FelixCardController::FelixCardController(const std::string &name)
   : DAQModule(name)
 {}
 
-void set_register()
+void FelixCardController::init(const data_t& args)
 {}
 
-void read_register()
+void FelixCardController::set_register()
+{}
+
+void FelixCardController::read_register()
 {}
 
 } // namespace flxlibs

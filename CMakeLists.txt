@@ -60,6 +60,7 @@ endif()
 ##############################################################################
 # Plugins
 daq_add_plugin(FelixCardReader duneDAQModule LINK_LIBRARIES appfwk::appfwk flxlibs)
+daq_add_plugin(FelixCardController duneDAQModule LINK_LIBRARIES appfwk::appfwk flxlibs)
 
 ##############################################################################
 # Integration tests
