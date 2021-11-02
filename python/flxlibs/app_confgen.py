@@ -12,6 +12,7 @@ moo.otypes.load_types('appfwk/app.jsonnet')
 moo.otypes.load_types('readout/readoutconfig.jsonnet')
 moo.otypes.load_types('readout/datarecorder.jsonnet')
 moo.otypes.load_types('flxlibs/felixcardreader.jsonnet')
+moo.otypes.load_types('flxlibs/felixcardcontroller.jsonnet')
 
 # Import new types
 import dunedaq.cmdlib.cmd as basecmd # AddressedCmd, 
@@ -21,6 +22,7 @@ import dunedaq.appfwk.cmd as cmd # AddressedCmd,
 import dunedaq.readout.readoutconfig as rconf 
 import dunedaq.readout.datarecorder as bfs
 import dunedaq.flxlibs.felixcardreader as flxcr
+import dunedaq.flxlibs.felixcardcontroller as flxcc
 
 from appfwk.utils import mcmd, mrccmd, mspec
 
@@ -91,12 +93,15 @@ def generate(
                     app.QueueInfo(name=f"output_{idx}", inst=f"{FRONTEND_TYPE}_link_{idx}", dir="output")
                         for idx in range(min(5, NUMBER_OF_DATA_PRODUCERS))
                     ]))
+    mod_specs.append(mspec("flxcardctrl_0", "FelixCardController", [
+                    ]))
     if NUMBER_OF_DATA_PRODUCERS > 5 :
         mod_specs.append(mspec("flxcard_1", "FelixCardReader", [
                         app.QueueInfo(name=f"output_{idx}", inst=f"{FRONTEND_TYPE}_link_{idx}", dir="output")
                             for idx in range(5, NUMBER_OF_DATA_PRODUCERS)
                         ]))
-
+        mod_specs.append(mspec("flxcardctrl_1", "FelixCardController", [
+                        ]))
 
     init_specs = app.Init(queues=queue_specs, modules=mod_specs)
 
@@ -129,7 +134,8 @@ def generate(
                             dma_memory_size_gb= 4,
                             numa_id=0,
                             num_links=max(0, NUMBER_OF_DATA_PRODUCERS - 5))),
-
+                ("flxcardctrl_0",flxcc.Conf()),
+                ("flxcardctrl_1",flxcc.Conf()),
             ] + [
                 (f"datahandler_{idx}", rconf.Conf(
                         readoutmodelconf= rconf.ReadoutModelConf(
@@ -174,6 +180,7 @@ def generate(
     startcmd = mrccmd("start", "CONFIGURED", "RUNNING", [
             ("datahandler_.*", startpars),
             ("flxcard.*", startpars),
+            ("flxcardctrl.*", startpars),
             ("data_recorder_.*", startpars),
             ("timesync_consumer", startpars),
             ("fragment_consumer", startpars)
@@ -185,6 +192,7 @@ def generate(
 
     stopcmd = mrccmd("stop", "RUNNING", "CONFIGURED", [
             ("flxcard.*", None),
+            ("flxcardctrl.*", None),
             ("datahandler_.*", None),
             ("data_recorder_.*", None),
             ("timesync_consumer", None),

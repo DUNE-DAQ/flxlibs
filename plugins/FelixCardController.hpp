@@ -9,10 +9,19 @@
 #ifndef FLXLIBS_PLUGINS_FELIXCARDCONTROLLER_HPP
 #define FLXLIBS_PLUGINS_FELIXCARDCONTROLLER_HPP
 
+//#include "appfwk/app/Nljs.hpp"
+//#include "appfwk/cmd/Nljs.hpp"
+//#include "appfwk/cmd/Structs.hpp"
+
+#include "flxlibs/felixcardcontroller/Structs.hpp"
+
 // From appfwk
 #include "appfwk/DAQModule.hpp"
 
+#include "CardWrapper.hpp"
+
 #include <string>
+#include <memory>
 
 namespace dunedaq {
 namespace flxlibs {
@@ -30,8 +39,22 @@ public:
   void init(const data_t&) override;
 
 private:
-  void set_register();
+  // Types
+  using module_conf_t = dunedaq::flxlibs::felixcardcontroller::Conf;
+
+  // Commands
+  void do_configure(const data_t& args);
+  void do_start(const data_t& args);
+  void do_stop(const data_t& args);
+
   void read_register();
+  void load_register();
+
+  // Configuration
+  module_conf_t m_cfg;
+
+  // FELIX Cards
+  std::unique_ptr<CardWrapper> m_card_wrapper;
 };
 
 } // namespace flxlibs
