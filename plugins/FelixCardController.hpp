@@ -6,8 +6,8 @@
  * received with this code.
  */
 
-#ifndef FLXLIBS_PLUGINS_FELIXCARDCONTROLLER_HPP
-#define FLXLIBS_PLUGINS_FELIXCARDCONTROLLER_HPP
+#ifndef FLXLIBS_PLUGINS_FELIXCARDCONTROLLER_HPP_
+#define FLXLIBS_PLUGINS_FELIXCARDCONTROLLER_HPP_
 
 //#include "appfwk/app/Nljs.hpp"
 //#include "appfwk/cmd/Nljs.hpp"
@@ -20,8 +20,8 @@
 
 #include "CardWrapper.hpp"
 
-#include <string>
 #include <memory>
+#include <string>
 
 namespace dunedaq {
 namespace flxlibs {
@@ -31,10 +31,10 @@ class FelixCardController : public dunedaq::appfwk::DAQModule
 public:
   explicit FelixCardController(const std::string& name);
 
-  FelixCardController(const FelixCardController&) = delete;            ///< FelixCardController is not copy-constructible
+  FelixCardController(const FelixCardController&) = delete; ///< FelixCardController is not copy-constructible
   FelixCardController& operator=(const FelixCardController&) = delete; ///< FelixCardController is not copy-assignable
-  FelixCardController(FelixCardController&&) = delete;                 ///< FelixCardController is not move-constructible
-  FelixCardController& operator=(FelixCardController&&) = delete;      ///< FelixCardController is not move-assignable
+  FelixCardController(FelixCardController&&) = delete;            ///< FelixCardController is not move-constructible
+  FelixCardController& operator=(FelixCardController&&) = delete; ///< FelixCardController is not move-assignable
 
   void init(const data_t&) override;
 
@@ -46,9 +46,8 @@ private:
   void do_configure(const data_t& args);
   void do_start(const data_t& args);
   void do_stop(const data_t& args);
-
-  void read_register();
-  void load_register();
+  void get_reg(const data_t& args);
+  void set_reg(const data_t& args);
 
   // Configuration
   module_conf_t m_cfg;
@@ -60,4 +59,4 @@ private:
 } // namespace flxlibs
 } // namespace dunedaq
 
-#endif // FLXLIBS_PLUGINS_FELIXCARDCONTROLLER_HPP
+#endif // FLXLIBS_PLUGINS_FELIXCARDCONTROLLER_HPP_

@@ -128,14 +128,22 @@ def generate(
                             num_links=min(5,NUMBER_OF_DATA_PRODUCERS))),
                 ("flxcard_1",flxcr.Conf(card_id=CARDID,
                             logical_unit=1,
-                            dma_id=0,
+                            dma_id=1,
                             chunk_trailer_size= 32,
                             dma_block_size_kb= 4,
                             dma_memory_size_gb= 4,
                             numa_id=0,
                             num_links=max(0, NUMBER_OF_DATA_PRODUCERS - 5))),
-                ("flxcardctrl_0",flxcc.Conf()),
-                ("flxcardctrl_1",flxcc.Conf()),
+                ("flxcardctrl_0",flxcc.Conf(card_id=CARDID,
+                            logical_unit=0,
+                            dma_id=1,
+                            dma_memory_size_gb= 4,
+                            numa_id=0)),
+                ("flxcardctrl_1",flxcc.Conf(card_id=CARDID,
+                            logical_unit=1,
+                            dma_id=1,
+                            dma_memory_size_gb= 4,
+                            numa_id=0)),
             ] + [
                 (f"datahandler_{idx}", rconf.Conf(
                         readoutmodelconf= rconf.ReadoutModelConf(
@@ -179,8 +187,8 @@ def generate(
     startpars = rccmd.StartParams(run=RUN_NUMBER)
     startcmd = mrccmd("start", "CONFIGURED", "RUNNING", [
             ("datahandler_.*", startpars),
-            ("flxcard.*", startpars),
-            ("flxcardctrl.*", startpars),
+            ("flxcard_.*", startpars),
+            ("flxcardctrl_.*", startpars),
             ("data_recorder_.*", startpars),
             ("timesync_consumer", startpars),
             ("fragment_consumer", startpars)
@@ -191,8 +199,8 @@ def generate(
 
 
     stopcmd = mrccmd("stop", "RUNNING", "CONFIGURED", [
-            ("flxcard.*", None),
-            ("flxcardctrl.*", None),
+            ("flxcard_.*", None),
+            ("flxcardctrl_.*", None),
             ("datahandler_.*", None),
             ("data_recorder_.*", None),
             ("timesync_consumer", None),
@@ -222,6 +230,28 @@ def generate(
     print("="*80+"\nRecord\n\n", jstr)
 
     cmd_seq.append(record_cmd)
+
+    get_reg_cmd = mrccmd("getregister", "RUNNING", "RUNNING", [
+        ("flxcardctrl_.*", flxcc.GetRegisterParams(
+            reg_name="REG_MAP_VERSION"
+        ))
+    ])
+
+    jstr = json.dumps(get_reg_cmd.pod(), indent=4, sort_keys=True)
+    print("="*80+"\nGet Register\n\n", jstr)
+
+    cmd_seq.append(get_reg_cmd)
+
+    set_reg_cmd = mrccmd("setregister", "RUNNING", "RUNNING", [
+        ("flxcardctrl_.*", flxcc.SetRegisterParams(
+            reg_name="REG_MAP_VERSION"
+        ))
+    ])
+
+    jstr = json.dumps(set_reg_cmd.pod(), indent=4, sort_keys=True)
+    print("="*80+"\nSet Register\n\n", jstr)
+
+    cmd_seq.append(set_reg_cmd)
 
     # Print them as json (to be improved/moved out)
     jstr = json.dumps([c.pod() for c in cmd_seq], indent=4, sort_keys=True)

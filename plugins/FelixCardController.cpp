@@ -11,6 +11,12 @@
 
 #include "logging/Logging.hpp"
 
+#include "regmap/regmap.h"
+
+#include <iomanip>
+#include <memory>
+#include <string>
+
 /**
  * @brief Name used by TRACE TLOG calls from this source file
  */
@@ -37,37 +43,49 @@ FelixCardController::FelixCardController(const std::string& name)
   register_command("conf", &FelixCardController::do_configure);
   register_command("start", &FelixCardController::do_start);
   register_command("stop", &FelixCardController::do_stop);
+  register_command("getregister", &FelixCardController::get_reg);
+  register_command("setregister", &FelixCardController::set_reg);
 }
 
-void FelixCardController::init(const data_t& args)
+void
+FelixCardController::init(const data_t& args)
 {
   m_card_wrapper->init(args);
 }
 
-void FelixCardController::do_configure(const data_t& args)
+void
+FelixCardController::do_configure(const data_t& args)
 {
   m_cfg = args.get<felixcardcontroller::Conf>();
-//  m_card_wrapper->configure(args);
-  TLOG() << "Hello from FelixCardController::do_configure()";
+  m_card_wrapper->configure(args);
 }
 
-void FelixCardController::do_start(const data_t& args)
+void
+FelixCardController::do_start(const data_t& args)
 {
   m_card_wrapper->start(args);
 }
 
-void FelixCardController::do_stop(const data_t& args)
+void
+FelixCardController::do_stop(const data_t& args)
 {
   m_card_wrapper->stop(args);
 }
 
-void FelixCardController::read_register()
+void
+FelixCardController::get_reg(const data_t& args)
 {
-  TLOG() << "Hello from FelixCardController::read_register()";
+  auto conf = args.get<felixcardcontroller::GetRegisterParams>();
+  auto reg_val = m_card_wrapper->get_register(conf.reg_name);
+  TLOG() << conf.reg_name << "        0x" << std::hex << reg_val;
 }
 
-void FelixCardController::load_register()
-{}
+void
+FelixCardController::set_reg(const data_t& args)
+{
+  auto conf = args.get<felixcardcontroller::SetRegisterParams>();
+  m_card_wrapper->set_register(conf.reg_name, conf.reg_val);
+}
 
 } // namespace flxlibs
 } // namespace dunedaq
