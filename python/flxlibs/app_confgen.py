@@ -134,16 +134,12 @@ def generate(
                             dma_memory_size_gb= 4,
                             numa_id=0,
                             num_links=max(0, NUMBER_OF_DATA_PRODUCERS - 5))),
-                ("flxcardctrl_0",flxcc.Conf(card_id=CARDID,
-                            logical_unit=0,
-                            dma_id=1,
-                            dma_memory_size_gb= 4,
-                            numa_id=0)),
-                ("flxcardctrl_1",flxcc.Conf(card_id=CARDID,
-                            logical_unit=1,
-                            dma_id=1,
-                            dma_memory_size_gb= 4,
-                            numa_id=0)),
+                ("flxcardctrl_0",flxcc.Conf(
+                            card_id=CARDID,
+                            logical_unit=0)),
+                ("flxcardctrl_1",flxcc.Conf(
+                            card_id=CARDID,
+                            logical_unit=1)),
             ] + [
                 (f"datahandler_{idx}", rconf.Conf(
                         readoutmodelconf= rconf.ReadoutModelConf(

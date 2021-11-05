@@ -46,9 +46,6 @@ public:
   void stop(const data_t& args);
   void set_running(bool should_run);
 
-  uint64_t get_register(std::string key);             // NOLINT(build/unsigned)
-  void set_register(std::string key, uint64_t value); // NOLINT(build/unsigned)
-
   void graceful_stop();
 
   void set_block_addr_handler(std::function<void(uint64_t)>& handle) // NOLINT(build/unsigned)

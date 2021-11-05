@@ -136,63 +136,63 @@ FelixCardReader::init(const data_t& args)
 void
 FelixCardReader::do_configure(const data_t& args)
 {
-  //  m_cfg = args.get<felixcardreader::Conf>();
-  //  m_card_id = m_cfg.card_id;
-  //  m_logical_unit = m_cfg.logical_unit;
-  //  m_num_links = m_cfg.num_links;
-  //  m_block_size = m_cfg.dma_block_size_kb * m_1kb_block_size;
-  //  m_chunk_trailer_size = m_cfg.chunk_trailer_size;
-  //  bool is_32b_trailer = false;
-  //
-  //  // Config checks
-  //  if (m_num_links != m_elinks.size()) {
-  //    ers::fatal(ElinkConfigurationInconsistency(ERS_HERE, m_num_links));
-  //  }
-  //  if (m_block_size % m_1kb_block_size != 0) {
-  //    ers::fatal(BlockSizeConfigurationInconsistency(ERS_HERE, m_block_size));
-  //  } else if (m_block_size != m_1kb_block_size && m_chunk_trailer_size != m_32b_trailer_size) {
-  //    ers::fatal(BlockSizeConfigurationInconsistency(ERS_HERE, m_block_size));
-  //  } else if (m_chunk_trailer_size == m_32b_trailer_size) {
-  //    is_32b_trailer = true;
-  //  }
-  //
-  //  // Configure components
-  //  TLOG(TLVL_WORK_STEPS) << "Configuring components with Block size:" << m_block_size
-  //                        << " & trailer size: " << m_chunk_trailer_size;
-  //  m_card_wrapper->configure(args);
-  //  for (unsigned lid = 0; lid < m_num_links; ++lid) {
-  //    auto tag = lid * m_elink_multiplier;
-  //    TLOG(TLVL_WORK_STEPS) << "Configuring ElinkHandler with elink tag: " << tag;
-  //    m_elinks[tag]->set_ids(m_card_id, m_logical_unit, lid, tag);
-  //    m_elinks[tag]->conf(args, m_block_size, is_32b_trailer);
-  //  }
+    m_cfg = args.get<felixcardreader::Conf>();
+    m_card_id = m_cfg.card_id;
+    m_logical_unit = m_cfg.logical_unit;
+    m_num_links = m_cfg.num_links;
+    m_block_size = m_cfg.dma_block_size_kb * m_1kb_block_size;
+    m_chunk_trailer_size = m_cfg.chunk_trailer_size;
+    bool is_32b_trailer = false;
+
+    // Config checks
+    if (m_num_links != m_elinks.size()) {
+      ers::fatal(ElinkConfigurationInconsistency(ERS_HERE, m_num_links));
+    }
+    if (m_block_size % m_1kb_block_size != 0) {
+      ers::fatal(BlockSizeConfigurationInconsistency(ERS_HERE, m_block_size));
+    } else if (m_block_size != m_1kb_block_size && m_chunk_trailer_size != m_32b_trailer_size) {
+      ers::fatal(BlockSizeConfigurationInconsistency(ERS_HERE, m_block_size));
+    } else if (m_chunk_trailer_size == m_32b_trailer_size) {
+      is_32b_trailer = true;
+    }
+
+    // Configure components
+    TLOG(TLVL_WORK_STEPS) << "Configuring components with Block size:" << m_block_size
+                          << " & trailer size: " << m_chunk_trailer_size;
+    m_card_wrapper->configure(args);
+    for (unsigned lid = 0; lid < m_num_links; ++lid) {
+      auto tag = lid * m_elink_multiplier;
+      TLOG(TLVL_WORK_STEPS) << "Configuring ElinkHandler with elink tag: " << tag;
+      m_elinks[tag]->set_ids(m_card_id, m_logical_unit, lid, tag);
+      m_elinks[tag]->conf(args, m_block_size, is_32b_trailer);
+    }
 }
 
 void
 FelixCardReader::do_start(const data_t& args)
 {
-  //  m_card_wrapper->start(args);
-  //  for (auto& [tag, elink] : m_elinks) {
-  //    elink->start(args);
-  //  }
+    m_card_wrapper->start(args);
+    for (auto& [tag, elink] : m_elinks) {
+      elink->start(args);
+    }
 }
 
 void
 FelixCardReader::do_stop(const data_t& args)
 {
-  //  m_card_wrapper->stop(args);
-  //  for (auto& [tag, elink] : m_elinks) {
-  //    elink->stop(args);
-  //  }
+    m_card_wrapper->stop(args);
+    for (auto& [tag, elink] : m_elinks) {
+      elink->stop(args);
+    }
 }
 
 void
 FelixCardReader::get_info(opmonlib::InfoCollector& ci, int level)
 {
-  //  for (unsigned lid = 0; lid < m_num_links; ++lid) {
-  //    auto tag = lid * m_elink_multiplier;
-  //    m_elinks[tag]->get_info(ci, level);
-  //  }
+    for (unsigned lid = 0; lid < m_num_links; ++lid) {
+      auto tag = lid * m_elink_multiplier;
+      m_elinks[tag]->get_info(ci, level);
+    }
 }
 
 } // namespace flxlibs

@@ -49,7 +49,7 @@ endif()
 
 ##############################################################################
 # Main library
-daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp LINK_LIBRARIES appfwk::appfwk ${FELIX_DEPENDENCIES} ${DUNEDAQ_DEPENDENCIES})
+daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp CardControllerWrapper.cpp LINK_LIBRARIES appfwk::appfwk ${FELIX_DEPENDENCIES} ${DUNEDAQ_DEPENDENCIES})
 
 if(WITH_FELIX_AS_PACKAGE)
   # All good

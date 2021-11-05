@@ -38,11 +38,9 @@ namespace flxlibs {
 FelixCardController::FelixCardController(const std::string& name)
   : DAQModule(name)
 {
-  m_card_wrapper = std::make_unique<CardWrapper>();
+  m_card_wrapper = std::make_unique<CardControllerWrapper>();
 
   register_command("conf", &FelixCardController::do_configure);
-  register_command("start", &FelixCardController::do_start);
-  register_command("stop", &FelixCardController::do_stop);
   register_command("getregister", &FelixCardController::get_reg);
   register_command("setregister", &FelixCardController::set_reg);
 }
@@ -58,18 +56,6 @@ FelixCardController::do_configure(const data_t& args)
 {
   m_cfg = args.get<felixcardcontroller::Conf>();
   m_card_wrapper->configure(args);
-}
-
-void
-FelixCardController::do_start(const data_t& args)
-{
-  m_card_wrapper->start(args);
-}
-
-void
-FelixCardController::do_stop(const data_t& args)
-{
-  m_card_wrapper->stop(args);
 }
 
 void

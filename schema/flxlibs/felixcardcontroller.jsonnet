@@ -18,35 +18,12 @@ local felixcardcontroller = {
     string : s.string("String",
                        doc="A string field"),
 
-    choice : s.boolean("Choice"),
-
     conf: s.record("Conf", [
     s.field("card_id", self.id, 0,
             doc="Physical card identifier (in the same host)"),
 
     s.field("logical_unit", self.count, 0,
             doc="Superlogic region of selected card"),
-
-    s.field("dma_id", self.id, 0,
-            doc="DMA descriptor to use"),
-
-    s.field("dma_memory_size_gb", self.count, 1,
-            doc="CMEM_RCC memory to allocate in GBs."),
-
-    s.field("dma_margin_blocks", self.count, 4,
-            doc="DMA parser safe margin block count"),
-
-    s.field("dma_block_threshold", self.count, 10,
-            doc="DMA parser activates at number of available new blocks"),
-
-    s.field("interrupt_mode", self.choice, false,
-            doc="Use device interrupts or polling for DMA parsing"),
-
-    s.field("poll_time", self.count, 5000,
-            doc="Poll time in us. Ignored if interrupt mode is on."),
-
-    s.field("numa_id", self.id, 0,
-            doc="CMEM_RCC NUMA region selector")
 
     ], doc="Upstream FELIX CardController DAQ Module Configuration"),
 

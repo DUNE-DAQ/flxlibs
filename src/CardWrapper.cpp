@@ -17,7 +17,6 @@
 
 // From STD
 #include <chrono>
-#include <iomanip>
 #include <memory>
 #include <string>
 
@@ -185,25 +184,6 @@ CardWrapper::close_card()
     ers::error(flxlibs::CardError(ERS_HERE, ex.what()));
     exit(EXIT_FAILURE);
   }
-}
-
-uint64_t                                                    // NOLINT(build/unsigned)
-CardWrapper::get_register(std::string key)
-{
-  TLOG_DEBUG(TLVL_WORK_STEPS) << "Reading value of register " << key;
-  m_card_mutex.lock();
-  auto reg_val = m_flx_card->cfg_get_reg(key.c_str());
-  m_card_mutex.unlock();
-  return reg_val;
-}
-
-void
-CardWrapper::set_register(std::string key, uint64_t value)  // NOLINT(build/unsigned)
-{
-  TLOG_DEBUG(TLVL_WORK_STEPS) << "Setting value of register " << key;
-  m_card_mutex.lock();
-  m_flx_card->cfg_set_reg(key.c_str(), value);  // handle invalid inputs
-  m_card_mutex.unlock();
 }
 
 int

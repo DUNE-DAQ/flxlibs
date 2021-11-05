@@ -9,16 +9,16 @@
 #ifndef FLXLIBS_PLUGINS_FELIXCARDCONTROLLER_HPP_
 #define FLXLIBS_PLUGINS_FELIXCARDCONTROLLER_HPP_
 
-//#include "appfwk/app/Nljs.hpp"
-//#include "appfwk/cmd/Nljs.hpp"
-//#include "appfwk/cmd/Structs.hpp"
+#include "appfwk/app/Nljs.hpp"
+#include "appfwk/cmd/Nljs.hpp"
+#include "appfwk/cmd/Structs.hpp"
 
 #include "flxlibs/felixcardcontroller/Structs.hpp"
 
 // From appfwk
 #include "appfwk/DAQModule.hpp"
 
-#include "CardWrapper.hpp"
+#include "CardControllerWrapper.hpp"
 
 #include <memory>
 #include <string>
@@ -44,8 +44,6 @@ private:
 
   // Commands
   void do_configure(const data_t& args);
-  void do_start(const data_t& args);
-  void do_stop(const data_t& args);
   void get_reg(const data_t& args);
   void set_reg(const data_t& args);
 
@@ -53,7 +51,7 @@ private:
   module_conf_t m_cfg;
 
   // FELIX Cards
-  std::unique_ptr<CardWrapper> m_card_wrapper;
+  std::unique_ptr<CardControllerWrapper> m_card_wrapper;
 };
 
 } // namespace flxlibs
