@@ -3,9 +3,9 @@
 
 include(CMakeFindDependencyMacro)
 
+find_dependency(ers)
 find_dependency(appfwk)
 find_dependency(logging)
-find_dependency(dataformats)
 find_dependency(readout)
 find_dependency(felix)
 
