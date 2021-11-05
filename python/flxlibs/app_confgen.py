@@ -229,7 +229,9 @@ def generate(
 
     get_reg_cmd = mrccmd("getregister", "RUNNING", "RUNNING", [
         ("flxcardctrl_.*", flxcc.GetRegisterParams(
-            reg_name="REG_MAP_VERSION"
+            reg_names=(
+                "REG_MAP_VERSION",
+            )
         ))
     ])
 
@@ -240,7 +242,9 @@ def generate(
 
     set_reg_cmd = mrccmd("setregister", "RUNNING", "RUNNING", [
         ("flxcardctrl_.*", flxcc.SetRegisterParams(
-            reg_name="REG_MAP_VERSION"
+            reg_val_pairs=(
+                flxcc.RegValPair(reg_name="REG_MAP_VERSION", reg_val=0),
+            )
         ))
     ])
 

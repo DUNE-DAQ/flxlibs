@@ -18,6 +18,19 @@ local felixcardcontroller = {
     string : s.string("String",
                        doc="A string field"),
 
+    regvalpair : s.record("RegValPair", [
+    s.field("reg_name", self.string, "",
+                doc="The name of a register"),
+    s.field("reg_val", self.uint8, 0,
+                doc="The value of a register")
+    ]),
+
+    reglist : s.sequence("RegList", self.string,
+                doc="A list of registers"),
+
+    regvallist : s.sequence("RegValList", self.regvalpair,
+                doc="A list of registers and values"),
+
     conf: s.record("Conf", [
     s.field("card_id", self.id, 0,
             doc="Physical card identifier (in the same host)"),
@@ -28,16 +41,14 @@ local felixcardcontroller = {
     ], doc="Upstream FELIX CardController DAQ Module Configuration"),
 
     getregister: s.record("GetRegisterParams", [
-        s.field("reg_name", self.string, "",
-                doc="The name of a register")
+    s.field("reg_names", self.reglist,
+                doc="A list of registers")
     ], doc="Register access parameters"),
 
     setregister: s.record("SetRegisterParams", [
-        s.field("reg_name", self.string, "",
-                doc="The name of a register"),
-        s.field("reg_val", self.uint8, 0,
-                doc="The value of a register")
-    ], doc="")
+    s.field("reg_val_pairs", self.regvallist,
+                doc="A list of registers and values to set")
+    ], doc="Register access parameters")
 };
 
 moo.oschema.sort_select(felixcardcontroller, ns)

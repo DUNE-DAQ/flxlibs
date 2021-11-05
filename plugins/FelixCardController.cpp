@@ -62,15 +62,19 @@ void
 FelixCardController::get_reg(const data_t& args)
 {
   auto conf = args.get<felixcardcontroller::GetRegisterParams>();
-  auto reg_val = m_card_wrapper->get_register(conf.reg_name);
-  TLOG() << conf.reg_name << "        0x" << std::hex << reg_val;
+  for (auto reg_name : conf.reg_names) {
+    auto reg_val = m_card_wrapper->get_register(reg_name);
+    TLOG() << reg_name << "        0x" << std::hex << reg_val;
+  }
 }
 
 void
 FelixCardController::set_reg(const data_t& args)
 {
   auto conf = args.get<felixcardcontroller::SetRegisterParams>();
-  m_card_wrapper->set_register(conf.reg_name, conf.reg_val);
+  for (auto p : conf.reg_val_pairs) {
+    m_card_wrapper->set_register(p.reg_name, p.reg_val);
+  }
 }
 
 } // namespace flxlibs
