@@ -12,6 +12,7 @@ find_package(readout REQUIRED)
 find_package(felix REQUIRED)
 
 daq_codegen(felixcardreader.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
+daq_codegen(felixcardcontroller.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
 daq_codegen( *info.jsonnet DEP_PKGS opmonlib TEMPLATES opmonlib/InfoStructs.hpp.j2 opmonlib/InfoNljs.hpp.j2 )
 
 ##############################################################################
@@ -48,7 +49,8 @@ endif()
 
 ##############################################################################
 # Main library
-daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp LINK_LIBRARIES ${FELIX_DEPENDENCIES} ${DUNEDAQ_DEPENDENCIES})
+daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp CardControllerWrapper.cpp LINK_LIBRARIES ${FELIX_DEPENDENCIES} ${DUNEDAQ_DEPENDENCIES})
+
 
 if(WITH_FELIX_AS_PACKAGE)
   # All good
@@ -60,6 +62,7 @@ endif()
 ##############################################################################
 # Plugins
 daq_add_plugin(FelixCardReader duneDAQModule LINK_LIBRARIES flxlibs)
+daq_add_plugin(FelixCardController duneDAQModule LINK_LIBRARIES flxlibs)
 
 ##############################################################################
 # Integration tests

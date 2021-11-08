@@ -17,8 +17,8 @@
 
 // From STD
 #include <chrono>
-#include <iomanip>
 #include <memory>
+#include <string>
 
 /**
  * @brief TRACE debug levels used in this source file
