@@ -9,6 +9,7 @@
 #include "flxlibs/felixcardcontrollerinfo/InfoNljs.hpp"
 
 #include "FelixCardController.hpp"
+#include "FelixIssues.hpp"
 
 #include "logging/Logging.hpp"
 
@@ -41,6 +42,7 @@ FelixCardController::FelixCardController(const std::string& name)
   : DAQModule(name)
   , m_card_id(0)
   , m_logical_unit(0)
+  , m_is_aligned(false)
 {
   m_card_wrapper = std::make_unique<CardControllerWrapper>();
 
@@ -73,13 +75,20 @@ FelixCardController::get_info(opmonlib::InfoCollector& ci, int /*level*/)
   uint64_t number_channels = m_card_wrapper->get_register(BF_NUM_OF_CHANNELS); // NOLINT(build/unsigned)
 
   std::vector<int> stats(number_channels, 0);
+  size_t num_aligned = 0;
   auto index = m_logical_unit * number_channels;
   for (size_t i = 0; i < number_channels; ++i) {
     if (aligned & (1 << index)) {
       stats[i] = 1;
+      num_aligned++;
+    } else if (m_is_aligned) {
+      m_is_aligned = false;
+      ers::warning(ChannelAlignment(ERS_HERE, index));
     }
     index++;
   }
+
+  m_is_aligned = (num_aligned < number_channels ? false : true);
 
   info.channel00_alignment_status = stats[0];
   info.channel01_alignment_status = stats[1];
@@ -87,7 +96,6 @@ FelixCardController::get_info(opmonlib::InfoCollector& ci, int /*level*/)
   info.channel03_alignment_status = stats[3];
   info.channel04_alignment_status = stats[4];
   info.channel05_alignment_status = stats[5];
-
   ci.add(info);
 }
 
