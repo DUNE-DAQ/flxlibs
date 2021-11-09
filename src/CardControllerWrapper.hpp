@@ -25,21 +25,21 @@ class CardControllerWrapper
 {
 public:
   /**
- * @brief CardControllerWrapper Constructor
- */
- CardControllerWrapper();
- ~CardControllerWrapper();
- CardControllerWrapper(const CardControllerWrapper&) = delete;            ///< CardControllerWrapper is not copy-constructible
- CardControllerWrapper& operator=(const CardControllerWrapper&) = delete; ///< CardControllerWrapper is not copy-assignable
- CardControllerWrapper(CardControllerWrapper&&) = delete;                 ///< CardControllerWrapper is not move-constructible
- CardControllerWrapper& operator=(CardControllerWrapper&&) = delete;      ///< CardControllerWrapper is not move-assignable
+   * @brief CardControllerWrapper Constructor
+   */
+  CardControllerWrapper();
+  ~CardControllerWrapper();
+  CardControllerWrapper(const CardControllerWrapper&) = delete;            ///< Not copy-constructible
+  CardControllerWrapper& operator=(const CardControllerWrapper&) = delete; ///< Not copy-assignable
+  CardControllerWrapper(CardControllerWrapper&&) = delete;                 ///< Not move-constructible
+  CardControllerWrapper& operator=(CardControllerWrapper&&) = delete;      ///< Not move-assignable
 
- using data_t = nlohmann::json;
- void init(const data_t& args);
- void configure(const data_t& args);
+  using data_t = nlohmann::json;
+  void init(const data_t& args);
+  void configure(const data_t& args);
 
- uint64_t get_register(std::string key);             // NOLINT(build/unsigned)
- void set_register(std::string key, uint64_t value); // NOLINT(build/unsigned)
+  uint64_t get_register(std::string key);             // NOLINT(build/unsigned)
+  void set_register(std::string key, uint64_t value); // NOLINT(build/unsigned)
 
 private:
   // Types
@@ -62,6 +62,6 @@ private:
   std::mutex m_card_mutex;
 };
 
-}// namespace dunedaq::flxlibs
+} // namespace dunedaq::flxlibs
 
-#endif //FLXLIBS_SRC_CARDCONTROLLERWRAPPER_HPP_
+#endif // FLXLIBS_SRC_CARDCONTROLLERWRAPPER_HPP_

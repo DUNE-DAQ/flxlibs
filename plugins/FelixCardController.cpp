@@ -6,16 +6,18 @@
  * received with this code.
  */
 #include "flxlibs/felixcardcontroller/Nljs.hpp"
+#include "flxlibs/felixcardcontrollerinfo/InfoNljs.hpp"
 
 #include "FelixCardController.hpp"
 
 #include "logging/Logging.hpp"
 
-#include "regmap/regmap.h"
+#include <nlohmann/json.hpp>
 
 #include <iomanip>
 #include <memory>
 #include <string>
+#include <vector>
 
 /**
  * @brief Name used by TRACE TLOG calls from this source file
@@ -37,6 +39,8 @@ namespace flxlibs {
 
 FelixCardController::FelixCardController(const std::string& name)
   : DAQModule(name)
+  , m_card_id(0)
+  , m_logical_unit(0)
 {
   m_card_wrapper = std::make_unique<CardControllerWrapper>();
 
@@ -55,7 +59,36 @@ void
 FelixCardController::do_configure(const data_t& args)
 {
   m_cfg = args.get<felixcardcontroller::Conf>();
+  m_card_id = m_cfg.card_id;
+  m_logical_unit = m_cfg.logical_unit;
   m_card_wrapper->configure(args);
+}
+
+void
+FelixCardController::get_info(opmonlib::InfoCollector& ci, int /*level*/)
+{
+  felixcardcontrollerinfo::ChannelInfo info;
+
+  uint64_t aligned = m_card_wrapper->get_register(REG_GBT_ALIGNMENT_DONE);     // NOLINT(build/unsigned)
+  uint64_t number_channels = m_card_wrapper->get_register(BF_NUM_OF_CHANNELS); // NOLINT(build/unsigned)
+
+  std::vector<int> stats(number_channels, 0);
+  auto index = m_logical_unit * number_channels;
+  for (size_t i = 0; i < number_channels; ++i) {
+    if (aligned & (1 << index)) {
+      stats[i] = 1;
+    }
+    index++;
+  }
+
+  info.channel00_alignment_status = stats[0];
+  info.channel01_alignment_status = stats[1];
+  info.channel02_alignment_status = stats[2];
+  info.channel03_alignment_status = stats[3];
+  info.channel04_alignment_status = stats[4];
+  info.channel05_alignment_status = stats[5];
+
+  ci.add(info);
 }
 
 void

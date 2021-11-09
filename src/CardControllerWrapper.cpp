@@ -5,7 +5,7 @@
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
- // From Module
+// From Module
 #include "CardControllerWrapper.hpp"
 #include "FelixDefinitions.hpp"
 #include "FelixIssues.hpp"
@@ -33,14 +33,15 @@ namespace dunedaq {
 namespace flxlibs {
 
 CardControllerWrapper::CardControllerWrapper()
-: m_card_id(0)
-, m_logical_unit(0)
-, m_card_id_str("")
+  : m_card_id(0)
+  , m_logical_unit(0)
+  , m_card_id_str("")
 {}
 
 CardControllerWrapper::~CardControllerWrapper()
 {
-  TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << "CardControllerWrapper destructor called. First stop check, then closing card.";
+  TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS)
+    << "CardControllerWrapper destructor called. First stop check, then closing card.";
   close_card();
   TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << "CardControllerWrapper destroyed.";
 }
@@ -106,7 +107,7 @@ CardControllerWrapper::close_card()
   }
 }
 
-uint64_t                                                    // NOLINT(build/unsigned)
+uint64_t // NOLINT(build/unsigned)
 CardControllerWrapper::get_register(std::string key)
 {
   TLOG_DEBUG(TLVL_WORK_STEPS) << "Reading value of register " << key;
@@ -117,11 +118,11 @@ CardControllerWrapper::get_register(std::string key)
 }
 
 void
-CardControllerWrapper::set_register(std::string key, uint64_t value)  // NOLINT(build/unsigned)
+CardControllerWrapper::set_register(std::string key, uint64_t value) // NOLINT(build/unsigned)
 {
   TLOG_DEBUG(TLVL_WORK_STEPS) << "Setting value of register " << key;
   m_card_mutex.lock();
-  m_flx_card->cfg_set_reg(key.c_str(), value);  // handle invalid inputs
+  m_flx_card->cfg_set_reg(key.c_str(), value); // handle invalid inputs
   m_card_mutex.unlock();
 }
 
