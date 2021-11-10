@@ -15,10 +15,11 @@
 
 #include <nlohmann/json.hpp>
 
-#include <iomanip>
 #include <memory>
 #include <string>
+#include <iomanip>
 #include <vector>
+#include <bitset>
 
 /**
  * @brief Name used by TRACE TLOG calls from this source file
@@ -49,6 +50,7 @@ FelixCardController::FelixCardController(const std::string& name)
   register_command("conf", &FelixCardController::do_configure);
   register_command("getregister", &FelixCardController::get_reg);
   register_command("setregister", &FelixCardController::set_reg);
+  register_command("gthreset", &FelixCardController::gth_reset);
 }
 
 void
@@ -115,6 +117,19 @@ FelixCardController::set_reg(const data_t& args)
   auto conf = args.get<felixcardcontroller::SetRegisterParams>();
   for (auto p : conf.reg_val_pairs) {
     m_card_wrapper->set_register(p.reg_name, p.reg_val);
+  }
+}
+
+void
+FelixCardController::gth_reset(const data_t& args)
+{
+  if (m_logical_unit != 0)
+    return;
+
+  auto conf = args.get<felixcardcontroller::GTHResetParams>();
+  for (int i = 0; i < 6; ++i) {
+    if (conf.quads & 1 << i)
+      m_card_wrapper->gth_reset(i);
   }
 }
 

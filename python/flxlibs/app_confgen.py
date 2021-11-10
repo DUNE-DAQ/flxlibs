@@ -253,6 +253,17 @@ def generate(
 
     cmd_seq.append(set_reg_cmd)
 
+    gth_reset_cmd = mrccmd("gthreset", "RUNNING", "RUNNING", [
+        ("flxcardctrl_.*", flxcc.GTHResetParams(
+            quads=0
+        ))
+    ])
+
+    jstr = json.dumps(gth_reset_cmd.pod(), indent=4, sort_keys=True)
+    print("="*80+"\nGTH Reset\n\n", jstr)
+
+    cmd_seq.append(gth_reset_cmd)
+
     # Print them as json (to be improved/moved out)
     jstr = json.dumps([c.pod() for c in cmd_seq], indent=4, sort_keys=True)
     return jstr

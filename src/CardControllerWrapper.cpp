@@ -126,5 +126,14 @@ CardControllerWrapper::set_register(std::string key, uint64_t value) // NOLINT(b
   m_card_mutex.unlock();
 }
 
+void
+CardControllerWrapper::gth_reset(int quad = -1)
+{
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Resetting GTH quad " << quad;
+  m_card_mutex.lock();
+  m_flx_card->gth_rx_reset(quad);
+  m_card_mutex.unlock();
+}
+
 } // namespace flxlibs
 } // namespace dunedaq

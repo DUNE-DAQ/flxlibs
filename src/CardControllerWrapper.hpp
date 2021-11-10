@@ -40,6 +40,7 @@ public:
 
   uint64_t get_register(std::string key);             // NOLINT(build/unsigned)
   void set_register(std::string key, uint64_t value); // NOLINT(build/unsigned)
+  void gth_reset(int quad);
 
 private:
   // Types
