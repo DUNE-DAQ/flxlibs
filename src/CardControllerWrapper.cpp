@@ -112,7 +112,7 @@ CardControllerWrapper::get_register(std::string key)
 {
   TLOG_DEBUG(TLVL_WORK_STEPS) << "Reading value of register " << key;
   m_card_mutex.lock();
-  auto reg_val = m_flx_card->cfg_get_option(key.c_str(), false);
+  auto reg_val = m_flx_card->cfg_get_reg(key.c_str());
   m_card_mutex.unlock();
   return reg_val;
 }
@@ -122,7 +122,26 @@ CardControllerWrapper::set_register(std::string key, uint64_t value) // NOLINT(b
 {
   TLOG_DEBUG(TLVL_WORK_STEPS) << "Setting value of register " << key;
   m_card_mutex.lock();
-  m_flx_card->cfg_set_option(key.c_str(), value, false); // handle invalid inputs
+  m_flx_card->cfg_set_reg(key.c_str(), value);
+  m_card_mutex.unlock();
+}
+
+uint64_t // NOLINT(build/unsigned)
+CardControllerWrapper::get_bitfield(std::string key)
+{
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Reading value of bitfield " << key;
+  m_card_mutex.lock();
+  auto bf_val = m_flx_card->cfg_get_option(key.c_str(), false);
+  m_card_mutex.unlock();
+  return bf_val;
+}
+
+void
+CardControllerWrapper::set_bitfield(std::string key, uint64_t value) // NOLINT(build/unsigned)
+{
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Setting value of bitfield " << key;
+  m_card_mutex.lock();
+  m_flx_card->cfg_set_option(key.c_str(), value, false);
   m_card_mutex.unlock();
 }
 
