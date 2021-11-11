@@ -47,6 +47,9 @@ private:
   void get_info(opmonlib::InfoCollector& ci, int level);
   void get_reg(const data_t& args);
   void set_reg(const data_t& args);
+  void get_bf(const data_t& args);
+  void set_bf(const data_t& args);
+  void gth_reset(const data_t& args);
 
   // Configuration
   module_conf_t m_cfg;

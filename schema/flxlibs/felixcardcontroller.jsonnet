@@ -48,7 +48,22 @@ local felixcardcontroller = {
     setregister: s.record("SetRegisterParams", [
     s.field("reg_val_pairs", self.regvallist,
                 doc="A list of registers and values to set")
-    ], doc="Register access parameters")
+    ], doc="Register access parameters"),
+
+    getbitfield: s.record("GetBFParams", [
+    s.field("bf_names", self.reglist,
+                doc="A list of bitfields")
+    ], doc="Bitfield access parameters"),
+
+    setbitfield: s.record("SetBFParams", [
+    s.field("bf_val_pairs", self.regvallist,
+                doc="A list of bitfields and values to set")
+    ], doc="Bitfield access parameters"),
+
+    gthreset: s.record("GTHResetParams", [
+    s.field("quads", self.uint8, 0,
+                doc="Binary representation of which quads (0-5) to reset. Eg. 010000 to reset quad 4")
+    ], doc="GTH reciever reset parameters")
 };
 
 moo.oschema.sort_select(felixcardcontroller, ns)
