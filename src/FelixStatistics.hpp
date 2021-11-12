@@ -25,6 +25,9 @@ struct ParserStats
   counter_t error_chunk_ctr{ 0 };
   counter_t error_subchunk_ctr{ 0 };
   counter_t error_block_ctr{ 0 };
+  counter_t subchunk_crc_error_ctr{ 0 };
+  counter_t subchunk_trunc_error_ctr{ 0 };
+  counter_t subchunk_error_ctr{ 0 };
 };
 
 } // namespace dunedaq::flxlibs::stats
