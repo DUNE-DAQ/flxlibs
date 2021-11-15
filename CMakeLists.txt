@@ -8,7 +8,8 @@ daq_setup_environment()
 find_package(ers REQUIRED)
 find_package(appfwk REQUIRED)
 find_package(logging REQUIRED)
-find_package(readout REQUIRED)
+find_package(readoutlibs REQUIRED)
+find_package(fdreadoutlibs REQUIRED)
 find_package(felix REQUIRED)
 
 daq_codegen(felixcardreader.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
@@ -17,7 +18,7 @@ daq_codegen( *info.jsonnet DEP_PKGS opmonlib TEMPLATES opmonlib/InfoStructs.hpp.
 
 ##############################################################################
 # Dependency sets
-set(DUNEDAQ_DEPENDENCIES appfwk::appfwk readout::readout)
+set(DUNEDAQ_DEPENDENCIES appfwk::appfwk readoutlibs::readoutlibs fdreadoutlibs::fdreadoutlibs)
 
 # Provide override functionality for FELIX dependencies
 option(WITH_FELIX_AS_PACKAGE "FELIX externals as a dunedaq package" ON)

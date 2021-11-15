@@ -9,8 +9,8 @@ moo.otypes.load_types('cmdlib/cmd.jsonnet')
 moo.otypes.load_types('rcif/cmd.jsonnet')
 moo.otypes.load_types('appfwk/cmd.jsonnet')
 moo.otypes.load_types('appfwk/app.jsonnet')
-moo.otypes.load_types('readout/readoutconfig.jsonnet')
-moo.otypes.load_types('readout/datarecorder.jsonnet')
+moo.otypes.load_types('readoutlibs/readoutconfig.jsonnet')
+moo.otypes.load_types('readoutlibs/recorderconfig.jsonnet')
 moo.otypes.load_types('flxlibs/felixcardreader.jsonnet')
 moo.otypes.load_types('flxlibs/felixcardcontroller.jsonnet')
 
@@ -19,8 +19,8 @@ import dunedaq.cmdlib.cmd as basecmd # AddressedCmd,
 import dunedaq.rcif.cmd as rccmd # AddressedCmd, 
 import dunedaq.appfwk.app as app # AddressedCmd, 
 import dunedaq.appfwk.cmd as cmd # AddressedCmd, 
-import dunedaq.readout.readoutconfig as rconf 
-import dunedaq.readout.datarecorder as bfs
+import dunedaq.readoutlibs.readoutconfig as rconf 
+import dunedaq.readoutlibs.recorderconfig as bfs
 import dunedaq.flxlibs.felixcardreader as flxcr
 import dunedaq.flxlibs.felixcardcontroller as flxcc
 

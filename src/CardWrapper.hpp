@@ -11,7 +11,7 @@
 #include "flxlibs/felixcardreader/Nljs.hpp"
 #include "flxlibs/felixcardreader/Structs.hpp"
 
-#include "readout/utils/ReusableThread.hpp"
+#include "readoutlibs/utils/ReusableThread.hpp"
 
 #include "flxcard/FlxCard.h"
 #include "packetformat/block_format.hpp"
@@ -110,7 +110,7 @@ private:
   // Processor
   inline static const std::string m_dma_processor_name = "flx-dma";
   std::atomic<bool> m_run_lock;
-  readout::ReusableThread m_dma_processor;
+  readoutlibs::ReusableThread m_dma_processor;
   std::function<void(uint64_t)> m_handle_block_addr; // NOLINT
   bool m_block_addr_handler_available{ false };
   void process_DMA();

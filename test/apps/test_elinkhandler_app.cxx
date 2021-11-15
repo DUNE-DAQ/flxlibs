@@ -12,7 +12,7 @@
 #include "flxlibs/AvailableParserOperations.hpp"
 
 #include "logging/Logging.hpp"
-#include "readout/ReadoutTypes.hpp"
+#include "fdreadoutlibs/FDReadoutTypes.hpp"
 
 #include "packetformat/block_format.hpp"
 #include <nlohmann/json.hpp>
@@ -24,7 +24,7 @@
 #include <string>
 
 using namespace dunedaq::flxlibs;
-using namespace dunedaq::readout;
+using namespace dunedaq::fdreadoutlibs;
 
 int
 main(int /*argc*/, char** /*argv[]*/)
