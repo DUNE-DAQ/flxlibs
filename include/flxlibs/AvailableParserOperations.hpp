@@ -12,7 +12,7 @@
 #include "FelixIssues.hpp"
 
 #include "appfwk/DAQSink.hpp"
-#include "readout/ReadoutTypes.hpp"
+#include "fdreadoutlibs/FDReadoutTypes.hpp"
 
 #include "packetformat/block_format.hpp"
 
@@ -159,7 +159,7 @@ fixsizedChunkViaHeap(std::unique_ptr<appfwk::DAQSink<TargetStruct*>>& sink,
 }
 
 inline std::function<void(const felix::packetformat::chunk& chunk)>
-varsizedChunkIntoWrapper(std::unique_ptr<appfwk::DAQSink<readout::types::VariableSizePayloadWrapper>>& sink,
+varsizedChunkIntoWrapper(std::unique_ptr<appfwk::DAQSink<fdreadoutlibs::types::VariableSizePayloadWrapper>>& sink,
                          std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {
@@ -175,7 +175,7 @@ varsizedChunkIntoWrapper(std::unique_ptr<appfwk::DAQSink<readout::types::Variabl
         subchunk_data[i], subchunk_sizes[i], static_cast<void*>(payload), bytes_copied_chunk, chunk_length);
       bytes_copied_chunk += subchunk_sizes[i];
     }
-    readout::types::VariableSizePayloadWrapper payload_wrapper(chunk_length, payload);
+    fdreadoutlibs::types::VariableSizePayloadWrapper payload_wrapper(chunk_length, payload);
     try {
       sink->push(std::move(payload_wrapper), timeout);
     } catch (const dunedaq::appfwk::QueueTimeoutExpired& excpt) {
@@ -185,14 +185,14 @@ varsizedChunkIntoWrapper(std::unique_ptr<appfwk::DAQSink<readout::types::Variabl
 }
 
 inline std::function<void(const felix::packetformat::shortchunk& shortchunk)>
-varsizedShortchunkIntoWrapper(std::unique_ptr<appfwk::DAQSink<readout::types::VariableSizePayloadWrapper>>& sink,
+varsizedShortchunkIntoWrapper(std::unique_ptr<appfwk::DAQSink<fdreadoutlibs::types::VariableSizePayloadWrapper>>& sink,
                               std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::shortchunk& shortchunk) {
     auto shortchunk_length = shortchunk.length;
     char* payload = static_cast<char*>(malloc(shortchunk_length * sizeof(char)));
     std::memcpy(payload, shortchunk.data, shortchunk_length);
-    readout::types::VariableSizePayloadWrapper payload_wrapper(shortchunk_length, payload);
+    fdreadoutlibs::types::VariableSizePayloadWrapper payload_wrapper(shortchunk_length, payload);
     try {
       sink->push(std::move(payload_wrapper), timeout);
     } catch (const dunedaq::appfwk::QueueTimeoutExpired& excpt) {
