@@ -15,11 +15,11 @@
 
 #include <nlohmann/json.hpp>
 
+#include <bitset>
+#include <iomanip>
 #include <memory>
 #include <string>
-#include <iomanip>
 #include <vector>
-#include <bitset>
 
 /**
  * @brief Name used by TRACE TLOG calls from this source file
@@ -123,7 +123,7 @@ FelixCardController::set_reg(const data_t& args)
 }
 
 void
-FelixCardController::get_bf(const data_t &args)
+FelixCardController::get_bf(const data_t& args)
 {
   auto conf = args.get<felixcardcontroller::GetBFParams>();
   for (auto bf_name : conf.bf_names) {
@@ -132,7 +132,8 @@ FelixCardController::get_bf(const data_t &args)
   }
 }
 
-void FelixCardController::set_bf(const data_t &args)
+void
+FelixCardController::set_bf(const data_t& args)
 {
   auto conf = args.get<felixcardcontroller::SetBFParams>();
   for (auto p : conf.bf_val_pairs) {

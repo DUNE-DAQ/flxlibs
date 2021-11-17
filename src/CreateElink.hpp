@@ -33,9 +33,12 @@ createElinkModel(const std::string& target)
     // Get parser and sink
     auto& parser = elink_model->get_parser();
     auto& sink = elink_model->get_sink();
+    auto& error_sink = elink_model->get_error_sink();
 
     // Modify parser as needed...
     parser.process_chunk_func = parsers::fixsizedChunkInto<readout::types::WIB_SUPERCHUNK_STRUCT>(sink);
+    parser.process_chunk_with_error_func =
+      parsers::fixsizedChunkInto<readout::types::WIB_SUPERCHUNK_STRUCT>(error_sink);
     // parser.process_block_func = ...
 
     // Return with setup model

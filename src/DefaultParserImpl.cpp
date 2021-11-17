@@ -79,12 +79,15 @@ void
 DefaultParserImpl::subchunk_processed_with_error(const felix::packetformat::subchunk& subchunk)
 {
   process_subchunk_with_error_func(subchunk);
-  if (subchunk.crcerr_flag)
+  if (subchunk.crcerr_flag) {   // NOLINT(runtime/output_format)
     m_stats.subchunk_crc_error_ctr++;
-  if (subchunk.trunc_flag)
+  }
+  if (subchunk.trunc_flag) {
     m_stats.subchunk_trunc_error_ctr++;
-  if (subchunk.err_flag)
+  }
+  if (subchunk.err_flag) {
     m_stats.subchunk_error_ctr++;
+  }
   m_stats.error_subchunk_ctr++;
 }
 

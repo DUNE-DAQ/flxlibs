@@ -48,6 +48,7 @@ def generate(
     queue_bare_specs = [
             app.QueueSpec(inst="time_sync_q", kind='FollyMPMCQueue', capacity=100),
             app.QueueSpec(inst="data_fragments_q", kind='FollyMPMCQueue', capacity=100),
+            app.QueueSpec(inst="errored_chunks_q", kind='FollyMPMCQueue', capacity=100),
         ] + [
             app.QueueSpec(inst=f"data_requests_{idx}", kind='FollySPSCQueue', capacity=1000)
                 for idx in range(NUMBER_OF_DATA_PRODUCERS)
@@ -92,6 +93,8 @@ def generate(
     mod_specs.append(mspec("flxcard_0", "FelixCardReader", [
                     app.QueueInfo(name=f"output_{idx}", inst=f"{FRONTEND_TYPE}_link_{idx}", dir="output")
                         for idx in range(min(5, NUMBER_OF_DATA_PRODUCERS))
+                    ] + [
+                    app.QueueInfo(name="errored_chunks", inst="errored_chunks_q", dir="output")
                     ]))
     mod_specs.append(mspec("flxcardctrl_0", "FelixCardController", [
                     ]))
@@ -99,6 +102,8 @@ def generate(
         mod_specs.append(mspec("flxcard_1", "FelixCardReader", [
                         app.QueueInfo(name=f"output_{idx}", inst=f"{FRONTEND_TYPE}_link_{idx}", dir="output")
                             for idx in range(5, NUMBER_OF_DATA_PRODUCERS)
+                        ] + [
+                        app.QueueInfo(name="errored_chunks", inst="errored_chunks_q", dir="output")
                         ]))
         mod_specs.append(mspec("flxcardctrl_1", "FelixCardController", [
                         ]))
