@@ -73,9 +73,7 @@ fixsizedChunkInto(std::unique_ptr<appfwk::DAQSink<TargetStruct>>& sink,
 
     // Only dump to buffer if possible
     if (chunk.length() != target_size) {
-      // report? Add custom way of handling unexpected user payloads.
-      //   In this case -> not fixed size chunk -> chunk-to-userbuff not possible
-      // Can't throw, and can't print as it may flood output
+      ers::error(UnexpectedChunk(ERS_HERE, chunk.length()));
     } else {
       TargetStruct payload;
       uint32_t bytes_copied_chunk = 0; // NOLINT
