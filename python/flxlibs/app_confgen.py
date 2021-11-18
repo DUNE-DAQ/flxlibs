@@ -49,6 +49,7 @@ def generate(
             app.QueueSpec(inst="time_sync_q", kind='FollyMPMCQueue', capacity=100),
             app.QueueSpec(inst="data_fragments_q", kind='FollyMPMCQueue', capacity=100),
             app.QueueSpec(inst="errored_chunks_q", kind='FollyMPMCQueue', capacity=100),
+            app.QueueSpec(inst="errored_frames_q", kind="FollyMPMCQueue", capacity=10000),
         ] + [
             app.QueueSpec(inst=f"data_requests_{idx}", kind='FollySPSCQueue', capacity=1000)
                 for idx in range(NUMBER_OF_DATA_PRODUCERS)
@@ -73,7 +74,8 @@ def generate(
                             app.QueueInfo(name="timesync", inst="time_sync_q", dir="output"),
                             app.QueueInfo(name="requests", inst=f"data_requests_{idx}", dir="input"),
                             app.QueueInfo(name="fragments", inst="data_fragments_q", dir="output"),
-                            app.QueueInfo(name="raw_recording", inst=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="output")
+                            app.QueueInfo(name="raw_recording", inst=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="output"),
+                            app.QueueInfo(name="errored_frames", inst="errored_frames_q", dir="output"),
                             ]) for idx in range(NUMBER_OF_DATA_PRODUCERS)
         ] + [
                 mspec(f"data_recorder_{idx}", "DataRecorder", [
