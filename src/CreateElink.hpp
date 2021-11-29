@@ -37,8 +37,10 @@ createElinkModel(const std::string& target)
 
     // Modify parser as needed...
     parser.process_chunk_func = parsers::fixsizedChunkInto<fdreadoutlibs::types::WIB_SUPERCHUNK_STRUCT>(sink);
-    parser.process_chunk_with_error_func =
+    if (error_sink != nullptr) {
+      parser.process_chunk_with_error_func =
         parsers::fixsizedChunkInto<fdreadoutlibs::types::WIB_SUPERCHUNK_STRUCT>(error_sink);
+    }
     // parser.process_block_func = ...
 
     // Return with setup model
