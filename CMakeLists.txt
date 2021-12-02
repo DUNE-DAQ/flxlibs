@@ -11,6 +11,7 @@ find_package(logging REQUIRED)
 find_package(readoutlibs REQUIRED)
 find_package(fdreadoutlibs REQUIRED)
 find_package(felix REQUIRED)
+find_package(opmonlib REQUIRED)
 
 daq_codegen(felixcardreader.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
 daq_codegen(felixcardcontroller.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )

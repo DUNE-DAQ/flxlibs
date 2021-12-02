@@ -9,6 +9,7 @@ find_dependency(logging)
 find_dependency(readoutlibs)
 find_dependency(fdreadoutlibs)
 find_dependency(felix)
+find_dependency(opmonlib)
 
 if (EXISTS ${CMAKE_SOURCE_DIR}/@PROJECT_NAME@)
 
