@@ -24,6 +24,9 @@ info: s.record("ELinkInfo", [
     s.field("num_chunks_processed_with_error", self.uint8, 0, doc="Chunks processed with error"),
     s.field("num_subchunks_processed_with_error", self.uint8, 0, doc="Subchunks processed with error"),
     s.field("num_blocks_processed_with_error", self.uint8, 0, doc="Blocks processed with error"),
+    s.field("num_subchunk_crc_errors", self.uint8, 0, doc="Number of CRC errors"),
+    s.field("num_subchunk_trunc_errors", self.uint8, 0, doc="Number of truncation errors"),
+    s.field("num_subchunk_errors", self.uint8, 0, doc="Number of errors"),
     s.field("rate_blocks_processed", self.float8, 0.0, doc="Rate of processed blocks in KHz"),
     s.field("rate_chunks_processed", self.float8, 0.0, doc="Rate of processed chunks in KHz")
   ], doc="ELink information")

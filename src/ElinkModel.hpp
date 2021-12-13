@@ -10,6 +10,7 @@
 
 #include "ElinkConcept.hpp"
 
+#include "appfwk/DAQModuleHelper.hpp"
 #include "appfwk/DAQSink.hpp"
 #include "flxlibs/felixcardreaderinfo/InfoNljs.hpp"
 #include "logging/Logging.hpp"
@@ -52,11 +53,14 @@ public:
       TLOG_DEBUG(5) << "ElinkModel sink is already set in initialized!";
     } else {
       m_sink_queue = std::make_unique<sink_t>(sink_name);
+      m_error_sink_queue = std::make_unique<sink_t>("errored_chunks_q");
       m_sink_is_set = true;
     }
   }
 
   std::unique_ptr<sink_t>& get_sink() { return m_sink_queue; }
+
+  std::unique_ptr<sink_t>& get_error_sink() { return m_error_sink_queue; }
 
   void init(const data_t& /*args*/, const size_t block_queue_capacity)
   {
@@ -138,6 +142,9 @@ public:
     info.num_chunks_processed_with_error = stats.error_chunk_ctr.exchange(0);
     info.num_subchunks_processed_with_error = stats.error_subchunk_ctr.exchange(0);
     info.num_blocks_processed_with_error = stats.error_block_ctr.exchange(0);
+    info.num_subchunk_crc_errors = stats.subchunk_crc_error_ctr.exchange(0);
+    info.num_subchunk_trunc_errors = stats.subchunk_trunc_error_ctr.exchange(0);
+    info.num_subchunk_errors = stats.subchunk_error_ctr.exchange(0);
     info.rate_blocks_processed = info.num_blocks_processed / seconds / 1000.;
     info.rate_chunks_processed = info.num_chunks_processed / seconds / 1000.;
 
@@ -172,6 +179,7 @@ private:
   // Sink
   bool m_sink_is_set{ false };
   std::unique_ptr<sink_t> m_sink_queue;
+  std::unique_ptr<sink_t> m_error_sink_queue;
 
   // blocks to process
   UniqueBlockAddrQueue m_block_addr_queue;

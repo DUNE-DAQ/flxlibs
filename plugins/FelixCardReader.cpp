@@ -78,6 +78,8 @@ FelixCardReader::init(const data_t& args)
     if (qi.dir != "output") {
       // ers::error(InitializationError(ERS_HERE, "Only output queues are supported in this module!"));
       continue;
+    } else if (qi.inst == "errored_chunks_q") {
+      continue;
     } else {
       TLOG_DEBUG(TLVL_WORK_STEPS) << ": CardReader output queue is " << qi.inst;
       const char delim = '_';
