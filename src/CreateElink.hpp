@@ -73,8 +73,24 @@ createElinkModel(const std::string& target)
     parser.process_chunk_func = parsers::varsizedChunkIntoWrapper(sink);
     parser.process_shortchunk_func = parsers::varsizedShortchunkIntoWrapper(sink);
     return elink_model;
+ 
+  } else if (target.find("dummy") != std::string::npos) {
+    auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::VariableSizePayloadWrapper>>();
+    return elink_model;
+    
   }
-
+ 
+/*else if (target.find("raw_tp") != std::string::npos) {
+    // RAW_WIB_TRIGGERPRIMITIVE struct
+    auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::RAW_WIB_TRIGGERPRIMITIVE_STRUCT>>();
+    elink_model->set_sink(target);
+    auto& parser = elink_model->get_parser();
+    auto& sink = elink_model->get_sink();
+    parser.process_chunk_func = parsers::fixsizedChunkInto(sink);
+    parser.process_shortchunk_func = parsers::fixsizedChunkInto(sink);
+    return elink_model;
+  }
+*/
   return nullptr;
 }
 
