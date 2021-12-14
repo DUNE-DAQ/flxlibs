@@ -62,14 +62,27 @@ main(int /*argc*/, char** /*argv[]*/)
 
   // Modify a specific elink handler
   bool first = true;
+  int firstWIBframes = 0;
   auto& parser0 = elinks[0]->get_parser();
-  parser0.process_subchunk_with_error_func = [&](const felix::packetformat::subchunk& subchunk) {
-    // This specific implementation prints the first occurence of a subchunk with error on elink-0.
+  parser0.process_chunk_func = [&](const felix::packetformat::chunk& chunk) {
+    auto subchunk_data = chunk.subchunks();
+    auto subchunk_sizes = chunk.subchunk_lengths();
+    auto n_subchunks = chunk.subchunk_number();
+    types::WIB_SUPERCHUNK_STRUCT wss;
+    uint32_t bytes_copied_chunk = 0; // NOLINT 
+    for (unsigned i = 0; i < n_subchunks; i++) {
+      parsers::dump_to_buffer(
+        subchunk_data[i], subchunk_sizes[i], static_cast<void*>(&wss.data), bytes_copied_chunk, sizeof(types::WIB_SUPERCHUNK_STRUCT));
+      bytes_copied_chunk += subchunk_sizes[i];
+    }
+
     if (first) {
-      TLOG() << "First subchunk with error:"
-             << " Length=" << subchunk.length << " ErrFlag=" << subchunk.err_flag
-             << " TrunFlag=" << subchunk.trunc_flag;
-      first = false;
+      TLOG() << "Chunk with length: " << chunk.length(); 
+      TLOG() << "WIB frame timestamp: " << wss.get_first_timestamp();
+      ++firstWIBframes;
+      if (firstWIBframes > 100) {
+        first = false;
+      }
     }
   };
 
