@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(flxlibs VERSION 1.2.3)
+project(flxlibs VERSION 1.3.0)
 
 find_package(daq-cmake REQUIRED)
 
@@ -8,15 +8,17 @@ daq_setup_environment()
 find_package(ers REQUIRED)
 find_package(appfwk REQUIRED)
 find_package(logging REQUIRED)
-find_package(readout REQUIRED)
+find_package(readoutlibs REQUIRED)
+find_package(fdreadoutlibs REQUIRED)
 find_package(felix REQUIRED)
 
 daq_codegen(felixcardreader.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
+daq_codegen(felixcardcontroller.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
 daq_codegen( *info.jsonnet DEP_PKGS opmonlib TEMPLATES opmonlib/InfoStructs.hpp.j2 opmonlib/InfoNljs.hpp.j2 )
 
 ##############################################################################
 # Dependency sets
-set(DUNEDAQ_DEPENDENCIES appfwk::appfwk readout::readout)
+set(DUNEDAQ_DEPENDENCIES appfwk::appfwk readoutlibs::readoutlibs fdreadoutlibs::fdreadoutlibs)
 
 # Provide override functionality for FELIX dependencies
 option(WITH_FELIX_AS_PACKAGE "FELIX externals as a dunedaq package" ON)
@@ -48,7 +50,8 @@ endif()
 
 ##############################################################################
 # Main library
-daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp LINK_LIBRARIES ${FELIX_DEPENDENCIES} ${DUNEDAQ_DEPENDENCIES})
+daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp CardControllerWrapper.cpp LINK_LIBRARIES ${FELIX_DEPENDENCIES} ${DUNEDAQ_DEPENDENCIES})
+
 
 if(WITH_FELIX_AS_PACKAGE)
   # All good
@@ -60,6 +63,7 @@ endif()
 ##############################################################################
 # Plugins
 daq_add_plugin(FelixCardReader duneDAQModule LINK_LIBRARIES flxlibs)
+daq_add_plugin(FelixCardController duneDAQModule LINK_LIBRARIES flxlibs)
 
 ##############################################################################
 # Integration tests

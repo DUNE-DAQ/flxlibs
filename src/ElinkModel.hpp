@@ -13,7 +13,7 @@
 #include "appfwk/DAQSink.hpp"
 #include "flxlibs/felixcardreaderinfo/InfoNljs.hpp"
 #include "logging/Logging.hpp"
-#include "readout/utils/ReusableThread.hpp"
+#include "readoutlibs/utils/ReusableThread.hpp"
 
 #include <folly/ProducerConsumerQueue.h>
 #include <nlohmann/json.hpp>
@@ -178,7 +178,7 @@ private:
 
   // Processor
   inline static const std::string m_parser_thread_name = "elinkp";
-  readout::ReusableThread m_parser_thread;
+  readoutlibs::ReusableThread m_parser_thread;
   void process_elink()
   {
     while (m_run_marker.load()) {

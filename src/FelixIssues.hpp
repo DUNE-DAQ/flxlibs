@@ -22,6 +22,8 @@ ERS_DECLARE_ISSUE(flxlibs, ConfigurationError, " FELIX Configuration Error: " <<
 
 ERS_DECLARE_ISSUE(flxlibs, QueueTimeoutError, " FELIX queue timed out: " << queuename, ((std::string)queuename))
 
+ERS_DECLARE_ISSUE(flxlibs, ChannelAlignment, " Channel not aligned: " << channel, ((int)channel)) // NOLINT
+
 ERS_DECLARE_ISSUE(flxlibs,
                   ParserOperationQueuePushFailure,
                   " ParserOps couldn't push to queue! Failed chunk: " << chunk,
