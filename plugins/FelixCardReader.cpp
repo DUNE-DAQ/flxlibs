@@ -93,8 +93,8 @@ FelixCardReader::init(const data_t& args)
         ers::fatal(InitializationError(ERS_HERE, "Link ID could not be parsed on queue instance name! "));
       }
       auto link_offset = 0;
-      if (linkid >= 5) { // RS FIXME: super ugly... queue names should contain tag for exact elink.
-        link_offset = 5;
+      if (linkid >= 6) { // RS FIXME: super ugly... queue names should contain tag for exact elink.
+        link_offset = 6;
       }
       auto tag = (linkid - link_offset) * m_elink_multiplier;
       TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << target << " elink tag: " << tag;
