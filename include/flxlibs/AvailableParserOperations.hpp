@@ -156,6 +156,35 @@ fixsizedChunkViaHeap(std::unique_ptr<appfwk::DAQSink<TargetStruct*>>& sink,
   };
 }
 
+template<class TargetWithDatafield>
+inline std::function<void(const felix::packetformat::chunk&)>
+varsizedChunkIntoWithDatafield(std::unique_ptr<appfwk::DAQSink<TargetWithDatafield>>& sink,
+                               std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
+{
+  return [&](const felix::packetformat::chunk& chunk) {
+    auto subchunk_data = chunk.subchunks();
+    auto subchunk_sizes = chunk.subchunk_lengths();
+    auto n_subchunks = chunk.subchunk_number();
+    TargetWithDatafield twd;
+    twd.get_data().reserve(chunk.length());
+    uint32_t bytes_copied_chunk = 0;
+    for (unsigned i = 0; i< n_subchunks; ++i) {
+      dump_to_buffer(subchunk_data[i],
+                     subchunk_sizes[i],
+                     static_cast<void*>(twd.get_data().data()),
+                     bytes_copied_chunk,
+                     chunk.length());
+      bytes_copied_chunk += subchunk_sizes[i];
+    }
+    twd.set_data_size(bytes_copied_chunk);
+    try {
+      sink->push(std::move(twd), timeout);
+    } catch (const dunedaq::appfwk::QueueTimeoutExpired& excpt) {
+      // ers::error
+    }
+  };
+}
+
 inline std::function<void(const felix::packetformat::chunk& chunk)>
 varsizedChunkIntoWrapper(std::unique_ptr<appfwk::DAQSink<fdreadoutlibs::types::VariableSizePayloadWrapper>>& sink,
                          std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
@@ -193,6 +222,19 @@ varsizedShortchunkIntoWrapper(std::unique_ptr<appfwk::DAQSink<fdreadoutlibs::typ
     fdreadoutlibs::types::VariableSizePayloadWrapper payload_wrapper(shortchunk_length, payload);
     try {
       sink->push(std::move(payload_wrapper), timeout);
+    } catch (const dunedaq::appfwk::QueueTimeoutExpired& excpt) {
+      // ers
+    }
+  };
+}
+
+inline std::function<void(const felix::packetformat::chunk& chunk)>
+errorChunkIntoSink(std::unique_ptr<appfwk::DAQSink<felix::packetformat::chunk>>& sink,
+                   std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
+{
+  return [&](const felix::packetformat::chunk& chunk) {
+    try {
+      sink->push(chunk, timeout);
     } catch (const dunedaq::appfwk::QueueTimeoutExpired& excpt) {
       // ers
     }
