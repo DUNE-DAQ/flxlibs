@@ -38,8 +38,7 @@ createElinkModel(const std::string& target)
     // Modify parser as needed...
     parser.process_chunk_func = parsers::fixsizedChunkInto<fdreadoutlibs::types::WIB_SUPERCHUNK_STRUCT>(sink);
     if (error_sink != nullptr) {
-      parser.process_chunk_with_error_func =
-        parsers::fixsizedChunkInto<fdreadoutlibs::types::WIB_SUPERCHUNK_STRUCT>(error_sink);
+      parser.process_chunk_with_error_func = parsers::errorChunkIntoSink(error_sink);
     }
     // parser.process_block_func = ...
 
@@ -62,6 +61,14 @@ createElinkModel(const std::string& target)
     auto& parser = elink_model->get_parser();
     auto& sink = elink_model->get_sink();
     parser.process_chunk_func = parsers::fixsizedChunkInto<fdreadoutlibs::types::DAPHNE_SUPERCHUNK_STRUCT>(sink);
+    return elink_model;
+
+  } else if (target.find("raw_tp") != std::string::npos) {
+    auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::RAW_WIB_TRIGGERPRIMITIVE_STRUCT>>();
+    elink_model->set_sink(target);
+    auto& parser = elink_model->get_parser();
+    auto& sink = elink_model->get_sink();
+    parser.process_chunk_func = parsers::varsizedChunkIntoWithDatafield<fdreadoutlibs::types::RAW_WIB_TRIGGERPRIMITIVE_STRUCT>(sink);
     return elink_model;
 
   } else if (target.find("varsize") != std::string::npos) {
