@@ -56,7 +56,7 @@ public:
       TLOG_DEBUG(5) << "ElinkModel sink is already set in initialized!";
     } else {
       m_sink_queue = std::make_unique<sink_t>(sink_name);
-      m_error_sink_queue = std::make_unique<err_sink_t>("errored_chunks_q");
+      //m_error_sink_queue = std::make_unique<err_sink_t>("errored_chunks_q");
       m_sink_is_set = true;
     }
   }
