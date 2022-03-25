@@ -45,6 +45,7 @@ FelixCardReader::FelixCardReader(const std::string& name)
   , m_configured(false)
   , m_card_id(0)
   , m_logical_unit(0)
+  , m_links_enabled({0})
   , m_num_links(0)
   , m_block_size(0)
   , m_block_router(nullptr)
@@ -92,11 +93,11 @@ FelixCardReader::init(const data_t& args)
       } catch (const std::exception& ex) {
         ers::fatal(InitializationError(ERS_HERE, "Link ID could not be parsed on queue instance name! "));
       }
-      auto link_offset = 0;
-      if (linkid >= 5) { // RS FIXME: super ugly... queue names should contain tag for exact elink.
-        link_offset = 5;
-      }
-      auto tag = (linkid - link_offset) * m_elink_multiplier;
+      //auto link_offset = 0;
+      //if (linkid >= 5) { // RS FIXME: super ugly... queue names should contain tag for exact elink.
+      //  link_offset = 5;
+      //}
+      auto tag = linkid * m_elink_multiplier;
       TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << target << " elink tag: " << tag;
       m_elinks[tag] = createElinkModel(qi.inst);
       if (m_elinks[tag] == nullptr) {
@@ -141,14 +142,15 @@ FelixCardReader::do_configure(const data_t& args)
     m_cfg = args.get<felixcardreader::Conf>();
     m_card_id = m_cfg.card_id;
     m_logical_unit = m_cfg.logical_unit;
-    m_num_links = m_cfg.num_links;
+    m_links_enabled = m_cfg.links_enabled;
+    m_num_links = m_links_enabled.size();
     m_block_size = m_cfg.dma_block_size_kb * m_1kb_block_size;
     m_chunk_trailer_size = m_cfg.chunk_trailer_size;
     bool is_32b_trailer = false;
 
     // Config checks
     if (m_num_links != m_elinks.size()) {
-      ers::fatal(ElinkConfigurationInconsistency(ERS_HERE, m_num_links));
+      ers::fatal(ElinkConfigurationInconsistency(ERS_HERE, m_links_enabled.size()));
     }
     if (m_block_size % m_1kb_block_size != 0) {
       ers::fatal(BlockSizeConfigurationInconsistency(ERS_HERE, m_block_size));
@@ -159,14 +161,16 @@ FelixCardReader::do_configure(const data_t& args)
     }
 
     // Configure components
+    TLOG(TLVL_WORK_STEPS) << "Card ID: " << m_card_id;
     TLOG(TLVL_WORK_STEPS) << "Configuring components with Block size:" << m_block_size
                           << " & trailer size: " << m_chunk_trailer_size;
     m_card_wrapper->configure(args);
     for (unsigned lid = 0; lid < m_num_links; ++lid) {
-      auto tag = lid * m_elink_multiplier;
+      auto tag = m_links_enabled[lid] * m_elink_multiplier; // actual elink tag, runs from 0-320
+      auto index = tag + (m_logical_unit * 6 * m_elink_multiplier); // position in m_elinks array
       TLOG(TLVL_WORK_STEPS) << "Configuring ElinkHandler with elink tag: " << tag;
-      m_elinks[tag]->set_ids(m_card_id, m_logical_unit, lid, tag);
-      m_elinks[tag]->conf(args, m_block_size, is_32b_trailer);
+      m_elinks[index]->set_ids(m_card_id, m_logical_unit, m_links_enabled[lid], tag);
+      m_elinks[index]->conf(args, m_block_size, is_32b_trailer);
     }
 }
 
@@ -192,8 +196,9 @@ void
 FelixCardReader::get_info(opmonlib::InfoCollector& ci, int level)
 {
     for (unsigned lid = 0; lid < m_num_links; ++lid) {
-      auto tag = lid * m_elink_multiplier;
-      m_elinks[tag]->get_info(ci, level);
+      auto tag = m_links_enabled[lid] * m_elink_multiplier;
+      auto index = tag + (m_logical_unit * 6 * m_elink_multiplier);
+      m_elinks[index]->get_info(ci, level);
     }
 }
 

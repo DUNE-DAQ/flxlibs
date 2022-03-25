@@ -44,7 +44,7 @@ CardWrapper::CardWrapper()
   , m_interrupt_mode(false)
   , m_poll_time(0)
   , m_numa_id(0)
-  , m_num_links(0)
+  , m_links_enabled({0})
   , m_info_str("")
   , m_run_lock{ false }
   , m_dma_processor(0)
