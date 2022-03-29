@@ -94,16 +94,24 @@ FelixCardReader::init(const data_t& args)
         ers::fatal(InitializationError(ERS_HERE, "Link ID could not be parsed on queue instance name! "));
       }
       //auto link_offset = 0;
-      //if (linkid >= 5) { // RS FIXME: super ugly... queue names should contain tag for exact elink.
-      //  link_offset = 5;
+      //if (linkid >= 6) { // RS FIXME: super ugly... queue names should contain tag for exact elink.
+      //  link_offset = 6;
       //}
-      auto tag = linkid * m_elink_multiplier;
-      TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << target << " elink tag: " << tag;
-      m_elinks[tag] = createElinkModel(qi.inst);
-      if (m_elinks[tag] == nullptr) {
+      //auto tag = (linkid - link_offset) * m_elink_multiplier;
+      // auto tag = linkid * m_elink_multiplier;
+      // TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << target << " elink tag: " << tag;
+      // m_elinks[tag] = createElinkModel(qi.inst);
+      // if (m_elinks[tag] == nullptr) {
+      //   ers::fatal(InitializationError(ERS_HERE, "CreateElink failed to provide an appropriate model for queue!"));
+      // }
+      // m_elinks[tag]->init(args, m_block_queue_capacity);
+      //auto tag = linkid * m_elink_multiplier;
+      TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << target << " DLH number: " << linkid;
+      m_elinks[linkid] = createElinkModel(qi.inst);
+      if (m_elinks[linkid] == nullptr) {
         ers::fatal(InitializationError(ERS_HERE, "CreateElink failed to provide an appropriate model for queue!"));
       }
-      m_elinks[tag]->init(args, m_block_queue_capacity);
+      m_elinks[linkid]->init(args, m_block_queue_capacity);
     }
   }
 
@@ -148,6 +156,9 @@ FelixCardReader::do_configure(const data_t& args)
     m_chunk_trailer_size = m_cfg.chunk_trailer_size;
     bool is_32b_trailer = false;
 
+    TLOG(TLVL_BOOKKEEPING) << "Number of elinks specified in configuration: " << m_links_enabled.size();
+    TLOG(TLVL_BOOKKEEPING) << "Number of data link handlers: " << m_elinks.size();
+
     // Config checks
     if (m_num_links != m_elinks.size()) {
       ers::fatal(ElinkConfigurationInconsistency(ERS_HERE, m_links_enabled.size()));
@@ -165,12 +176,26 @@ FelixCardReader::do_configure(const data_t& args)
     TLOG(TLVL_WORK_STEPS) << "Configuring components with Block size:" << m_block_size
                           << " & trailer size: " << m_chunk_trailer_size;
     m_card_wrapper->configure(args);
-    for (unsigned lid = 0; lid < m_num_links; ++lid) {
-      auto tag = m_links_enabled[lid] * m_elink_multiplier; // actual elink tag, runs from 0-320
-      auto index = tag + (m_logical_unit * 6 * m_elink_multiplier); // position in m_elinks array
-      TLOG(TLVL_WORK_STEPS) << "Configuring ElinkHandler with elink tag: " << tag;
-      m_elinks[index]->set_ids(m_card_id, m_logical_unit, m_links_enabled[lid], tag);
-      m_elinks[index]->conf(args, m_block_size, is_32b_trailer);
+    // for (unsigned lid = 0; lid < m_num_links; ++lid) {
+    //   auto tag = m_links_enabled[lid] * m_elink_multiplier; // actual elink tag, runs from 0-320
+    //   auto index = tag + (m_logical_unit * 6 * m_elink_multiplier); // position in m_elinks array
+    //   TLOG(TLVL_WORK_STEPS) << "Configuring ElinkHandler with elink tag: " << tag;
+    //   m_elinks[index]->set_ids(m_card_id, m_logical_unit, m_links_enabled[lid], index);
+    //   m_elinks[index]->conf(args, m_block_size, is_32b_trailer);
+    // }
+    // get linkids defined by queues
+    std::vector<int> linkids;
+    for(auto& [id, elink] : m_elinks) {
+      linkids.push_back(id);
+    }
+    // loop through all elinkmodels, change the linkids to link tags and configure
+    for (unsigned i = 0; i < m_num_links; ++i) {
+      auto elink = m_elinks.extract(linkids[i]);
+      auto tag = m_links_enabled[i] * m_elink_multiplier;
+      elink.key() = tag;
+      m_elinks.insert(std::move(elink));
+      m_elinks[tag]->set_ids(m_card_id, m_logical_unit, m_links_enabled[i], tag);
+      m_elinks[tag]->conf(args, m_block_size, is_32b_trailer);
     }
 }
 
@@ -197,8 +222,7 @@ FelixCardReader::get_info(opmonlib::InfoCollector& ci, int level)
 {
     for (unsigned lid = 0; lid < m_num_links; ++lid) {
       auto tag = m_links_enabled[lid] * m_elink_multiplier;
-      auto index = tag + (m_logical_unit * 6 * m_elink_multiplier);
-      m_elinks[index]->get_info(ci, level);
+      m_elinks[tag]->get_info(ci, level);
     }
 }
 
