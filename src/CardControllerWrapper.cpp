@@ -33,9 +33,6 @@ namespace dunedaq {
 namespace flxlibs {
 
 CardControllerWrapper::CardControllerWrapper()
-  : m_card_id(0)
-  , m_logical_unit(0)
-  , m_card_id_str("")
 {}
 
 CardControllerWrapper::~CardControllerWrapper()
@@ -63,17 +60,11 @@ CardControllerWrapper::configure(const data_t& args)
   } else {
     // Load config
     m_cfg = args.get<felixcardcontroller::Conf>();
-    m_card_id = m_cfg.card_id;
-    m_logical_unit = m_cfg.logical_unit;
-
-    std::ostringstream cardoss;
-    cardoss << "[id:" << std::to_string(m_card_id) << " slr:" << std::to_string(m_logical_unit) << "]";
-    m_card_id_str = cardoss.str();
-    TLOG_DEBUG(TLVL_WORK_STEPS) << "Configuring CardControllerWrapper of card " << m_card_id_str;
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "Configuring CardControllerWrapper of card " << m_cfg.card_id;
     // Open card
     open_card();
-    TLOG_DEBUG(TLVL_WORK_STEPS) << "Card[" << m_card_id_str << "] opened.";
-    TLOG_DEBUG(TLVL_WORK_STEPS) << m_card_id_str << "] is configured for datataking.";
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "Card[" << m_cfg.card_id << "] opened.";
+    TLOG_DEBUG(TLVL_WORK_STEPS) << m_cfg.card_id << "] is configured for datataking.";
     m_configured = true;
   }
 }
@@ -81,11 +72,10 @@ CardControllerWrapper::configure(const data_t& args)
 void
 CardControllerWrapper::open_card()
 {
-  TLOG_DEBUG(TLVL_WORK_STEPS) << "Opening FELIX card " << m_card_id_str;
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Opening FELIX card " << m_cfg.card_id;
   try {
     m_card_mutex.lock();
-    auto absolute_card_id = m_card_id + m_logical_unit;
-    m_flx_card->card_open(static_cast<int>(absolute_card_id), LOCK_NONE); // FlxCard.h
+    m_flx_card->card_open(static_cast<int>(m_cfg.card_id), LOCK_NONE); // FlxCard.h
     m_card_mutex.unlock();
   } catch (FlxException& ex) {
     ers::error(flxlibs::CardError(ERS_HERE, ex.what()));
@@ -96,7 +86,7 @@ CardControllerWrapper::open_card()
 void
 CardControllerWrapper::close_card()
 {
-  TLOG_DEBUG(TLVL_WORK_STEPS) << "Closing FELIX card " << m_card_id_str;
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Closing FELIX card " << m_cfg.card_id;
   try {
     m_card_mutex.lock();
     m_flx_card->card_close();
@@ -146,11 +136,13 @@ CardControllerWrapper::set_bitfield(std::string key, uint64_t value) // NOLINT(b
 }
 
 void
-CardControllerWrapper::gth_reset(int quad = -1)
+CardControllerWrapper::gth_reset()
 {
-  TLOG_DEBUG(TLVL_WORK_STEPS) << "Resetting GTH quad " << quad;
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Resetting GTH";
   m_card_mutex.lock();
-  m_flx_card->gth_rx_reset(quad);
+  for (auto i=0 ; i< 6; ++i) {
+      m_flx_card->gth_rx_reset(i);
+  }    
   m_card_mutex.unlock();
 }
 

@@ -6,11 +6,11 @@ local s = moo.oschema.schema(ns);
 
 // Object structure
 local felixcardcontroller = {
-    count  : s.number("Count", "u4",
-                      doc="Count of things"),
+    boolean : s.boolean("boolean",
+                      doc="A boolean"),
 
-    id : s.number("Identifier", "i4",
-                  doc="An ID of a thingy"),
+    uint4  : s.number("uint4", "u4",
+                      doc="An unsigned of 4 bytes"),
 
     uint8 : s.number("uint8", "u8",
                       doc="An unsigned of 8 bytes"),
@@ -31,39 +31,53 @@ local felixcardcontroller = {
     regvallist : s.sequence("RegValList", self.regvalpair,
                 doc="A list of registers and values"),
 
+    link : s.record("Link", [
+    s.field("link_id", self.uint4, doc="Link identifier"),
+    s.field("enabled", self.boolean, doc="Indicate whether the link is enabled"),
+    s.field("dma_desc", self.uint8, doc="DMA channel"),
+    s.field("superchunk_factor", self.uint4, doc="Superchunk factor")
+    ], doc=""),
+
+    links : s.sequence("LinksList", self.link,
+                doc="A list of links"),
+ 
+    logical_unit: s.record("LogicalUnit", [
+    s.field("log_unit_id", self.uint4, doc="Logical unit identifier"),
+    s.field("links", self.links, doc="List of links in the logical unit"),
+    ], doc=""),
+    
+    logical_units : s.sequence("LogicalUnitList", self.logical_unit,
+                doc="A list of logical units"),
+
     conf: s.record("Conf", [
-    s.field("card_id", self.id, 0,
+    s.field("card_id", self.uint4, 0,
             doc="Physical card identifier (in the same host)"),
 
-    s.field("logical_unit", self.count, 0,
-            doc="Superlogic region of selected card"),
+    s.field("logical_units", self.logical_units,
+            doc="Superlogic regions of selected card"),
 
     ], doc="Upstream FELIX CardController DAQ Module Configuration"),
 
-    getregister: s.record("GetRegisterParams", [
+    getregister: s.record("GetRegisters", [
     s.field("reg_names", self.reglist,
                 doc="A list of registers")
     ], doc="Register access parameters"),
 
-    setregister: s.record("SetRegisterParams", [
+    setregister: s.record("SetRegisters", [
     s.field("reg_val_pairs", self.regvallist,
                 doc="A list of registers and values to set")
     ], doc="Register access parameters"),
 
-    getbitfield: s.record("GetBFParams", [
+    getbitfield: s.record("GetBFs", [
     s.field("bf_names", self.reglist,
                 doc="A list of bitfields")
     ], doc="Bitfield access parameters"),
 
-    setbitfield: s.record("SetBFParams", [
+    setbitfield: s.record("SetBFs", [
     s.field("bf_val_pairs", self.regvallist,
                 doc="A list of bitfields and values to set")
     ], doc="Bitfield access parameters"),
 
-    gthreset: s.record("GTHResetParams", [
-    s.field("quads", self.uint8, 0,
-                doc="Binary representation of which quads (0-5) to reset. Eg. 010000 to reset quad 4")
-    ], doc="GTH reciever reset parameters")
 };
 
 moo.oschema.sort_select(felixcardcontroller, ns)

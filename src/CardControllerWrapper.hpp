@@ -42,7 +42,7 @@ public:
   void set_register(std::string key, uint64_t value); // NOLINT(build/unsigned)
   uint64_t get_bitfield(std::string key);             // NOLINT(build/unsigned)
   void set_bitfield(std::string key, uint64_t value); // NOLINT(build/unsigned)
-  void gth_reset(int quad);
+  void gth_reset();
 
 private:
   // Types
@@ -55,9 +55,6 @@ private:
   // Configuration and internals
   module_conf_t m_cfg;
   bool m_configured{ false };
-  uint8_t m_card_id;      // NOLINT
-  uint8_t m_logical_unit; // NOLINT
-  std::string m_card_id_str;
 
   // Card object
   using UniqueFlxCard = std::unique_ptr<FlxCard>;

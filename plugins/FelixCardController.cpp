@@ -41,8 +41,6 @@ namespace flxlibs {
 
 FelixCardController::FelixCardController(const std::string& name)
   : DAQModule(name)
-  , m_card_id(0)
-  , m_logical_unit(0)
   , m_is_aligned(false)
 {
   m_card_wrapper = std::make_unique<CardControllerWrapper>();
@@ -65,14 +63,13 @@ void
 FelixCardController::do_configure(const data_t& args)
 {
   m_cfg = args.get<felixcardcontroller::Conf>();
-  m_card_id = m_cfg.card_id;
-  m_logical_unit = m_cfg.logical_unit;
   m_card_wrapper->configure(args);
 }
 
 void
 FelixCardController::get_info(opmonlib::InfoCollector& ci, int /*level*/)
 {
+  //GLM: FIXME! Loop over all logical units and over all enabled channels using the m_cfg information
   felixcardcontrollerinfo::ChannelInfo info;
 
   uint64_t aligned = m_card_wrapper->get_register(REG_GBT_ALIGNMENT_DONE);     // NOLINT(build/unsigned)
@@ -80,7 +77,8 @@ FelixCardController::get_info(opmonlib::InfoCollector& ci, int /*level*/)
 
   std::vector<int> stats(number_channels, 0);
   size_t num_aligned = 0;
-  auto index = m_logical_unit * number_channels;
+  //GLM: FIXME auto index = m_logical_unit * number_channels;
+  auto index = number_channels;
   for (size_t i = 0; i < number_channels; ++i) {
     if (aligned & (1 << index)) {
       stats[i] = 1;
@@ -106,7 +104,7 @@ FelixCardController::get_info(opmonlib::InfoCollector& ci, int /*level*/)
 void
 FelixCardController::get_reg(const data_t& args)
 {
-  auto conf = args.get<felixcardcontroller::GetRegisterParams>();
+  auto conf = args.get<felixcardcontroller::GetRegisters>();
   for (auto reg_name : conf.reg_names) {
     auto reg_val = m_card_wrapper->get_register(reg_name);
     TLOG() << reg_name << "        0x" << std::hex << reg_val;
@@ -116,7 +114,7 @@ FelixCardController::get_reg(const data_t& args)
 void
 FelixCardController::set_reg(const data_t& args)
 {
-  auto conf = args.get<felixcardcontroller::SetRegisterParams>();
+  auto conf = args.get<felixcardcontroller::SetRegisters>();
   for (auto p : conf.reg_val_pairs) {
     m_card_wrapper->set_register(p.reg_name, p.reg_val);
   }
@@ -125,7 +123,7 @@ FelixCardController::set_reg(const data_t& args)
 void
 FelixCardController::get_bf(const data_t& args)
 {
-  auto conf = args.get<felixcardcontroller::GetBFParams>();
+  auto conf = args.get<felixcardcontroller::GetBFs>();
   for (auto bf_name : conf.bf_names) {
     auto bf_val = m_card_wrapper->get_bitfield(bf_name);
     TLOG() << bf_name << "        0x" << std::hex << bf_val;
@@ -135,23 +133,16 @@ FelixCardController::get_bf(const data_t& args)
 void
 FelixCardController::set_bf(const data_t& args)
 {
-  auto conf = args.get<felixcardcontroller::SetBFParams>();
+  auto conf = args.get<felixcardcontroller::SetBFs>();
   for (auto p : conf.bf_val_pairs) {
     m_card_wrapper->set_bitfield(p.reg_name, p.reg_val);
   }
 }
 
 void
-FelixCardController::gth_reset(const data_t& args)
+FelixCardController::gth_reset(const data_t& /*args*/)
 {
-  if (m_logical_unit != 0)
-    return;
-
-  auto conf = args.get<felixcardcontroller::GTHResetParams>();
-  for (int i = 0; i < 6; ++i) {
-    if (conf.quads & 1 << i)
-      m_card_wrapper->gth_reset(i);
-  }
+  m_card_wrapper->gth_reset();
 }
 
 } // namespace flxlibs
