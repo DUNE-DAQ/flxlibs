@@ -93,19 +93,6 @@ FelixCardReader::init(const data_t& args)
       } catch (const std::exception& ex) {
         ers::fatal(InitializationError(ERS_HERE, "Link ID could not be parsed on queue instance name! "));
       }
-      //auto link_offset = 0;
-      //if (linkid >= 6) { // RS FIXME: super ugly... queue names should contain tag for exact elink.
-      //  link_offset = 6;
-      //}
-      //auto tag = (linkid - link_offset) * m_elink_multiplier;
-      // auto tag = linkid * m_elink_multiplier;
-      // TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << target << " elink tag: " << tag;
-      // m_elinks[tag] = createElinkModel(qi.inst);
-      // if (m_elinks[tag] == nullptr) {
-      //   ers::fatal(InitializationError(ERS_HERE, "CreateElink failed to provide an appropriate model for queue!"));
-      // }
-      // m_elinks[tag]->init(args, m_block_queue_capacity);
-      //auto tag = linkid * m_elink_multiplier;
       TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << target << " DLH number: " << linkid;
       m_elinks[linkid] = createElinkModel(qi.inst);
       if (m_elinks[linkid] == nullptr) {
@@ -176,13 +163,6 @@ FelixCardReader::do_configure(const data_t& args)
     TLOG(TLVL_WORK_STEPS) << "Configuring components with Block size:" << m_block_size
                           << " & trailer size: " << m_chunk_trailer_size;
     m_card_wrapper->configure(args);
-    // for (unsigned lid = 0; lid < m_num_links; ++lid) {
-    //   auto tag = m_links_enabled[lid] * m_elink_multiplier; // actual elink tag, runs from 0-320
-    //   auto index = tag + (m_logical_unit * 6 * m_elink_multiplier); // position in m_elinks array
-    //   TLOG(TLVL_WORK_STEPS) << "Configuring ElinkHandler with elink tag: " << tag;
-    //   m_elinks[index]->set_ids(m_card_id, m_logical_unit, m_links_enabled[lid], index);
-    //   m_elinks[index]->conf(args, m_block_size, is_32b_trailer);
-    // }
     // get linkids defined by queues
     std::vector<int> linkids;
     for(auto& [id, elink] : m_elinks) {
