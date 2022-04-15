@@ -33,7 +33,7 @@ import re
 # Time to waait on pop()
 QUEUE_POP_WAIT_MS=100;
 # local clock speed Hz
-CLOCK_SPEED_HZ = 49996800;
+CLOCK_SPEED_HZ = 50000000;
 
 def parse_linkmask(string, n_links):
     # check if format is correct
@@ -53,17 +53,23 @@ def parse_linkmask(string, n_links):
                             mask.extend(r)
                         else:
                             mask.extend(range(r[0], r[-1]+1))
-                    masks.append(mask)
+                    masks.append(sorted(mask))
                 else:
                     masks.append([])
             if len(masks[0]) + len(masks[1]) == n_links:
                 return masks
             else:
-                raise Exception(f"Number of links defined in link masks ({len(masks[0]) + len(masks[1])}) is not equal to the number of data+tp producers: {n_links}")
+                raise Exception(f"Number of links defined in link masks ({len(masks[0])} + {len(masks[1])}) is not equal to the number of data+tp producers: {n_links}")
         else:
             raise Exception("Need to define link mask for both SLR's using \":\" e.g. \"slr1 : slr2\"")
     else:
         raise Exception("No letters allowed in link mask")
+
+def CountTPLink(link_mask):
+    if 5 in link_mask:
+        return 1
+    else:
+        return 0
 
 def generate(
         FRONTEND_TYPE='wib',
@@ -77,6 +83,11 @@ def generate(
         DATA_FILE="./frames.bin"
     ):
 
+    link_mask = parse_linkmask(FELIX_ELINK_MASK, NUMBER_OF_DATA_PRODUCERS+NUMBER_OF_TP_PRODUCERS)
+    n_links_0 = len(link_mask[0])
+    n_links_1 = len(link_mask[1])
+    n_tp_link_0 = CountTPLink(link_mask[0])
+    n_tp_link_1 = CountTPLink(link_mask[1])
     # Define modules and queues
     queue_bare_specs = [
             app.QueueSpec(inst="time_sync_q", kind='FollyMPMCQueue', capacity=100),
@@ -85,54 +96,89 @@ def generate(
             app.QueueSpec(inst="errored_frames_q", kind="FollyMPMCQueue", capacity=10000),
         ] + [
             app.QueueSpec(inst=f"data_requests_{idx}", kind='FollySPSCQueue', capacity=1000)
-                for idx in range(NUMBER_OF_DATA_PRODUCERS+NUMBER_OF_TP_PRODUCERS)
+                for idx in range(min(5, n_links_0-n_tp_link_0))
+        ] + [
+            app.QueueSpec(inst=f"data_requests_{idx}", kind='FollySPSCQueue', capacity=1000)
+                for idx in range(6, 6+n_links_1-n_tp_link_1)
+        ] + [
+            app.QueueSpec(inst=f"data_requests_{idx}", kind='FollySPSCQueue', capacity=1000)
+                for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]
+        ] + [
+            app.QueueSpec(inst=f"data_requests_{idx}", kind='FollySPSCQueue', capacity=1000)
+                for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]
         ] + [
             app.QueueSpec(inst=f"{FRONTEND_TYPE}_link_{idx}", kind='FollySPSCQueue', capacity=100000)
-                for idx in range(NUMBER_OF_DATA_PRODUCERS)
+                for idx in range(min(5, n_links_0-n_tp_link_0))
+        ] + [
+            app.QueueSpec(inst=f"{FRONTEND_TYPE}_link_{idx}", kind='FollySPSCQueue', capacity=100000)
+                for idx in range(6, 6+n_links_1-n_tp_link_1)
         ] + [
             app.QueueSpec(inst=f"raw_tp_link_{idx}", kind='FollySPSCQueue', capacity=100000)
-                for idx in range(NUMBER_OF_DATA_PRODUCERS, NUMBER_OF_DATA_PRODUCERS+NUMBER_OF_TP_PRODUCERS)
+                for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]
+        ] + [
+            app.QueueSpec(inst=f"raw_tp_link_{idx}", kind='FollySPSCQueue', capacity=100000)
+                for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]
         ] + [
             app.QueueSpec(inst=f"tp_fake_link_{idx}", kind='FollySPSCQueue', capacity=100000)
-                for idx in range(NUMBER_OF_DATA_PRODUCERS, NUMBER_OF_DATA_PRODUCERS+NUMBER_OF_TP_PRODUCERS) 
+                for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]
+        ] + [
+            app.QueueSpec(inst=f"tp_fake_link_{idx}", kind='FollySPSCQueue', capacity=100000)
+                for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]
         ] + [
             app.QueueSpec(inst=f"{FRONTEND_TYPE}_recording_link_{idx}", kind='FollySPSCQueue', capacity=100000)
-                for idx in range(NUMBER_OF_DATA_PRODUCERS)
+                for idx in range(min(5, n_links_0-n_tp_link_0))
         ] + [
-            app.QueueSpec(inst=f"raw_tp_recording_link_{idx}", kind='FollySPSCQueue', capacity=100000)
-                for idx in range(NUMBER_OF_DATA_PRODUCERS, NUMBER_OF_DATA_PRODUCERS+NUMBER_OF_TP_PRODUCERS)
+            app.QueueSpec(inst=f"{FRONTEND_TYPE}_recording_link_{idx}", kind='FollySPSCQueue', capacity=100000)
+                for idx in range(6, 6+n_links_1-n_tp_link_1)
         ]
 
     # Only needed to reproduce the same order as when using jsonnet
     queue_specs = app.QueueSpecs(sorted(queue_bare_specs, key=lambda x: x.inst))
 
+    #! omit DataRecorder for TP's for now
     mod_specs = [
-        mspec(f"datahandler_{idx}", "DataLinkHandler", [
+                mspec(f"datahandler_{idx}", "DataLinkHandler", [
                             app.QueueInfo(name="raw_input", inst=f"{FRONTEND_TYPE}_link_{idx}", dir="input"),
                             app.QueueInfo(name="timesync", inst="time_sync_q", dir="output"),
                             app.QueueInfo(name="requests", inst=f"data_requests_{idx}", dir="input"),
-                            app.QueueInfo(name="fragments", inst="data_fragments_q", dir="output"),
+                            app.QueueInfo(name="fragment_queue", inst="data_fragments_q", dir="output"),
                             app.QueueInfo(name="raw_recording", inst=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="output"),
                             app.QueueInfo(name="errored_frames", inst="errored_frames_q", dir="output"),
-                            ]) for idx in range(NUMBER_OF_DATA_PRODUCERS)
+                            ]) for idx in range(min(5, n_links_0-n_tp_link_0))
         ] + [
-        mspec(f"datahandler_{idx}", "DataLinkHandler", [
+                mspec(f"datahandler_{idx}", "DataLinkHandler", [
+                            app.QueueInfo(name="raw_input", inst=f"{FRONTEND_TYPE}_link_{idx}", dir="input"),
+                            app.QueueInfo(name="timesync", inst="time_sync_q", dir="output"),
+                            app.QueueInfo(name="requests", inst=f"data_requests_{idx}", dir="input"),
+                            app.QueueInfo(name="fragment_queue", inst="data_fragments_q", dir="output"),
+                            app.QueueInfo(name="raw_recording", inst=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="output"),
+                            app.QueueInfo(name="errored_frames", inst="errored_frames_q", dir="output"),
+                            ]) for idx in range(6, 6+n_links_1-n_tp_link_1)
+        ] + [
+                mspec(f"datahandler_{idx}", "DataLinkHandler", [
                             app.QueueInfo(name="raw_input", inst=f"raw_tp_link_{idx}", dir="input"),
                             app.QueueInfo(name="timesync", inst="time_sync_q", dir="output"),
                             app.QueueInfo(name="requests", inst=f"data_requests_{idx}", dir="input"),
-                            app.QueueInfo(name="fragments", inst="data_fragments_q", dir="output"),
-                            app.QueueInfo(name="raw_recording", inst=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="output"),
+                            app.QueueInfo(name="fragment_queue", inst="data_fragments_q", dir="output"),
                             app.QueueInfo(name="errored_frames", inst="errored_frames_q", dir="output"),
-                            ]) for idx in range(NUMBER_OF_DATA_PRODUCERS, NUMBER_OF_DATA_PRODUCERS+NUMBER_OF_TP_PRODUCERS)
+                            ]) for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]
+        ] + [
+                mspec(f"datahandler_{idx}", "DataLinkHandler", [
+                            app.QueueInfo(name="raw_input", inst=f"raw_tp_link_{idx}", dir="input"),
+                            app.QueueInfo(name="timesync", inst="time_sync_q", dir="output"),
+                            app.QueueInfo(name="requests", inst=f"data_requests_{idx}", dir="input"),
+                            app.QueueInfo(name="fragment_queue", inst="data_fragments_q", dir="output"),
+                            app.QueueInfo(name="errored_frames", inst="errored_frames_q", dir="output"),
+                            ]) for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]
         ] + [
                 mspec(f"data_recorder_{idx}", "DataRecorder", [
                             app.QueueInfo(name="raw_recording", inst=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="input")
-                            ]) for idx in range(NUMBER_OF_DATA_PRODUCERS)
+                            ]) for idx in range(min(5, n_links_0-n_tp_link_0))
         ] + [
                 mspec(f"data_recorder_{idx}", "DataRecorder", [
-                            app.QueueInfo(name="raw_recording", inst=f"raw_tp_recording_link_{idx}", dir="input")
-                            ]) for idx in range(NUMBER_OF_DATA_PRODUCERS, NUMBER_OF_DATA_PRODUCERS+NUMBER_OF_TP_PRODUCERS)
-        ] + [
+                            app.QueueInfo(name="raw_recording", inst=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="input")
+                            ]) for idx in range(6, 6+n_links_1-n_tp_link_1)
+        ] + [            
                 mspec(f"timesync_consumer", "TimeSyncConsumer", [
                                             app.QueueInfo(name="input_queue", inst=f"time_sync_q", dir="input")
                                             ])
@@ -142,24 +188,26 @@ def generate(
                                             ])
         ]
 
-
-    mod_specs.append(mspec("flxcard_0", "FelixCardReader", [
-                    app.QueueInfo(name=f"output_{idx}", inst=f"{FRONTEND_TYPE}_link_{idx}", dir="output")
-                        for idx in range(min(5, NUMBER_OF_DATA_PRODUCERS))
-                    ] + [
-                    app.QueueInfo(name=f"output_{NUMBER_OF_DATA_PRODUCERS}", inst=f"raw_tp_link_{NUMBER_OF_DATA_PRODUCERS}", dir="output")
-                    ] + [
-                    app.QueueInfo(name="errored_chunks", inst="errored_chunks_q", dir="output")
-                    ]))
-    mod_specs.append(mspec("flxcardctrl_0", "FelixCardController", [
-                    ]))
-    if NUMBER_OF_DATA_PRODUCERS > 5 :
-        mod_specs.append(mspec("flxcard_1", "FelixCardReader", [
+    
+    if n_links_0 > 0:
+        mod_specs.append(mspec("flxcard_0", "FelixCardReader", [
                         app.QueueInfo(name=f"output_{idx}", inst=f"{FRONTEND_TYPE}_link_{idx}", dir="output")
-                            for idx in range(5, NUMBER_OF_DATA_PRODUCERS)
+                            for idx in range(min(5, n_links_0-n_tp_link_0))
                         ] + [
                         app.QueueInfo(name=f"output_{idx}", inst=f"raw_tp_link_{idx}", dir="output")
-                        for idx in range(NUMBER_OF_DATA_PRODUCERS+1, NUMBER_OF_DATA_PRODUCERS+2) if NUMBER_OF_TP_PRODUCERS > 1
+                            for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]
+                        ] + [
+                        app.QueueInfo(name="errored_chunks", inst="errored_chunks_q", dir="output")
+                        ]))
+        mod_specs.append(mspec("flxcardctrl_0", "FelixCardController", [
+                        ]))
+    if NUMBER_OF_DATA_PRODUCERS > 5 or n_links_1 > 0:
+        mod_specs.append(mspec("flxcard_1", "FelixCardReader", [
+                        app.QueueInfo(name=f"output_{idx}", inst=f"{FRONTEND_TYPE}_link_{idx}", dir="output")
+                            for idx in range(6, 6+n_links_1-n_tp_link_1)
+                        ] + [
+                        app.QueueInfo(name=f"output_{idx}", inst=f"raw_tp_link_{idx}", dir="output")
+                            for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]
                         ] + [
                         app.QueueInfo(name="errored_chunks", inst="errored_chunks_q", dir="output")
                         ]))
@@ -181,7 +229,10 @@ def generate(
 
     CARDID = 0
 
-    link_mask = parse_linkmask(FELIX_ELINK_MASK, NUMBER_OF_DATA_PRODUCERS+NUMBER_OF_TP_PRODUCERS)
+    lb_size = 3*CLOCK_SPEED_HZ/(25*12*DATA_RATE_SLOWDOWN_FACTOR)
+    lb_remiander = lb_size % 4096
+    lb_size -= lb_remiander # ensure latency buffer size is always a multiple of 4096, so should be 4k aligned
+
     confcmd = mrccmd("conf", "INITIAL", "CONFIGURED", [
                 ("flxcard_0",flxcr.Conf(card_id=CARDID,
                             logical_unit=0,
@@ -216,7 +267,7 @@ def generate(
                         ),
                         latencybufferconf= rconf.LatencyBufferConf(
                             latency_buffer_alignment_size = 4096,
-                            latency_buffer_size = 3*CLOCK_SPEED_HZ/(25*12*DATA_RATE_SLOWDOWN_FACTOR),
+                            latency_buffer_size = lb_size,
                             region_id = 0,
                             element_id = idx,
                         ),
@@ -227,7 +278,7 @@ def generate(
                             emulator_mode = EMULATOR_MODE,
                         ),
                         requesthandlerconf= rconf.RequestHandlerConf(
-                            latency_buffer_size = 3*CLOCK_SPEED_HZ/(25*12*DATA_RATE_SLOWDOWN_FACTOR),
+                            latency_buffer_size = lb_size,
                             pop_limit_pct = 0.8,
                             pop_size_pct = 0.1,
                             region_id = 0,
@@ -236,7 +287,103 @@ def generate(
                             stream_buffer_size = 8388608,
                             enable_raw_recording = True
                         )
-                        )) for idx in range(NUMBER_OF_DATA_PRODUCERS)
+                        )) for idx in range(min(5, n_links_0-n_tp_link_0))
+            ] + [
+                (f"datahandler_{idx}", rconf.Conf(
+                        readoutmodelconf= rconf.ReadoutModelConf(
+                            source_queue_timeout_ms= QUEUE_POP_WAIT_MS,
+                            fake_trigger_flag=1,
+                            timesync_connection_name="timesync",
+                            region_id = 0,
+                            element_id = idx,
+                        ),
+                        latencybufferconf= rconf.LatencyBufferConf(
+                            latency_buffer_alignment_size = 4096,
+                            latency_buffer_size = lb_size,
+                            region_id = 0,
+                            element_id = idx,
+                        ),
+                        rawdataprocessorconf= rconf.RawDataProcessorConf(
+                            region_id = 0,
+                            element_id = idx,
+                            enable_software_tpg = ENABLE_SOFTWARE_TPG,
+                            emulator_mode = EMULATOR_MODE,
+                        ),
+                        requesthandlerconf= rconf.RequestHandlerConf(
+                            latency_buffer_size = lb_size,
+                            pop_limit_pct = 0.8,
+                            pop_size_pct = 0.1,
+                            region_id = 0,
+                            element_id = idx,
+                            output_file = f"raw_output_{idx}.out",
+                            stream_buffer_size = 8388608,
+                            enable_raw_recording = True
+                        )
+                        )) for idx in range(6, 6+n_links_1-n_tp_link_1)
+            ] + [
+                (f"datahandler_{idx}", rconf.Conf(
+                        readoutmodelconf= rconf.ReadoutModelConf(
+                            source_queue_timeout_ms= QUEUE_POP_WAIT_MS,
+                            fake_trigger_flag=1,
+                            timesync_connection_name="timesync",
+                            region_id = 0,
+                            element_id = idx,
+                        ),
+                        latencybufferconf= rconf.LatencyBufferConf(
+                            latency_buffer_alignment_size = 4096,
+                            latency_buffer_size = lb_size,
+                            region_id = 0,
+                            element_id = idx,
+                        ),
+                        rawdataprocessorconf= rconf.RawDataProcessorConf(
+                            region_id = 0,
+                            element_id = idx,
+                            enable_software_tpg = False,
+                            emulator_mode = EMULATOR_MODE,
+                        ),
+                        requesthandlerconf= rconf.RequestHandlerConf(
+                            latency_buffer_size = lb_size,
+                            pop_limit_pct = 0.8,
+                            pop_size_pct = 0.1,
+                            region_id = 0,
+                            element_id = idx,
+                            output_file = f"raw_output_{idx}.out",
+                            stream_buffer_size = 8388608,
+                            enable_raw_recording = True
+                        )
+                        )) for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]
+            ] + [
+                (f"datahandler_{idx}", rconf.Conf(
+                        readoutmodelconf= rconf.ReadoutModelConf(
+                            source_queue_timeout_ms= QUEUE_POP_WAIT_MS,
+                            fake_trigger_flag=1,
+                            timesync_connection_name="timesync",
+                            region_id = 0,
+                            element_id = idx,
+                        ),
+                        latencybufferconf= rconf.LatencyBufferConf(
+                            latency_buffer_alignment_size = 4096,
+                            latency_buffer_size = lb_size,
+                            region_id = 0,
+                            element_id = idx,
+                        ),
+                        rawdataprocessorconf= rconf.RawDataProcessorConf(
+                            region_id = 0,
+                            element_id = idx,
+                            enable_software_tpg = False,
+                            emulator_mode = EMULATOR_MODE,
+                        ),
+                        requesthandlerconf= rconf.RequestHandlerConf(
+                            latency_buffer_size = lb_size,
+                            pop_limit_pct = 0.8,
+                            pop_size_pct = 0.1,
+                            region_id = 0,
+                            element_id = idx,
+                            output_file = f"raw_output_{idx}.out",
+                            stream_buffer_size = 8388608,
+                            enable_raw_recording = True
+                        )
+                        )) for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]
             ] + [
                 (f"data_recorder_{idx}", bfs.Conf(
                         output_file = f"output_{idx}.out",
