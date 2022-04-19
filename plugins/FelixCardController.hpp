@@ -57,8 +57,8 @@ private:
   // State
   bool m_is_aligned;
 
-  // FELIX Cards
-  std::unique_ptr<CardControllerWrapper> m_card_wrapper;
+  // FELIX Card
+  std::map<uint32_t, std::unique_ptr<CardControllerWrapper> > m_card_wrappers;
 };
 
 } // namespace flxlibs

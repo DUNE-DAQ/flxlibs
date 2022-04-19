@@ -43,6 +43,7 @@ local felixcardcontroller = {
  
     logical_unit: s.record("LogicalUnit", [
     s.field("log_unit_id", self.uint4, doc="Logical unit identifier"),
+    s.field("emu_fanout", self.boolean, doc="Toggle emulator on/off"),
     s.field("links", self.links, doc="List of links in the logical unit"),
     ], doc=""),
     
@@ -59,21 +60,34 @@ local felixcardcontroller = {
     ], doc="Upstream FELIX CardController DAQ Module Configuration"),
 
     getregister: s.record("GetRegisters", [
+    s.field("card_id", self.uint4, 0,
+            doc="Physical card identifier (in the same host)"),
+    s.field("log_unit_id", self.uint4, doc="Logical unit identifier"),
     s.field("reg_names", self.reglist,
                 doc="A list of registers")
     ], doc="Register access parameters"),
 
     setregister: s.record("SetRegisters", [
+    s.field("card_id", self.uint4, 0,
+            doc="Physical card identifier (in the same host)"),
+    s.field("log_unit_id", self.uint4, doc="Logical unit identifier"),
+
     s.field("reg_val_pairs", self.regvallist,
                 doc="A list of registers and values to set")
     ], doc="Register access parameters"),
 
     getbitfield: s.record("GetBFs", [
+    s.field("card_id", self.uint4, 0,
+            doc="Physical card identifier (in the same host)"),
+    s.field("log_unit_id", self.uint4, doc="Logical unit identifier"),
     s.field("bf_names", self.reglist,
                 doc="A list of bitfields")
     ], doc="Bitfield access parameters"),
 
     setbitfield: s.record("SetBFs", [
+    s.field("card_id", self.uint4, 0,
+            doc="Physical card identifier (in the same host)"),
+    s.field("log_unit_id", self.uint4, doc="Logical unit identifier"),
     s.field("bf_val_pairs", self.regvallist,
                 doc="A list of bitfields and values to set")
     ], doc="Bitfield access parameters"),
