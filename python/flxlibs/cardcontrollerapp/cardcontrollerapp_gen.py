@@ -18,13 +18,12 @@ from appfwk.daqmodule import DAQModule
 #from appfwk.conf_utils import Direction, Connection
 
 #===============================================================================
-def get_cardcontroller_app(card_id, 
+def get_cardcontroller_app(nickname, card_id, 
                 host="localhost"):
     '''
     Here an entire application controlling one physical FLX card is generated. 
     '''
 
-    nickname = 'flx_card_'+host+'_'+str(card_id)
     # Define modules
 
     modules = []
@@ -32,10 +31,10 @@ def get_cardcontroller_app(card_id,
     links = [];
     lus = [];
     # Prepare standard config with 6 links per logical unit
-    for i in (0,5):
+    for i in range(6):
         links+=[flx.Link(link_id=i, enabled=True, dma_desc=0, superchunk_factor=12)]
     # Prepare standard config with 2 logical units per card
-    for j in (0,1):
+    for j in range(2):
         lus+=[flx.LogicalUnit(log_unit_id=j, emu_fanout=False, links=links)]
 
 

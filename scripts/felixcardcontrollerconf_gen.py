@@ -73,7 +73,8 @@ def cli(partition_name, host_flx, ncards, opmon_impl, ers_impl, pocket_url, json
    
 
     for i in (0,ncards-1):
-        the_system.apps[i]=cardcontrollerapp_gen.get_cardcontroller_app(i*2,host_flx)
+        nickname = 'flx_card_'+host_flx.replace('-', '_')+'_'+str(i*2)
+        the_system.apps[nickname]=cardcontrollerapp_gen.get_cardcontroller_app(nickname,i*2,host_flx)
 
     ####################################################################
     # Application command data generation
