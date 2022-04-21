@@ -19,8 +19,6 @@ local felixcardreader = {
     id : s.number("Identifier", "i4",
                   doc="An ID of a thingy"),
 
-    array : s.sequence("Array", self.count, doc="list of numbers"),
-
     choice : s.boolean("Choice"),
 
     conf: s.record("Conf", [
@@ -60,8 +58,8 @@ local felixcardreader = {
         s.field("num_sources", self.count, 1,
                 doc="Read a single superlogic region, or both"),
 
-        s.field("links_enabled", self.array, [0, 1, 2, 3, 4],
-                doc="Number of elinks configured"),
+        s.field("num_links", self.count, 5,
+                doc="Number of elinks configured"), 
 
     ], doc="Upstream FELIX CardReader DAQ Module Configuration"),
 

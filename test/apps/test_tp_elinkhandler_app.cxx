@@ -171,9 +171,9 @@ main(int argc, char* argv[])
       }
 
       std::ostringstream oss;
-      //rwtpp->m_head.print(oss);
-      //types::RAW_WIB_TRIGGERPRIMITIVE_STRUCT rwtps;
-      //rwtps.rwtp.reset(rwtpp);
+      rwtpp->m_head.print(oss);
+      types::RAW_WIB_TRIGGERPRIMITIVE_STRUCT rwtps;
+      rwtps.rwtp.reset(rwtpp);
       TLOG() << oss.str();
 
       if (amount > 1000) {

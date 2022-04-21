@@ -90,7 +90,7 @@ private:
   bool m_interrupt_mode;    // NOLINT
   size_t m_poll_time;       // NOLINT
   uint8_t m_numa_id;        // NOLINT
-  std::vector<unsigned int> m_links_enabled;      // NOLINT
+  uint8_t m_num_links;      // NOLINT
   std::string m_info_str;
 
   // Card object

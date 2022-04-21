@@ -71,8 +71,6 @@ private:
 
   int m_card_id;
   int m_logical_unit;
-
-  std::vector<unsigned int> m_links_enabled;
   unsigned m_num_links;
   std::size_t m_block_size;
   int m_chunk_trailer_size;
