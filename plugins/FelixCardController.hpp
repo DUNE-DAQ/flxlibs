@@ -53,14 +53,9 @@ private:
 
   // Configuration
   module_conf_t m_cfg;
-  uint8_t m_card_id;      // NOLINT
-  uint8_t m_logical_unit; // NOLINT
 
-  // State
-  bool m_is_aligned;
-
-  // FELIX Cards
-  std::unique_ptr<CardControllerWrapper> m_card_wrapper;
+  // FELIX Card
+  std::map<uint32_t, std::unique_ptr<CardControllerWrapper> > m_card_wrappers;
 };
 
 } // namespace flxlibs

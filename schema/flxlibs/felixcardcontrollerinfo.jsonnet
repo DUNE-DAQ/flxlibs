@@ -6,17 +6,19 @@ local moo = import "moo.jsonnet";
 local s = moo.oschema.schema("dunedaq.flxlibs.felixcardcontrollerinfo");
 
 local info = {
-    uint8 : s.number("uint8", "u8",
-        doc="An unsigned of 8 bytes"),
+    boolean : s.boolean("boolean",
+                      doc="A boolean"),
 
-info: s.record("ChannelInfo", [
-    s.field("channel00_alignment_status", self.uint8, 0, doc="Alignment status for channel 0"),
-    s.field("channel01_alignment_status", self.uint8, 0, doc="Alignment status for channel 1"),
-    s.field("channel02_alignment_status", self.uint8, 0, doc="Alignment status for channel 2"),
-    s.field("channel03_alignment_status", self.uint8, 0, doc="Alignment status for channel 3"),
-    s.field("channel04_alignment_status", self.uint8, 0, doc="Alignment status for channel 4"),
-    s.field("channel05_alignment_status", self.uint8, 0, doc="Alignment status for channel 5")
-], doc="Channel information")
+    uint4  : s.number("uint4", "u4",
+                      doc="An unsigned of 4 bytes"),
+
+    link : s.record("LinkInfo", [
+    s.field("device_id", self.uint4, doc="Device identifier"),
+    s.field("link_id", self.uint4, doc="Link identifier"),
+    s.field("enabled", self.boolean, doc="Indicate whether the link is enabled"),
+    s.field("aligned", self.boolean, doc="Indicate whether the link is aligned")
+    ], doc="Upstream FELIX Link information")
+
 };
 
 moo.oschema.sort_select(info)

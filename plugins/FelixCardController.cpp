@@ -20,6 +20,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <utility>
 
 /**
  * @brief Name used by TRACE TLOG calls from this source file
@@ -41,13 +42,11 @@ namespace flxlibs {
 
 FelixCardController::FelixCardController(const std::string& name)
   : DAQModule(name)
-  , m_card_id(0)
-  , m_logical_unit(0)
-  , m_is_aligned(false)
 {
-  m_card_wrapper = std::make_unique<CardControllerWrapper>();
+  //m_card_wrapper = std::make_unique<CardControllerWrapper>();
 
   register_command("conf", &FelixCardController::do_configure);
+  register_command("start", &FelixCardController::gth_reset);
   register_command("getregister", &FelixCardController::get_reg);
   register_command("setregister", &FelixCardController::set_reg);
   register_command("getbitfield", &FelixCardController::get_bf);
@@ -56,59 +55,53 @@ FelixCardController::FelixCardController(const std::string& name)
 }
 
 void
-FelixCardController::init(const data_t& args)
+FelixCardController::init(const data_t& /*args*/)
 {
-  m_card_wrapper->init(args);
 }
 
 void
 FelixCardController::do_configure(const data_t& args)
 {
   m_cfg = args.get<felixcardcontroller::Conf>();
-  m_card_id = m_cfg.card_id;
-  m_logical_unit = m_cfg.logical_unit;
-  m_card_wrapper->configure(args);
+  for (auto lu : m_cfg.logical_units) {
+     uint32_t id = m_cfg.card_id+lu.log_unit_id;
+     m_card_wrappers.emplace(std::make_pair(id,std::make_unique<CardControllerWrapper>(id)));
+     if(m_card_wrappers.size() == 1) {
+	 // Do the init only for the first device (whole card)
+         m_card_wrappers.begin()->second->init();
+     }
+     m_card_wrappers.at(m_cfg.card_id+lu.log_unit_id)->configure(lu);
+  }
 }
 
 void
 FelixCardController::get_info(opmonlib::InfoCollector& ci, int /*level*/)
 {
-  felixcardcontrollerinfo::ChannelInfo info;
-
-  uint64_t aligned = m_card_wrapper->get_register(REG_GBT_ALIGNMENT_DONE);     // NOLINT(build/unsigned)
-  uint64_t number_channels = m_card_wrapper->get_register(BF_NUM_OF_CHANNELS); // NOLINT(build/unsigned)
-
-  std::vector<int> stats(number_channels, 0);
-  size_t num_aligned = 0;
-  auto index = m_logical_unit * number_channels;
-  for (size_t i = 0; i < number_channels; ++i) {
-    if (aligned & (1 << index)) {
-      stats[i] = 1;
-      num_aligned++;
-    } else if (m_is_aligned) {
-      m_is_aligned = false;
-      ers::warning(ChannelAlignment(ERS_HERE, index));
-    }
-    index++;
+  for (auto lu : m_cfg.logical_units) {
+     uint32_t id = m_cfg.card_id+lu.log_unit_id;
+     uint64_t aligned = m_card_wrappers.at(id)->get_register(REG_GBT_ALIGNMENT_DONE);
+     for( auto li : lu.links) {
+	felixcardcontrollerinfo::LinkInfo info;
+	info.device_id = id;
+	info.link_id = li.link_id;
+	info.enabled = li.enabled;
+	info.aligned = aligned & (1<<li.link_id);
+        opmonlib::InfoCollector tmp_ic;
+	std::stringstream info_name;
+	info_name << "device_" << id << "_link_" << li.link_id; 
+        tmp_ic.add(info);
+	ci.add(info_name.str(),tmp_ic);
+     }
   }
-
-  m_is_aligned = (num_aligned < number_channels ? false : true);
-
-  info.channel00_alignment_status = stats[0];
-  info.channel01_alignment_status = stats[1];
-  info.channel02_alignment_status = stats[2];
-  info.channel03_alignment_status = stats[3];
-  info.channel04_alignment_status = stats[4];
-  info.channel05_alignment_status = stats[5];
-  ci.add(info);
 }
 
 void
 FelixCardController::get_reg(const data_t& args)
 {
-  auto conf = args.get<felixcardcontroller::GetRegisterParams>();
+  auto conf = args.get<felixcardcontroller::GetRegisters>();
+  auto id = conf.card_id + conf.log_unit_id;
   for (auto reg_name : conf.reg_names) {
-    auto reg_val = m_card_wrapper->get_register(reg_name);
+    auto reg_val = m_card_wrappers.at(id)->get_register(reg_name);
     TLOG() << reg_name << "        0x" << std::hex << reg_val;
   }
 }
@@ -116,18 +109,22 @@ FelixCardController::get_reg(const data_t& args)
 void
 FelixCardController::set_reg(const data_t& args)
 {
-  auto conf = args.get<felixcardcontroller::SetRegisterParams>();
+  auto conf = args.get<felixcardcontroller::SetRegisters>();
+  auto id = conf.card_id + conf.log_unit_id;
+
   for (auto p : conf.reg_val_pairs) {
-    m_card_wrapper->set_register(p.reg_name, p.reg_val);
+    m_card_wrappers.at(id)->set_register(p.reg_name, p.reg_val);
   }
 }
 
 void
 FelixCardController::get_bf(const data_t& args)
 {
-  auto conf = args.get<felixcardcontroller::GetBFParams>();
+  auto conf = args.get<felixcardcontroller::GetBFs>();
+  auto id = conf.card_id + conf.log_unit_id;
+
   for (auto bf_name : conf.bf_names) {
-    auto bf_val = m_card_wrapper->get_bitfield(bf_name);
+    auto bf_val = m_card_wrappers.at(id)->get_bitfield(bf_name);
     TLOG() << bf_name << "        0x" << std::hex << bf_val;
   }
 }
@@ -135,23 +132,19 @@ FelixCardController::get_bf(const data_t& args)
 void
 FelixCardController::set_bf(const data_t& args)
 {
-  auto conf = args.get<felixcardcontroller::SetBFParams>();
+  auto conf = args.get<felixcardcontroller::SetBFs>();
+  auto id = conf.card_id + conf.log_unit_id;
+
   for (auto p : conf.bf_val_pairs) {
-    m_card_wrapper->set_bitfield(p.reg_name, p.reg_val);
+    m_card_wrappers.at(id)->set_bitfield(p.reg_name, p.reg_val);
   }
 }
 
 void
-FelixCardController::gth_reset(const data_t& args)
+FelixCardController::gth_reset(const data_t& /*args*/)
 {
-  if (m_logical_unit != 0)
-    return;
-
-  auto conf = args.get<felixcardcontroller::GTHResetParams>();
-  for (int i = 0; i < 6; ++i) {
-    if (conf.quads & 1 << i)
-      m_card_wrapper->gth_reset(i);
-  }
+  // Do the reset only for the first device (whole card)
+  m_card_wrappers.begin()->second->gth_reset();
 }
 
 } // namespace flxlibs

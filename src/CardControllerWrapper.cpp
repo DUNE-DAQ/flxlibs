@@ -32,11 +32,19 @@ enum
 namespace dunedaq {
 namespace flxlibs {
 
-CardControllerWrapper::CardControllerWrapper()
-  : m_card_id(0)
-  , m_logical_unit(0)
-  , m_card_id_str("")
-{}
+CardControllerWrapper::CardControllerWrapper(uint32_t device_id) : m_device_id(device_id)
+{
+  TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS)
+    << "CardControllerWrapper constructor called. Open card " << m_device_id;
+	
+  m_flx_card = std::make_unique<FlxCard>();
+  if (m_flx_card == nullptr) {
+    ers::fatal(flxlibs::CardError(ERS_HERE, "Couldn't create FlxCard object."));
+  }
+  open_card();
+  TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << "CardControllerWrapper constructed.";
+
+}
 
 CardControllerWrapper::~CardControllerWrapper()
 {
@@ -47,46 +55,83 @@ CardControllerWrapper::~CardControllerWrapper()
 }
 
 void
-CardControllerWrapper::init(const data_t& /*args*/)
-{
-  m_flx_card = std::make_unique<FlxCard>();
-  if (m_flx_card == nullptr) {
-    ers::fatal(flxlibs::CardError(ERS_HERE, "Couldn't create FlxCard object."));
-  }
+CardControllerWrapper::init() {
+
+ // Card initialization
+ // this is complicated....should we repeat all code in flx_init?
+ // For now do not do the configs of the clock chips
+ const std::lock_guard<std::mutex> lock(m_card_mutex);
+ m_flx_card->cfg_set_option( BF_MMCM_MAIN_LCLK_SEL, 1 ); // local clock
+ m_flx_card->soft_reset();
+ //si5328_configure();
+ //si5345_configure(0);
+ m_flx_card->cfg_set_option(BF_GBT_SOFT_RESET, 0xFFFFFFFFFFFF);
+ m_flx_card->cfg_set_option(BF_GBT_SOFT_RESET, 0);
+
+ int bad_channels = m_flx_card->gbt_setup( FLX_GBT_ALIGNMENT_ONE, FLX_GBT_TMODE_FEC ); //What does this do?
+ if(bad_channels) {
+    TLOG()<< bad_channels << " not aligned.";
+ }
+ m_flx_card->irq_disable( ALL_IRQS );
+ 
 }
 
 void
-CardControllerWrapper::configure(const data_t& args)
+CardControllerWrapper::configure(const felixcardcontroller::LogicalUnit & lu_cfg)
 {
-  if (m_configured) {
-    TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << "Card is already configured! Won't touch it.";
-  } else {
-    // Load config
-    m_cfg = args.get<felixcardcontroller::Conf>();
-    m_card_id = m_cfg.card_id;
-    m_logical_unit = m_cfg.logical_unit;
 
-    std::ostringstream cardoss;
-    cardoss << "[id:" << std::to_string(m_card_id) << " slr:" << std::to_string(m_logical_unit) << "]";
-    m_card_id_str = cardoss.str();
-    TLOG_DEBUG(TLVL_WORK_STEPS) << "Configuring CardControllerWrapper of card " << m_card_id_str;
-    // Open card
-    open_card();
-    TLOG_DEBUG(TLVL_WORK_STEPS) << "Card[" << m_card_id_str << "] opened.";
-    TLOG_DEBUG(TLVL_WORK_STEPS) << m_card_id_str << "] is configured for datataking.";
-    m_configured = true;
+ // Disable all links
+ for(size_t i=0 ; i<12; ++i) {
+  std::stringstream ss;
+  ss << "DECODING_LINK" << std::setw(2) << std::setfill('0') << i << "_EGROUP0_CTRL_EPATH_ENA";
+  set_bitfield(ss.str(), 0);
+ }
+
+  // Enable/disable emulation
+  if(lu_cfg.emu_fanout) {
+    //set_bitfield("FE_EMU_LOGIC_IDLES", 0); // FIXME
+    //set_bitfield("FE_EMU_LOGIC_CHUNK_LENGTH", 0);
+    //set_bitfield("FE_EMU_LOGIC_ENA", 0);
+    //set_bitfield("FE_EMU_LOGIC_L1A_TRIGGERED", 0);
+
+    set_bitfield("GBT_TOFRONTEND_FANOUT_SEL", 0);
+    set_bitfield("GBT_TOHOST_FANOUT_SEL", 0xffffff);
+    set_bitfield("FE_EMU_ENA_EMU_TOFRONTEND", 0);
+    set_bitfield("FE_EMU_ENA_EMU_TOHOST", 1);
+  }
+  else {
+    //set_register("FE_EMU_LOGIC_ENA", 0);
+    //set_register("FE_EMU_LOGIC_L1A_TRIGGERED", 0);
+    //set_register("FE_EMU_LOGIC_IDLES", 0);
+    //set_register("FE_EMU_LOGIC_CHUNK_LENGTH", 0);
+
+    set_bitfield("FE_EMU_ENA_EMU_TOFRONTEND", 0);
+    set_bitfield("FE_EMU_ENA_EMU_TOHOST", 0);
+    set_bitfield("GBT_TOFRONTEND_FANOUT_SEL", 0);
+    set_bitfield("GBT_TOHOST_FANOUT_SEL", 0);
+  }
+   
+ // Enable and configure the right links
+ 
+  for(auto li : lu_cfg.links) {
+    if(li.enabled) {
+      std::stringstream sc_stream;
+      sc_stream << "SUPER_CHUNK_FACTOR_LINK_"<< std::setw(2) << std::setfill('0') << li.link_id;
+      std::stringstream ena_stream;
+      ena_stream<< "DECODING_LINK" << std::setw(2) << std::setfill('0') << li.link_id << "_EGROUP0_CTRL_EPATH_ENA";
+      set_bitfield(sc_stream.str(), li.superchunk_factor);
+      set_bitfield(ena_stream.str(), 1);
+    }
   }
 }
 
 void
 CardControllerWrapper::open_card()
 {
-  TLOG_DEBUG(TLVL_WORK_STEPS) << "Opening FELIX card " << m_card_id_str;
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Opening FELIX card " << m_device_id;
   try {
-    m_card_mutex.lock();
-    auto absolute_card_id = m_card_id + m_logical_unit;
-    m_flx_card->card_open(static_cast<int>(absolute_card_id), LOCK_NONE); // FlxCard.h
-    m_card_mutex.unlock();
+    const std::lock_guard<std::mutex> lock(m_card_mutex);
+    m_flx_card->card_open(static_cast<int>(m_device_id), LOCK_NONE); // FlxCard.h
   } catch (FlxException& ex) {
     ers::error(flxlibs::CardError(ERS_HERE, ex.what()));
     exit(EXIT_FAILURE);
@@ -96,11 +141,10 @@ CardControllerWrapper::open_card()
 void
 CardControllerWrapper::close_card()
 {
-  TLOG_DEBUG(TLVL_WORK_STEPS) << "Closing FELIX card " << m_card_id_str;
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Closing FELIX card " << m_device_id;
   try {
-    m_card_mutex.lock();
+    const std::lock_guard<std::mutex> lock(m_card_mutex);
     m_flx_card->card_close();
-    m_card_mutex.unlock();
   } catch (FlxException& ex) {
     ers::error(flxlibs::CardError(ERS_HERE, ex.what()));
     exit(EXIT_FAILURE);
@@ -111,47 +155,44 @@ uint64_t // NOLINT(build/unsigned)
 CardControllerWrapper::get_register(std::string key)
 {
   TLOG_DEBUG(TLVL_WORK_STEPS) << "Reading value of register " << key;
-  m_card_mutex.lock();
+  const std::lock_guard<std::mutex> lock(m_card_mutex);
   auto reg_val = m_flx_card->cfg_get_reg(key.c_str());
-  m_card_mutex.unlock();
   return reg_val;
 }
 
 void
 CardControllerWrapper::set_register(std::string key, uint64_t value) // NOLINT(build/unsigned)
 {
-  TLOG_DEBUG(TLVL_WORK_STEPS) << "Setting value of register " << key;
-  m_card_mutex.lock();
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Setting value of register " << key << " to " << value;
+  const std::lock_guard<std::mutex> lock(m_card_mutex);
   m_flx_card->cfg_set_reg(key.c_str(), value);
-  m_card_mutex.unlock();
 }
 
 uint64_t // NOLINT(build/unsigned)
 CardControllerWrapper::get_bitfield(std::string key)
 {
   TLOG_DEBUG(TLVL_WORK_STEPS) << "Reading value of bitfield " << key;
-  m_card_mutex.lock();
+  const std::lock_guard<std::mutex> lock(m_card_mutex);
   auto bf_val = m_flx_card->cfg_get_option(key.c_str(), false);
-  m_card_mutex.unlock();
   return bf_val;
 }
 
 void
 CardControllerWrapper::set_bitfield(std::string key, uint64_t value) // NOLINT(build/unsigned)
 {
-  TLOG_DEBUG(TLVL_WORK_STEPS) << "Setting value of bitfield " << key;
-  m_card_mutex.lock();
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Setting value of bitfield " << key << " to " << value;;
+  const std::lock_guard<std::mutex> lock(m_card_mutex);
   m_flx_card->cfg_set_option(key.c_str(), value, false);
-  m_card_mutex.unlock();
 }
 
 void
-CardControllerWrapper::gth_reset(int quad = -1)
+CardControllerWrapper::gth_reset()
 {
-  TLOG_DEBUG(TLVL_WORK_STEPS) << "Resetting GTH quad " << quad;
-  m_card_mutex.lock();
-  m_flx_card->gth_rx_reset(quad);
-  m_card_mutex.unlock();
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Resetting GTH";
+  const std::lock_guard<std::mutex> lock(m_card_mutex);
+  for (auto i=0 ; i< 6; ++i) {
+      m_flx_card->gth_rx_reset(i);
+  }    
 }
 
 } // namespace flxlibs
