@@ -27,7 +27,7 @@ public:
   /**
    * @brief CardControllerWrapper Constructor
    */
-  CardControllerWrapper();
+  CardControllerWrapper(uint32_t device_id);
   ~CardControllerWrapper();
   CardControllerWrapper(const CardControllerWrapper&) = delete;            ///< Not copy-constructible
   CardControllerWrapper& operator=(const CardControllerWrapper&) = delete; ///< Not copy-assignable
@@ -35,31 +35,23 @@ public:
   CardControllerWrapper& operator=(CardControllerWrapper&&) = delete;      ///< Not move-assignable
 
   using data_t = nlohmann::json;
-  void init(const data_t& args);
-  void configure(const data_t& args);
+  void init();
+  void configure(const felixcardcontroller::LogicalUnit & lu_cfg);
 
   uint64_t get_register(std::string key);             // NOLINT(build/unsigned)
   void set_register(std::string key, uint64_t value); // NOLINT(build/unsigned)
   uint64_t get_bitfield(std::string key);             // NOLINT(build/unsigned)
   void set_bitfield(std::string key, uint64_t value); // NOLINT(build/unsigned)
-  void gth_reset(int quad);
+  void gth_reset();
 
 private:
-  // Types
-  using module_conf_t = dunedaq::flxlibs::felixcardcontroller::Conf;
 
   // Card
   void open_card();
   void close_card();
 
-  // Configuration and internals
-  module_conf_t m_cfg;
-  bool m_configured{ false };
-  uint8_t m_card_id;      // NOLINT
-  uint8_t m_logical_unit; // NOLINT
-  std::string m_card_id_str;
-
   // Card object
+  uint32_t m_device_id;
   using UniqueFlxCard = std::unique_ptr<FlxCard>;
   UniqueFlxCard m_flx_card;
   std::mutex m_card_mutex;
