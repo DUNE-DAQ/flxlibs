@@ -54,9 +54,6 @@ private:
   // Configuration
   module_conf_t m_cfg;
 
-  // State
-  bool m_is_aligned;
-
   // FELIX Card
   std::map<uint32_t, std::unique_ptr<CardControllerWrapper> > m_card_wrappers;
 };
