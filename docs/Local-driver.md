@@ -1,10 +1,13 @@
 ## What is the "local" driver?
 In order to ensure absolute consistency with the software externals, the DUNE readout external packages from the ATLAS FELIX Software Suite are built in-house and deployed as external products. Hence the reason, the driver being a foundation that connects firmware with software, it is also part of this product.
 
-## How to build and start it
+## Build and start script
+With `sudo` rights or as `root` one can use the [setup_felix_driver.sh](https://github.com/DUNE-DAQ/flxlibs/tree/develop/scripts/setup_felix_driver.sh) script to build and start the drivers.
+
+## How to build and start it, step by step
 With `sudo` rights or as `root` one needs to do the following steps:
 ```
-mkdir /opt/felix
+mkdir -p /opt/felix
 cp -r /cvmfs/dunedaq.opensciencegrid.org/products/felix/v1_2_2 /opt/felix/
 if [[ `lsb_release -rs` == 8 ]]; then cd /opt/felix/v1_2_2/Linux64bit+4.18-2.28-e19-prof/drivers_rcc/src/; else cd /opt/felix/v1_2_2/Linux64bit+3.10-2.17-e19-prof/drivers_rcc/src/; fi;
 make -j
@@ -103,4 +106,3 @@ clearlock -> Clear all lock bits (Attention: Close processes that hold lock bits
 
 Please ignore the last errors which are complaining about regmap missmatch.
 
-This step will be automated in the future.
