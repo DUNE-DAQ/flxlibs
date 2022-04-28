@@ -13,9 +13,8 @@ moo.otypes.load_types('flxlibs/felixcardcontroller.jsonnet')
 # Import new types
 import dunedaq.flxlibs.felixcardcontroller as flx
 
-from appfwk.app import App, ModuleGraph
-from appfwk.daqmodule import DAQModule
-#from appfwk.conf_utils import Direction, Connection
+from daqconf.core.app import App, ModuleGraph
+from daqconf.core.daqmodule import DAQModule
 
 #===============================================================================
 def get_cardcontroller_app(nickname, card_id, 
