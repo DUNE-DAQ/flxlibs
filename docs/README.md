@@ -24,13 +24,13 @@ Please ensure the following:
 
 ## Examples
 After successfully following the configuration instructions, you can try to run a test app that uses the FELIX.
-First, create a configuration file if real front-end is connected to the card:
+First, create a configuration file if real front-end is connected to the card (enable all ADC links):
 
-    python -m flxlibs.app_confgen -n 10 felix-app.json
+    python -m flxlibs.app_confgen -n 10 -m "0-4:0-4" felix-app.json
     
 If the FELIX is on the emulator fanout and the internal emulator is loaded, apply also frame specific emulation for the DatalinkHanders to overwrite frame signatures (e.g.: timestamp, sequence number, etc.):
 
-    python -m flxlibs.app_confgen -n 10 -e felix-app.json
+    python -m flxlibs.app_confgen -n 10 -m "0-4:0-4" -e felix-app.json
 
 Then run it with:
 
