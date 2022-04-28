@@ -8,8 +8,8 @@ import glob
 import rich.traceback
 from rich.console import Console
 from os.path import exists, join
-from appfwk.system import System
-from appfwk.conf_utils import make_app_command_data
+from daqconf.core.system import System
+from daqconf.core.conf_utils import make_app_command_data
 from daqconf.core.metadata import write_metadata_file
 
 # Add -h as default help option
@@ -87,7 +87,7 @@ def cli(partition_name, host_flx, ncards, opmon_impl, ers_impl, pocket_url, json
     }
 
     # Make boot.json config
-    from appfwk.conf_utils import make_system_command_datas,generate_boot, write_json_files
+    from daqconf.core.conf_utils import make_system_command_datas,generate_boot, write_json_files
     system_command_datas = make_system_command_datas(the_system)
     # Override the default boot.json with the one from minidaqapp
     boot = generate_boot(the_system.apps, partition_name=partition_name, ers_settings=ers_settings, info_svc_uri=info_svc_uri,
