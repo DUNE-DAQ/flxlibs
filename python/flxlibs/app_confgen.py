@@ -199,8 +199,6 @@ def generate(
                         ] + [
                         app.QueueInfo(name="errored_chunks", inst="errored_chunks_q", dir="output")
                         ]))
-        mod_specs.append(mspec("flxcardctrl_0", "FelixCardController", [
-                        ]))
     if NUMBER_OF_DATA_PRODUCERS > 5 or n_links_1 > 0:
         mod_specs.append(mspec("flxcard_1", "FelixCardReader", [
                         app.QueueInfo(name=f"output_{idx}", inst=f"{FRONTEND_TYPE}_link_{idx}", dir="output")
@@ -211,9 +209,8 @@ def generate(
                         ] + [
                         app.QueueInfo(name="errored_chunks", inst="errored_chunks_q", dir="output")
                         ]))
-        mod_specs.append(mspec("flxcardctrl_1", "FelixCardController", [
-                        ]))
 
+    mod_specs.append(mspec("flxcardctrl_0", "FelixCardController", []))
     nw_specs = [nwmgr.Connection(name="timesync", topics=["Timesync"], address="tcp://127.0.0.1:6000")]
     init_specs = app.Init(queues=queue_specs, modules=mod_specs, nwconnections=nw_specs)
 
@@ -260,10 +257,8 @@ def generate(
                                     enabled=True, 
                                     dma_desc=0, 
                                     superchunk_factor=12
-                                    ) for i in link_mask[0]])])),
-                ("flxcardctrl_1",flxcc.Conf(
-                            card_id=CARDID,
-                            logical_units=[flxcc.LogicalUnit(
+                                    ) for i in link_mask[0]])]
+                                +[flxcc.LogicalUnit(
                                 log_unit_id=1,
                                 emu_fanout=False,
                                 links=[flxcc.Link(
@@ -271,7 +266,7 @@ def generate(
                                     enabled=True, 
                                     dma_desc=0, 
                                     superchunk_factor=12
-                                    ) for i in link_mask[1]])])),
+                                    ) for i in link_mask[1]])]))
             ] + [
                 (f"datahandler_{idx}", rconf.Conf(
                         readoutmodelconf= rconf.ReadoutModelConf(
