@@ -252,10 +252,26 @@ def generate(
                             links_enabled=link_mask[1])),
                 ("flxcardctrl_0",flxcc.Conf(
                             card_id=CARDID,
-                            logical_unit=0)),
+                            logical_units=[flxcc.LogicalUnit(
+                                log_unit_id=0,
+                                emu_fanout=False,
+                                links=[flxcc.Link(
+                                    link_id=i, 
+                                    enabled=True, 
+                                    dma_desc=0, 
+                                    superchunk_factor=12
+                                    ) for i in link_mask[0]])])),
                 ("flxcardctrl_1",flxcc.Conf(
                             card_id=CARDID,
-                            logical_unit=1)),
+                            logical_units=[flxcc.LogicalUnit(
+                                log_unit_id=1,
+                                emu_fanout=False,
+                                links=[flxcc.Link(
+                                    link_id=i, 
+                                    enabled=True, 
+                                    dma_desc=0, 
+                                    superchunk_factor=12
+                                    ) for i in link_mask[1]])])),
             ] + [
                 (f"datahandler_{idx}", rconf.Conf(
                         readoutmodelconf= rconf.ReadoutModelConf(
@@ -442,7 +458,9 @@ def generate(
     cmd_seq.append(record_cmd)
 
     get_reg_cmd = mrccmd("getregister", "RUNNING", "RUNNING", [
-        ("flxcardctrl_.*", flxcc.GetRegisterParams(
+        ("flxcardctrl_.*", flxcc.GetRegisters(
+            card_id=0,
+            log_unit_id=0,
             reg_names=(
                 "REG_MAP_VERSION",
             )
@@ -455,7 +473,9 @@ def generate(
     cmd_seq.append(get_reg_cmd)
 
     set_reg_cmd = mrccmd("setregister", "RUNNING", "RUNNING", [
-        ("flxcardctrl_.*", flxcc.SetRegisterParams(
+        ("flxcardctrl_.*", flxcc.SetRegisters(
+            card_id=0,
+            log_unit_id=0,
             reg_val_pairs=(
                 flxcc.RegValPair(reg_name="REG_MAP_VERSION", reg_val=0),
             )
@@ -468,7 +488,9 @@ def generate(
     cmd_seq.append(set_reg_cmd)
 
     get_bf_cmd = mrccmd("getbitfield", "RUNNING", "RUNNING", [
-        ("flxcardctrl_.*", flxcc.GetBFParams(
+        ("flxcardctrl_.*", flxcc.GetBFs(
+            card_id=0,
+            log_unit_id=0,
             bf_names=(
                 "REG_MAP_VERSION",
             )
@@ -481,7 +503,9 @@ def generate(
     cmd_seq.append(get_bf_cmd)
 
     set_bf_cmd = mrccmd("setbitfield", "RUNNING", "RUNNING", [
-        ("flxcardcontrol_.*", flxcc.SetBFParams(
+        ("flxcardcontrol_.*", flxcc.SetBFs(
+            card_id=0,
+            log_unit_id=0,
             bf_val_pairs=(
                 flxcc.RegValPair(reg_name="REG_MAP_VERSION", reg_val=0),
             )
@@ -493,16 +517,15 @@ def generate(
 
     cmd_seq.append(set_bf_cmd)
 
-    gth_reset_cmd = mrccmd("gthreset", "RUNNING", "RUNNING", [
-        ("flxcardctrl_.*", flxcc.GTHResetParams(
-            quads=0
-        ))
-    ])
-
-    jstr = json.dumps(gth_reset_cmd.pod(), indent=4, sort_keys=True)
-    print("="*80+"\nGTH Reset\n\n", jstr)
-
-    cmd_seq.append(gth_reset_cmd)
+    #? is this feature depriciated?
+    # gth_reset_cmd = mrccmd("gthreset", "RUNNING", "RUNNING", [
+    #     ("flxcardctrl_.*", flxcc.GTHResetParams(
+    #         quads=0
+    #     ))
+    # ])
+    # jstr = json.dumps(gth_reset_cmd.pod(), indent=4, sort_keys=True)
+    # print("="*80+"\nGTH Reset\n\n", jstr)
+    # cmd_seq.append(gth_reset_cmd)
 
     # Print them as json (to be improved/moved out)
     jstr = json.dumps([c.pod() for c in cmd_seq], indent=4, sort_keys=True)
