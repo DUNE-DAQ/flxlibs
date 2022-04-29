@@ -13,7 +13,8 @@
 #include "packetformat/block_format.hpp"
 
 #include "appfwk/DAQModuleHelper.hpp"
-#include "appfwk/DAQSink.hpp"
+#include "iomanager/IOManager.hpp"
+#include "iomanager/Sender.hpp"
 #include "flxlibs/felixcardreaderinfo/InfoNljs.hpp"
 #include "logging/Logging.hpp"
 #include "readoutlibs/utils/ReusableThread.hpp"
@@ -32,10 +33,8 @@ template<class TargetPayloadType>
 class ElinkModel : public ElinkConcept
 {
 public:
-  // using sink_t = appfwk::DAQSink<std::unique_ptr<TargetPayloadType>>;
-  // using sink_t = appfwk::DAQSink<TargetPayloadType*>;
-  using sink_t = appfwk::DAQSink<TargetPayloadType>;
-  using err_sink_t = appfwk::DAQSink<felix::packetformat::chunk>;
+  using sink_t = iomanager::SenderConcept<TargetPayloadType>;
+  using err_sink_t = iomanager::SenderConcept<felix::packetformat::chunk>;
   using inherited = ElinkConcept;
   using data_t = nlohmann::json;
 
@@ -55,15 +54,15 @@ public:
     if (m_sink_is_set) {
       TLOG_DEBUG(5) << "ElinkModel sink is already set in initialized!";
     } else {
-      m_sink_queue = std::make_unique<sink_t>(sink_name);
-      //m_error_sink_queue = std::make_unique<err_sink_t>("errored_chunks_q");
+      iomanager::IOManager iom;
+      m_sink_queue = iom.get_sender<sink_t>(sink_name);
       m_sink_is_set = true;
     }
   }
 
-  std::unique_ptr<sink_t>& get_sink() { return m_sink_queue; }
+  std::shared_ptr<sink_t>& get_sink() { return m_sink_queue; }
 
-  std::unique_ptr<err_sink_t>& get_error_sink() { return m_error_sink_queue; }
+  std::shared_ptr<err_sink_t>& get_error_sink() { return m_error_sink_queue; }
 
   void init(const data_t& /*args*/, const size_t block_queue_capacity)
   {
@@ -181,8 +180,8 @@ private:
 
   // Sink
   bool m_sink_is_set{ false };
-  std::unique_ptr<sink_t> m_sink_queue;
-  std::unique_ptr<err_sink_t> m_error_sink_queue;
+  std::shared_ptr<sink_t> m_sink_queue;
+  std::shared_ptr<err_sink_t> m_error_sink_queue;
 
   // blocks to process
   UniqueBlockAddrQueue m_block_addr_queue;
