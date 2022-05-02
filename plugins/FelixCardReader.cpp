@@ -76,7 +76,7 @@ FelixCardReader::init(const data_t& args)
   auto ini = args.get<appfwk::app::ModInit>();
   m_card_wrapper->init(args);
   for (const auto& qi : ini.conn_refs) {
-    if (qi.dir != iomanager::Direction::kOutput) {
+    if (qi.dir != iomanager::connection::Direction::kOutput) {
       // ers::error(InitializationError(ERS_HERE, "Only output queues are supported in this module!"));
       continue;
     } else if (qi.uid == "errored_chunks_q") {
