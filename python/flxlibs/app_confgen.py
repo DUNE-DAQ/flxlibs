@@ -80,7 +80,9 @@ def generate(
         EMULATOR_MODE = False,
         ENABLE_SOFTWARE_TPG=False,
         RUN_NUMBER = 333,
-        DATA_FILE="./frames.bin"
+        DATA_FILE="./frames.bin",
+        SUPERCHUNK_FACTOR=12,
+        EMU_FANOUT=False
     ):
 
     link_mask = parse_linkmask(FELIX_ELINK_MASK, NUMBER_OF_DATA_PRODUCERS+NUMBER_OF_TP_PRODUCERS)
@@ -251,21 +253,21 @@ def generate(
                             card_id=CARDID,
                             logical_units=[flxcc.LogicalUnit(
                                 log_unit_id=0,
-                                emu_fanout=False,
+                                emu_fanout=EMU_FANOUT,
                                 links=[flxcc.Link(
                                     link_id=i, 
                                     enabled=True, 
                                     dma_desc=0, 
-                                    superchunk_factor=12
+                                    superchunk_factor=SUPERCHUNK_FACTOR
                                     ) for i in link_mask[0]])]
                                 +[flxcc.LogicalUnit(
                                 log_unit_id=1,
-                                emu_fanout=False,
+                                emu_fanout=EMU_FANOUT,
                                 links=[flxcc.Link(
                                     link_id=i, 
                                     enabled=True, 
                                     dma_desc=0, 
-                                    superchunk_factor=12
+                                    superchunk_factor=SUPERCHUNK_FACTOR
                                     ) for i in link_mask[1]])]))
             ] + [
                 (f"datahandler_{idx}", rconf.Conf(
@@ -542,8 +544,10 @@ if __name__ == '__main__':
     @click.option('-g', '--enable-software-tpg', is_flag=True)
     @click.option('-r', '--run-number', default=333)
     @click.option('-d', '--data-file', type=click.Path(), default='./frames.bin')
+    @click.option('-S', '--superchunk-factor', default=12)
+    @click.option('-E', '--emu-fanout', is_flag=True)
     @click.argument('json_file', type=click.Path(), default='flx_readout.json')
-    def cli(frontend_type, number_of_data_producers, number_of_tp_producers, felix_elink_mask, data_rate_slowdown_factor, emulator_mode, enable_software_tpg, run_number, data_file, json_file):
+    def cli(frontend_type, number_of_data_producers, number_of_tp_producers, felix_elink_mask, data_rate_slowdown_factor, emulator_mode, enable_software_tpg, run_number, data_file, superchunk_factor, emu_fanout, json_file):
         """
           JSON_FILE: Input raw data file.
           JSON_FILE: Output json configuration file.
@@ -559,6 +563,8 @@ if __name__ == '__main__':
                     EMULATOR_MODE = emulator_mode,
                     ENABLE_SOFTWARE_TPG = enable_software_tpg,
                     RUN_NUMBER = run_number,
+                    SUPERCHUNK_FACTOR = superchunk_factor,
+                    EMU_FANOUT = emu_fanout,
                     DATA_FILE = data_file,
                 ))
 
