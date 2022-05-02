@@ -75,16 +75,16 @@ FelixCardReader::init(const data_t& args)
 {
   auto ini = args.get<appfwk::app::ModInit>();
   m_card_wrapper->init(args);
-  for (const auto& qi : ini.qinfos) {
-    if (qi.dir != "output") {
+  for (const auto& qi : ini.conn_refs) {
+    if (qi.dir != iomanager::Direction::kOutput) {
       // ers::error(InitializationError(ERS_HERE, "Only output queues are supported in this module!"));
       continue;
-    } else if (qi.inst == "errored_chunks_q") {
+    } else if (qi.uid == "errored_chunks_q") {
       continue;
     } else {
-      TLOG_DEBUG(TLVL_WORK_STEPS) << ": CardReader output queue is " << qi.inst;
+      TLOG_DEBUG(TLVL_WORK_STEPS) << ": CardReader output queue is " << qi.uid;
       const char delim = '_';
-      std::string target = qi.inst;
+      std::string target = qi.uid;
       std::vector<std::string> words;
       tokenize(target, delim, words);
       int linkid = -1;
@@ -94,7 +94,7 @@ FelixCardReader::init(const data_t& args)
         ers::fatal(InitializationError(ERS_HERE, "Link ID could not be parsed on queue instance name! "));
       }
       TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << target << " DLH number: " << linkid;
-      m_elinks[linkid] = createElinkModel(qi.inst);
+      m_elinks[linkid] = createElinkModel(qi.uid);
       if (m_elinks[linkid] == nullptr) {
         ers::fatal(InitializationError(ERS_HERE, "CreateElink failed to provide an appropriate model for queue!"));
       }

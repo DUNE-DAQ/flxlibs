@@ -55,7 +55,7 @@ public:
       TLOG_DEBUG(5) << "ElinkModel sink is already set in initialized!";
     } else {
       iomanager::IOManager iom;
-      m_sink_queue = iom.get_sender<sink_t>(sink_name);
+      m_sink_queue = iom.get_sender<TargetPayloadType>(sink_name);
       m_sink_is_set = true;
     }
   }

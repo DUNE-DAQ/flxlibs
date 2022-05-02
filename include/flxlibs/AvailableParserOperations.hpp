@@ -85,7 +85,7 @@ fixsizedChunkInto(std::shared_ptr<iomanager::SenderConcept<TargetStruct>>& sink,
       try {
         // finally, push to sink
         sink->send(payload, timeout);
-      } catch (const dunedaq::iomanager::TimeoutExpired&& excpt) {
+      } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
         // ers::error(ParserOperationQueuePushFailure(ERS_HERE, " "));
       }
     }
@@ -120,7 +120,7 @@ fixsizedShortchunkInto(std::shared_ptr<iomanager::SenderConcept<TargetStruct>>& 
 template<class TargetStruct>
 inline std::function<void(const felix::packetformat::chunk& chunk)>
 fixsizedChunkViaHeap(std::shared_ptr<iomanager::SenderConcept<TargetStruct*>>& sink,
-                     // std::shared_ptr<iomanager::Sender<std::unique_ptr<TargetStruct>>>& sink,
+                     // std::shared_ptr<iomanager::SenderConcept<std::unique_ptr<TargetStruct>>>& sink,
                      std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {
@@ -158,7 +158,7 @@ fixsizedChunkViaHeap(std::shared_ptr<iomanager::SenderConcept<TargetStruct*>>& s
 
 template<class TargetWithDatafield>
 inline std::function<void(const felix::packetformat::chunk&)>
-varsizedChunkIntoWithDatafield(std::shared_ptr<iomanager::Sender<TargetWithDatafield>>& sink,
+varsizedChunkIntoWithDatafield(std::shared_ptr<iomanager::SenderConcept<TargetWithDatafield>>& sink,
                                std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {
@@ -186,7 +186,7 @@ varsizedChunkIntoWithDatafield(std::shared_ptr<iomanager::Sender<TargetWithDataf
 }
 
 inline std::function<void(const felix::packetformat::chunk& chunk)>
-varsizedChunkIntoWrapper(std::shared_ptr<iomanager::Sender<fdreadoutlibs::types::VariableSizePayloadWrapper>>& sink,
+varsizedChunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadoutlibs::types::VariableSizePayloadWrapper>>& sink,
                          std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {
@@ -212,7 +212,7 @@ varsizedChunkIntoWrapper(std::shared_ptr<iomanager::Sender<fdreadoutlibs::types:
 }
 
 inline std::function<void(const felix::packetformat::shortchunk& shortchunk)>
-varsizedShortchunkIntoWrapper(std::shared_ptr<iomanager::Sender<fdreadoutlibs::types::VariableSizePayloadWrapper>>& sink,
+varsizedShortchunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadoutlibs::types::VariableSizePayloadWrapper>>& sink,
                               std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::shortchunk& shortchunk) {
@@ -229,12 +229,13 @@ varsizedShortchunkIntoWrapper(std::shared_ptr<iomanager::Sender<fdreadoutlibs::t
 }
 
 inline std::function<void(const felix::packetformat::chunk& chunk)>
-errorChunkIntoSink(std::shared_ptr<iomanager::Sender<felix::packetformat::chunk>>& sink,
+errorChunkIntoSink(std::shared_ptr<iomanager::SenderConcept<felix::packetformat::chunk>>& sink,
                    std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {
     try {
-      sink->send(chunk, timeout);
+#warning GLM -> This is not safe since chunk may not be valid after send!
+      //sink->send(chunk, timeout);
     } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
       // ers
     }
