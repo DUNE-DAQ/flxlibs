@@ -234,7 +234,7 @@ errorChunkIntoSink(std::shared_ptr<iomanager::SenderConcept<felix::packetformat:
 {
   return [&](const felix::packetformat::chunk& chunk) {
     try {
-#warning GLM -> This is not safe since chunk may not be valid after send!
+#warning GLM -> What should we do here with the const chunk? 
       //sink->send(chunk, timeout);
     } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
       // ers
