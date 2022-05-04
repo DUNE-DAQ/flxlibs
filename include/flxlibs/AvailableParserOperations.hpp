@@ -84,7 +84,7 @@ fixsizedChunkInto(std::shared_ptr<iomanager::SenderConcept<TargetStruct>>& sink,
       }
       try {
         // finally, push to sink
-        sink->send(payload, timeout);
+        sink->send(std::move(payload), timeout);
       } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
         // ers::error(ParserOperationQueuePushFailure(ERS_HERE, " "));
       }
@@ -109,7 +109,7 @@ fixsizedShortchunkInto(std::shared_ptr<iomanager::SenderConcept<TargetStruct>>& 
       std::memcpy(static_cast<char*>(payload), shortchunk.data, target_size);
       try {
         // finally, push to sink
-        sink->send(payload, timeout);
+        sink->send(std::move(payload), timeout);
       } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
         // ers::error(ParserOperationQueuePushFailure(ERS_HERE, " "));
       }
@@ -148,7 +148,7 @@ fixsizedChunkViaHeap(std::shared_ptr<iomanager::SenderConcept<TargetStruct*>>& s
       }
       try {
         // finally, push to sink
-        sink->send(payload, timeout); // std::move(std::make_unique<TargetStruct>(payload)), timeout);
+        sink->send(std::move(payload), timeout); // std::move(std::make_unique<TargetStruct>(payload)), timeout);
       } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
         // ers::error(ParserOperationQueuePushFailure(ERS_HERE, " "));
       }
@@ -178,7 +178,7 @@ varsizedChunkIntoWithDatafield(std::shared_ptr<iomanager::SenderConcept<TargetWi
     }
     twd.set_data_size(bytes_copied_chunk);
     try {
-      sink->send(twd, timeout);
+      sink->send(std::move(twd), timeout);
     } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
       // ers::error
     }
@@ -204,7 +204,7 @@ varsizedChunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadoutlibs:
     }
     fdreadoutlibs::types::VariableSizePayloadWrapper payload_wrapper(chunk_length, payload);
     try {
-      sink->send(payload_wrapper, timeout);
+      sink->send(std::move(payload_wrapper), timeout);
     } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
       // ers
     }
@@ -221,7 +221,7 @@ varsizedShortchunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadout
     std::memcpy(payload, shortchunk.data, shortchunk_length);
     fdreadoutlibs::types::VariableSizePayloadWrapper payload_wrapper(shortchunk_length, payload);
     try {
-      sink->send(payload_wrapper, timeout);
+      sink->send(std::move(payload_wrapper), timeout);
     } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
       // ers
     }
