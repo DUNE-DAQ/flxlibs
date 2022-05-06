@@ -90,7 +90,7 @@ def generate(
     n_tp_link_0 = CountTPLink(link_mask[0])
     n_tp_link_1 = CountTPLink(link_mask[1])
     # Define modules and queues
-    queue_specs = [conn.ConnectionId(uid="time_sync_q", partition="", service_type="kQueue", data_type="", uri=f"queue://FollyMPMC:100"),
+    queue_specs = [
             conn.ConnectionId(uid="data_fragments_q", partition="", service_type="kQueue", data_type="", uri=f"queue://FollyMPMC:100"),
             conn.ConnectionId(uid="errored_chunks_q", partition="", service_type="kQueue", data_type="", uri=f"queue://FollyMPMC:100"),
             conn.ConnectionId(uid="errored_frames_q", partition="", service_type="kQueue", data_type="", uri=f"queue://FollyMPMC:10000"),
@@ -131,7 +131,7 @@ def generate(
             conn.ConnectionId(uid=f"{FRONTEND_TYPE}_recording_link_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
                 for idx in range(6, 6+n_links_1-n_tp_link_1)
         ] + [
-                conn.ConnectionId(uid="time_sync_q", topics=["Timesync"], partition="", service_type="kNetwork", data_type="", uri=f"tcp://127.0.0.1:6000") 
+                conn.ConnectionId(uid="time_sync_q", topics=["Timesync"], partition="", service_type="kPubSub", data_type="", uri=f"tcp://127.0.0.1:6000") 
             ]
 
     # Only needed to reproduce the same order as when using jsonnet
