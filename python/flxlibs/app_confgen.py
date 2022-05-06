@@ -131,7 +131,7 @@ def generate(
             conn.ConnectionId(uid=f"{FRONTEND_TYPE}_recording_link_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
                 for idx in range(6, 6+n_links_1-n_tp_link_1)
         ] + [
-                conn.ConnectionId(uid="timesync", topics=["Timesync"], partition="", service_type="kNetwork", data_type="", uri=f"tcp://127.0.0.1:6000") 
+                conn.ConnectionId(uid="time_sync_q", topics=["Timesync"], partition="", service_type="kNetwork", data_type="", uri=f"tcp://127.0.0.1:6000") 
             ]
 
     # Only needed to reproduce the same order as when using jsonnet
@@ -181,10 +181,6 @@ def generate(
                             conn.ConnectionRef(name="raw_recording", uid=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="kInput")
                             ]) for idx in range(6, 6+n_links_1-n_tp_link_1)
         ] + [            
-                mspec(f"timesync_consumer", "TimeSyncConsumer", [
-                                            conn.ConnectionRef(name="input_queue", uid=f"time_sync_q", dir="kInput")
-                                            ])
-        ] + [
                 mspec(f"fragment_consumer", "FragmentConsumer", [
                                             conn.ConnectionRef(name="input_queue", uid=f"data_fragments_q", dir="kInput")
                                             ])
@@ -390,7 +386,6 @@ def generate(
             ("datahandler_.*", startpars),
             ("flxcard_.*", startpars),
             ("data_recorder_.*", startpars),
-            ("timesync_consumer", startpars),
             ("fragment_consumer", startpars)
         ])
 
@@ -402,7 +397,6 @@ def generate(
             ("flxcard_.*", None),
             ("datahandler_.*", None),
             ("data_recorder_.*", None),
-            ("timesync_consumer", None),
             ("fragment_consumer", None)
         ])
 
