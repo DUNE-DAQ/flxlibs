@@ -16,7 +16,6 @@
 
 // From appfwk
 #include "appfwk/DAQModule.hpp"
-#include "appfwk/DAQSink.hpp"
 #include "utilities/WorkerThread.hpp"
 
 // FELIX Software Suite provided

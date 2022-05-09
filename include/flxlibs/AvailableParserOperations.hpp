@@ -11,7 +11,7 @@
 
 #include "FelixIssues.hpp"
 
-#include "appfwk/DAQSink.hpp"
+#include "iomanager/Sender.hpp"
 #include "fdreadoutlibs/FDReadoutTypes.hpp"
 
 #include "packetformat/block_format.hpp"
@@ -61,7 +61,7 @@ dump_to_buffer(const char* data,
 
 template<class TargetStruct>
 inline std::function<void(const felix::packetformat::chunk& chunk)>
-fixsizedChunkInto(std::unique_ptr<appfwk::DAQSink<TargetStruct>>& sink,
+fixsizedChunkInto(std::shared_ptr<iomanager::SenderConcept<TargetStruct>>& sink,
                   std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {
@@ -84,8 +84,8 @@ fixsizedChunkInto(std::unique_ptr<appfwk::DAQSink<TargetStruct>>& sink,
       }
       try {
         // finally, push to sink
-        sink->push(std::move(payload), timeout);
-      } catch (const dunedaq::appfwk::QueueTimeoutExpired& excpt) {
+        sink->send(std::move(payload), timeout);
+      } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
         // ers::error(ParserOperationQueuePushFailure(ERS_HERE, " "));
       }
     }
@@ -94,7 +94,7 @@ fixsizedChunkInto(std::unique_ptr<appfwk::DAQSink<TargetStruct>>& sink,
 
 template<class TargetStruct>
 inline std::function<void(const felix::packetformat::shortchunk& shortchunk)>
-fixsizedShortchunkInto(std::unique_ptr<appfwk::DAQSink<TargetStruct>>& sink,
+fixsizedShortchunkInto(std::shared_ptr<iomanager::SenderConcept<TargetStruct>>& sink,
                        std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::shortchunk& shortchunk) {
@@ -109,8 +109,8 @@ fixsizedShortchunkInto(std::unique_ptr<appfwk::DAQSink<TargetStruct>>& sink,
       std::memcpy(static_cast<char*>(payload), shortchunk.data, target_size);
       try {
         // finally, push to sink
-        sink->push(std::move(payload), timeout);
-      } catch (const dunedaq::appfwk::QueueTimeoutExpired& excpt) {
+        sink->send(std::move(payload), timeout);
+      } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
         // ers::error(ParserOperationQueuePushFailure(ERS_HERE, " "));
       }
     }
@@ -119,8 +119,8 @@ fixsizedShortchunkInto(std::unique_ptr<appfwk::DAQSink<TargetStruct>>& sink,
 
 template<class TargetStruct>
 inline std::function<void(const felix::packetformat::chunk& chunk)>
-fixsizedChunkViaHeap(std::unique_ptr<appfwk::DAQSink<TargetStruct*>>& sink,
-                     // std::unique_ptr<appfwk::DAQSink<std::unique_ptr<TargetStruct>>>& sink,
+fixsizedChunkViaHeap(std::shared_ptr<iomanager::SenderConcept<TargetStruct*>>& sink,
+                     // std::shared_ptr<iomanager::SenderConcept<std::unique_ptr<TargetStruct>>>& sink,
                      std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {
@@ -148,8 +148,8 @@ fixsizedChunkViaHeap(std::unique_ptr<appfwk::DAQSink<TargetStruct*>>& sink,
       }
       try {
         // finally, push to sink
-        sink->push(payload, timeout); // std::move(std::make_unique<TargetStruct>(payload)), timeout);
-      } catch (const dunedaq::appfwk::QueueTimeoutExpired& excpt) {
+        sink->send(std::move(payload), timeout); // std::move(std::make_unique<TargetStruct>(payload)), timeout);
+      } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
         // ers::error(ParserOperationQueuePushFailure(ERS_HERE, " "));
       }
     }
@@ -158,7 +158,7 @@ fixsizedChunkViaHeap(std::unique_ptr<appfwk::DAQSink<TargetStruct*>>& sink,
 
 template<class TargetWithDatafield>
 inline std::function<void(const felix::packetformat::chunk&)>
-varsizedChunkIntoWithDatafield(std::unique_ptr<appfwk::DAQSink<TargetWithDatafield>>& sink,
+varsizedChunkIntoWithDatafield(std::shared_ptr<iomanager::SenderConcept<TargetWithDatafield>>& sink,
                                std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {
@@ -178,15 +178,15 @@ varsizedChunkIntoWithDatafield(std::unique_ptr<appfwk::DAQSink<TargetWithDatafie
     }
     twd.set_data_size(bytes_copied_chunk);
     try {
-      sink->push(std::move(twd), timeout);
-    } catch (const dunedaq::appfwk::QueueTimeoutExpired& excpt) {
+      sink->send(std::move(twd), timeout);
+    } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
       // ers::error
     }
   };
 }
 
 inline std::function<void(const felix::packetformat::chunk& chunk)>
-varsizedChunkIntoWrapper(std::unique_ptr<appfwk::DAQSink<fdreadoutlibs::types::VariableSizePayloadWrapper>>& sink,
+varsizedChunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadoutlibs::types::VariableSizePayloadWrapper>>& sink,
                          std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {
@@ -204,15 +204,15 @@ varsizedChunkIntoWrapper(std::unique_ptr<appfwk::DAQSink<fdreadoutlibs::types::V
     }
     fdreadoutlibs::types::VariableSizePayloadWrapper payload_wrapper(chunk_length, payload);
     try {
-      sink->push(std::move(payload_wrapper), timeout);
-    } catch (const dunedaq::appfwk::QueueTimeoutExpired& excpt) {
+      sink->send(std::move(payload_wrapper), timeout);
+    } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
       // ers
     }
   };
 }
 
 inline std::function<void(const felix::packetformat::shortchunk& shortchunk)>
-varsizedShortchunkIntoWrapper(std::unique_ptr<appfwk::DAQSink<fdreadoutlibs::types::VariableSizePayloadWrapper>>& sink,
+varsizedShortchunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadoutlibs::types::VariableSizePayloadWrapper>>& sink,
                               std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::shortchunk& shortchunk) {
@@ -221,21 +221,22 @@ varsizedShortchunkIntoWrapper(std::unique_ptr<appfwk::DAQSink<fdreadoutlibs::typ
     std::memcpy(payload, shortchunk.data, shortchunk_length);
     fdreadoutlibs::types::VariableSizePayloadWrapper payload_wrapper(shortchunk_length, payload);
     try {
-      sink->push(std::move(payload_wrapper), timeout);
-    } catch (const dunedaq::appfwk::QueueTimeoutExpired& excpt) {
+      sink->send(std::move(payload_wrapper), timeout);
+    } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
       // ers
     }
   };
 }
 
 inline std::function<void(const felix::packetformat::chunk& chunk)>
-errorChunkIntoSink(std::unique_ptr<appfwk::DAQSink<felix::packetformat::chunk>>& sink,
+errorChunkIntoSink(std::shared_ptr<iomanager::SenderConcept<felix::packetformat::chunk>>& sink,
                    std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {
     try {
-      sink->push(chunk, timeout);
-    } catch (const dunedaq::appfwk::QueueTimeoutExpired& excpt) {
+#warning GLM -> What should we do here with the const chunk? 
+      //sink->send(chunk, timeout);
+    } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
       // ers
     }
   };

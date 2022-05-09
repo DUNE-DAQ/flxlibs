@@ -12,9 +12,6 @@
 #include "packetformat/block_format.hpp"
 #include "packetformat/block_parser.hpp"
 
-// From Module
-//#include "appfwk/DAQSource.hpp"
-
 #include "FelixIssues.hpp"
 //#include "ReadoutTypes.hpp"
 #include "FelixStatistics.hpp"

@@ -22,8 +22,9 @@ import dunedaq.appfwk.cmd as cmd # AddressedCmd,
 import dunedaq.readoutlibs.readoutconfig as rconf 
 import dunedaq.readoutlibs.recorderconfig as bfs
 import dunedaq.flxlibs.felixcardreader as flxcr
-import dunedaq.flxlibs.felixcardcontroller as flxcc
-import dunedaq.networkmanager.nwmgr as nwmgr
+#import dunedaq.flxlibs.felixcardcontroller as flxcc
+import dunedaq.iomanager.connection as conn
+#import dunedaq.networkmanager.nwmgr as nwmgr
 
 from appfwk.utils import mcmd, mrccmd, mspec
 
@@ -91,130 +92,126 @@ def generate(
     n_tp_link_0 = CountTPLink(link_mask[0])
     n_tp_link_1 = CountTPLink(link_mask[1])
     # Define modules and queues
-    queue_bare_specs = [
-            app.QueueSpec(inst="time_sync_q", kind='FollyMPMCQueue', capacity=100),
-            app.QueueSpec(inst="data_fragments_q", kind='FollyMPMCQueue', capacity=100),
-            app.QueueSpec(inst="errored_chunks_q", kind='FollyMPMCQueue', capacity=100),
-            app.QueueSpec(inst="errored_frames_q", kind="FollyMPMCQueue", capacity=10000),
+    queue_specs = [
+            conn.ConnectionId(uid="data_fragments_q", partition="", service_type="kQueue", data_type="", uri=f"queue://FollyMPMC:100"),
+            conn.ConnectionId(uid="errored_chunks_q", partition="", service_type="kQueue", data_type="", uri=f"queue://FollyMPMC:100"),
+            conn.ConnectionId(uid="errored_frames_q", partition="", service_type="kQueue", data_type="", uri=f"queue://FollyMPMC:10000"),
         ] + [
-            app.QueueSpec(inst=f"data_requests_{idx}", kind='FollySPSCQueue', capacity=1000)
+            conn.ConnectionId(uid=f"data_requests_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:1000")
                 for idx in range(min(5, n_links_0-n_tp_link_0))
         ] + [
-            app.QueueSpec(inst=f"data_requests_{idx}", kind='FollySPSCQueue', capacity=1000)
+            conn.ConnectionId(uid=f"data_requests_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:1000")
                 for idx in range(6, 6+n_links_1-n_tp_link_1)
         ] + [
-            app.QueueSpec(inst=f"data_requests_{idx}", kind='FollySPSCQueue', capacity=1000)
+            conn.ConnectionId(uid=f"data_requests_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:1000")
                 for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]
         ] + [
-            app.QueueSpec(inst=f"data_requests_{idx}", kind='FollySPSCQueue', capacity=1000)
+            conn.ConnectionId(uid=f"data_requests_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:1000")
                 for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]
         ] + [
-            app.QueueSpec(inst=f"{FRONTEND_TYPE}_link_{idx}", kind='FollySPSCQueue', capacity=100000)
+            conn.ConnectionId(uid=f"{FRONTEND_TYPE}_link_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
                 for idx in range(min(5, n_links_0-n_tp_link_0))
         ] + [
-            app.QueueSpec(inst=f"{FRONTEND_TYPE}_link_{idx}", kind='FollySPSCQueue', capacity=100000)
+            conn.ConnectionId(uid=f"{FRONTEND_TYPE}_link_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
                 for idx in range(6, 6+n_links_1-n_tp_link_1)
         ] + [
-            app.QueueSpec(inst=f"raw_tp_link_{idx}", kind='FollySPSCQueue', capacity=100000)
+            conn.ConnectionId(uid=f"raw_tp_link_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
                 for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]
         ] + [
-            app.QueueSpec(inst=f"raw_tp_link_{idx}", kind='FollySPSCQueue', capacity=100000)
+            conn.ConnectionId(uid=f"raw_tp_link_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
                 for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]
         ] + [
-            app.QueueSpec(inst=f"tp_fake_link_{idx}", kind='FollySPSCQueue', capacity=100000)
+            conn.ConnectionId(uid=f"tp_fake_link_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
                 for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]
         ] + [
-            app.QueueSpec(inst=f"tp_fake_link_{idx}", kind='FollySPSCQueue', capacity=100000)
+            conn.ConnectionId(uid=f"tp_fake_link_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
                 for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]
         ] + [
-            app.QueueSpec(inst=f"{FRONTEND_TYPE}_recording_link_{idx}", kind='FollySPSCQueue', capacity=100000)
+            conn.ConnectionId(uid=f"{FRONTEND_TYPE}_recording_link_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
                 for idx in range(min(5, n_links_0-n_tp_link_0))
         ] + [
-            app.QueueSpec(inst=f"{FRONTEND_TYPE}_recording_link_{idx}", kind='FollySPSCQueue', capacity=100000)
+            conn.ConnectionId(uid=f"{FRONTEND_TYPE}_recording_link_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
                 for idx in range(6, 6+n_links_1-n_tp_link_1)
-        ]
+        ] + [
+                conn.ConnectionId(uid="time_sync_q", topics=["Timesync"], partition="", service_type="kPubSub", data_type="", uri=f"tcp://127.0.0.1:6000") 
+            ]
 
     # Only needed to reproduce the same order as when using jsonnet
-    queue_specs = app.QueueSpecs(sorted(queue_bare_specs, key=lambda x: x.inst))
+    #queue_specs = app.QueueSpecs(sorted(queue_bare_specs, key=lambda x: x.inst))
 
     #! omit DataRecorder for TP's for now
     mod_specs = [
                 mspec(f"datahandler_{idx}", "DataLinkHandler", [
-                            app.QueueInfo(name="raw_input", inst=f"{FRONTEND_TYPE}_link_{idx}", dir="input"),
-                            app.QueueInfo(name="timesync", inst="time_sync_q", dir="output"),
-                            app.QueueInfo(name="requests", inst=f"data_requests_{idx}", dir="input"),
-                            app.QueueInfo(name="fragment_queue", inst="data_fragments_q", dir="output"),
-                            app.QueueInfo(name="raw_recording", inst=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="output"),
-                            app.QueueInfo(name="errored_frames", inst="errored_frames_q", dir="output"),
+                            conn.ConnectionRef(name="raw_input", uid=f"{FRONTEND_TYPE}_link_{idx}", dir="kInput"),
+                            conn.ConnectionRef(name="timesync_output", uid="time_sync_q", dir="kOutput"),
+                            conn.ConnectionRef(name="request_input", uid=f"data_requests_{idx}", dir="kInput"),
+                            conn.ConnectionRef(name="fragment_queue", uid="data_fragments_q", dir="kOutput"),
+                            conn.ConnectionRef(name="raw_recording", uid=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="kOutput"),
+                            conn.ConnectionRef(name="errored_frames", uid="errored_frames_q", dir="kOutput"),
                             ]) for idx in range(min(5, n_links_0-n_tp_link_0))
         ] + [
                 mspec(f"datahandler_{idx}", "DataLinkHandler", [
-                            app.QueueInfo(name="raw_input", inst=f"{FRONTEND_TYPE}_link_{idx}", dir="input"),
-                            app.QueueInfo(name="timesync", inst="time_sync_q", dir="output"),
-                            app.QueueInfo(name="requests", inst=f"data_requests_{idx}", dir="input"),
-                            app.QueueInfo(name="fragment_queue", inst="data_fragments_q", dir="output"),
-                            app.QueueInfo(name="raw_recording", inst=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="output"),
-                            app.QueueInfo(name="errored_frames", inst="errored_frames_q", dir="output"),
+                            conn.ConnectionRef(name="raw_input", uid=f"{FRONTEND_TYPE}_link_{idx}", dir="kInput"),
+                            conn.ConnectionRef(name="timesync_output", uid="time_sync_q", dir="kOutput"),
+                            conn.ConnectionRef(name="request_input", uid=f"data_requests_{idx}", dir="kInput"),
+                            conn.ConnectionRef(name="fragment_queue", uid="data_fragments_q", dir="kOutput"),
+                            conn.ConnectionRef(name="raw_recording", uid=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="kOutput"),
+                            conn.ConnectionRef(name="errored_frames", uid="errored_frames_q", dir="kOutput"),
                             ]) for idx in range(6, 6+n_links_1-n_tp_link_1)
         ] + [
                 mspec(f"datahandler_{idx}", "DataLinkHandler", [
-                            app.QueueInfo(name="raw_input", inst=f"raw_tp_link_{idx}", dir="input"),
-                            app.QueueInfo(name="timesync", inst="time_sync_q", dir="output"),
-                            app.QueueInfo(name="requests", inst=f"data_requests_{idx}", dir="input"),
-                            app.QueueInfo(name="fragment_queue", inst="data_fragments_q", dir="output"),
-                            app.QueueInfo(name="errored_frames", inst="errored_frames_q", dir="output"),
+                            conn.ConnectionRef(name="raw_input", uid=f"raw_tp_link_{idx}", dir="kInput"),
+                            conn.ConnectionRef(name="timesync_output", uid="time_sync_q", dir="kOutput"),
+                            conn.ConnectionRef(name="request_input", uid=f"data_requests_{idx}", dir="kInput"),
+                            conn.ConnectionRef(name="fragment_queue", uid="data_fragments_q", dir="kOutput"),
+                            conn.ConnectionRef(name="errored_frames", uid="errored_frames_q", dir="kOutput"),
                             ]) for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]
         ] + [
                 mspec(f"datahandler_{idx}", "DataLinkHandler", [
-                            app.QueueInfo(name="raw_input", inst=f"raw_tp_link_{idx}", dir="input"),
-                            app.QueueInfo(name="timesync", inst="time_sync_q", dir="output"),
-                            app.QueueInfo(name="requests", inst=f"data_requests_{idx}", dir="input"),
-                            app.QueueInfo(name="fragment_queue", inst="data_fragments_q", dir="output"),
-                            app.QueueInfo(name="errored_frames", inst="errored_frames_q", dir="output"),
+                            conn.ConnectionRef(name="raw_input", uid=f"raw_tp_link_{idx}", dir="kInput"),
+                            conn.ConnectionRef(name="timesync_output", uid="time_sync_q", dir="kOutput"),
+                            conn.ConnectionRef(name="request_input", uid=f"data_requests_{idx}", dir="kInput"),
+                            conn.ConnectionRef(name="fragment_queue", uid="data_fragments_q", dir="kOutput"),
+                            conn.ConnectionRef(name="errored_frames", uid="errored_frames_q", dir="kOutput"),
                             ]) for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]
         ] + [
                 mspec(f"data_recorder_{idx}", "DataRecorder", [
-                            app.QueueInfo(name="raw_recording", inst=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="input")
+                            conn.ConnectionRef(name="raw_recording", uid=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="kInput")
                             ]) for idx in range(min(5, n_links_0-n_tp_link_0))
         ] + [
                 mspec(f"data_recorder_{idx}", "DataRecorder", [
-                            app.QueueInfo(name="raw_recording", inst=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="input")
+                            conn.ConnectionRef(name="raw_recording", uid=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="kInput")
                             ]) for idx in range(6, 6+n_links_1-n_tp_link_1)
         ] + [            
-                mspec(f"timesync_consumer", "TimeSyncConsumer", [
-                                            app.QueueInfo(name="input_queue", inst=f"time_sync_q", dir="input")
-                                            ])
-        ] + [
                 mspec(f"fragment_consumer", "FragmentConsumer", [
-                                            app.QueueInfo(name="input_queue", inst=f"data_fragments_q", dir="input")
+                                            conn.ConnectionRef(name="input_queue", uid=f"data_fragments_q", dir="kInput")
                                             ])
         ]
 
     
     if n_links_0 > 0:
         mod_specs.append(mspec("flxcard_0", "FelixCardReader", [
-                        app.QueueInfo(name=f"output_{idx}", inst=f"{FRONTEND_TYPE}_link_{idx}", dir="output")
+                        conn.ConnectionRef(name=f"output_{idx}", uid=f"{FRONTEND_TYPE}_link_{idx}", dir="kOutput")
                             for idx in range(min(5, n_links_0-n_tp_link_0))
                         ] + [
-                        app.QueueInfo(name=f"output_{idx}", inst=f"raw_tp_link_{idx}", dir="output")
+                        conn.ConnectionRef(name=f"output_{idx}", uid=f"raw_tp_link_{idx}", dir="kOutput")
                             for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]
                         ] + [
-                        app.QueueInfo(name="errored_chunks", inst="errored_chunks_q", dir="output")
+                        conn.ConnectionRef(name="errored_chunks", uid="errored_chunks_q", dir="kOutput")
                         ]))
     if NUMBER_OF_DATA_PRODUCERS > 5 or n_links_1 > 0:
         mod_specs.append(mspec("flxcard_1", "FelixCardReader", [
-                        app.QueueInfo(name=f"output_{idx}", inst=f"{FRONTEND_TYPE}_link_{idx}", dir="output")
+                        conn.ConnectionRef(name=f"output_{idx}", uid=f"{FRONTEND_TYPE}_link_{idx}", dir="kOutput")
                             for idx in range(6, 6+n_links_1-n_tp_link_1)
                         ] + [
-                        app.QueueInfo(name=f"output_{idx}", inst=f"raw_tp_link_{idx}", dir="output")
+                        conn.ConnectionRef(name=f"output_{idx}", uid=f"raw_tp_link_{idx}", dir="kOutput")
                             for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]
                         ] + [
-                        app.QueueInfo(name="errored_chunks", inst="errored_chunks_q", dir="output")
+                        conn.ConnectionRef(name="errored_chunks", uid="errored_chunks_q", dir="kOutput")
                         ]))
 
     mod_specs.append(mspec("flxcardctrl_0", "FelixCardController", []))
-    nw_specs = [nwmgr.Connection(name="timesync", topics=["Timesync"], address="tcp://127.0.0.1:6000")]
-    init_specs = app.Init(queues=queue_specs, modules=mod_specs, nwconnections=nw_specs)
+    init_specs = app.Init(connections=queue_specs, modules=mod_specs)
 
     jstr = json.dumps(init_specs.pod(), indent=4, sort_keys=True)
     print(jstr)
@@ -411,9 +408,7 @@ def generate(
     startcmd = mrccmd("start", "CONFIGURED", "RUNNING", [
             ("datahandler_.*", startpars),
             ("flxcard_.*", startpars),
-            ("flxcardctrl_.*", startpars),
             ("data_recorder_.*", startpars),
-            ("timesync_consumer", startpars),
             ("fragment_consumer", startpars)
         ])
 
@@ -423,10 +418,8 @@ def generate(
 
     stopcmd = mrccmd("stop", "RUNNING", "CONFIGURED", [
             ("flxcard_.*", None),
-            ("flxcardctrl_.*", None),
             ("datahandler_.*", None),
             ("data_recorder_.*", None),
-            ("timesync_consumer", None),
             ("fragment_consumer", None)
         ])
 
