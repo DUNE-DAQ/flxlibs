@@ -81,7 +81,9 @@ def generate(
         EMULATOR_MODE = False,
         ENABLE_SOFTWARE_TPG=False,
         RUN_NUMBER = 333,
-        DATA_FILE="./frames.bin"
+        DATA_FILE="./frames.bin",
+        SUPERCHUNK_FACTOR=12,
+        EMU_FANOUT=False
     ):
 
     link_mask = parse_linkmask(FELIX_ELINK_MASK, NUMBER_OF_DATA_PRODUCERS+NUMBER_OF_TP_PRODUCERS)
@@ -208,6 +210,7 @@ def generate(
                         conn.ConnectionRef(name="errored_chunks", uid="errored_chunks_q", dir="kOutput")
                         ]))
 
+    mod_specs.append(mspec("flxcardctrl_0", "FelixCardController", []))
     init_specs = app.Init(connections=queue_specs, modules=mod_specs)
 
     jstr = json.dumps(init_specs.pod(), indent=4, sort_keys=True)
@@ -243,6 +246,26 @@ def generate(
                             dma_memory_size_gb= 4,
                             numa_id=0,
                             links_enabled=link_mask[1])),
+                ("flxcardctrl_0",flxcc.Conf(
+                            card_id=CARDID,
+                            logical_units=[flxcc.LogicalUnit(
+                                log_unit_id=0,
+                                emu_fanout=EMU_FANOUT,
+                                links=[flxcc.Link(
+                                    link_id=i, 
+                                    enabled=True, 
+                                    dma_desc=0, 
+                                    superchunk_factor=SUPERCHUNK_FACTOR
+                                    ) for i in link_mask[0]])]
+                                +[flxcc.LogicalUnit(
+                                log_unit_id=1,
+                                emu_fanout=EMU_FANOUT,
+                                links=[flxcc.Link(
+                                    link_id=i, 
+                                    enabled=True, 
+                                    dma_desc=0, 
+                                    superchunk_factor=SUPERCHUNK_FACTOR
+                                    ) for i in link_mask[1]])]))
             ] + [
                 (f"datahandler_{idx}", rconf.Conf(
                         readoutmodelconf= rconf.ReadoutModelConf(
@@ -424,6 +447,65 @@ def generate(
 
     cmd_seq.append(record_cmd)
 
+    get_reg_cmd = mrccmd("getregister", "RUNNING", "RUNNING", [
+        ("flxcardctrl_.*", flxcc.GetRegisters(
+            card_id=0,
+            log_unit_id=0,
+            reg_names=(
+                "REG_MAP_VERSION",
+            )
+        ))
+    ])
+
+    jstr = json.dumps(get_reg_cmd.pod(), indent=4, sort_keys=True)
+    print("="*80+"\nGet Register\n\n", jstr)
+
+    cmd_seq.append(get_reg_cmd)
+
+    set_reg_cmd = mrccmd("setregister", "RUNNING", "RUNNING", [
+        ("flxcardctrl_.*", flxcc.SetRegisters(
+            card_id=0,
+            log_unit_id=0,
+            reg_val_pairs=(
+                flxcc.RegValPair(reg_name="REG_MAP_VERSION", reg_val=0),
+            )
+        ))
+    ])
+
+    jstr = json.dumps(set_reg_cmd.pod(), indent=4, sort_keys=True)
+    print("="*80+"\nSet Register\n\n", jstr)
+
+    cmd_seq.append(set_reg_cmd)
+
+    get_bf_cmd = mrccmd("getbitfield", "RUNNING", "RUNNING", [
+        ("flxcardctrl_.*", flxcc.GetBFs(
+            card_id=0,
+            log_unit_id=0,
+            bf_names=(
+                "REG_MAP_VERSION",
+            )
+        ))
+    ])
+
+    jstr = json.dumps(get_bf_cmd.pod(), indent=4, sort_keys=True)
+    print("="*80+"\nGet Bitfield\n\n", jstr)
+
+    cmd_seq.append(get_bf_cmd)
+
+    set_bf_cmd = mrccmd("setbitfield", "RUNNING", "RUNNING", [
+        ("flxcardcontrol_.*", flxcc.SetBFs(
+            card_id=0,
+            log_unit_id=0,
+            bf_val_pairs=(
+                flxcc.RegValPair(reg_name="REG_MAP_VERSION", reg_val=0),
+            )
+        ))
+    ])
+
+    jstr = json.dumps(set_bf_cmd.pod(), indent=4, sort_keys=True)
+    print("="*80+"\nSet Bitfield\n\n", jstr)
+
+    cmd_seq.append(set_bf_cmd)
 
     # Print them as json (to be improved/moved out)
     jstr = json.dumps([c.pod() for c in cmd_seq], indent=4, sort_keys=True)
@@ -445,8 +527,10 @@ if __name__ == '__main__':
     @click.option('-g', '--enable-software-tpg', is_flag=True)
     @click.option('-r', '--run-number', default=333)
     @click.option('-d', '--data-file', type=click.Path(), default='./frames.bin')
+    @click.option('-S', '--superchunk-factor', default=12)
+    @click.option('-E', '--emu-fanout', is_flag=True)
     @click.argument('json_file', type=click.Path(), default='flx_readout.json')
-    def cli(frontend_type, number_of_data_producers, number_of_tp_producers, felix_elink_mask, data_rate_slowdown_factor, emulator_mode, enable_software_tpg, run_number, data_file, json_file):
+    def cli(frontend_type, number_of_data_producers, number_of_tp_producers, felix_elink_mask, data_rate_slowdown_factor, emulator_mode, enable_software_tpg, run_number, data_file, superchunk_factor, emu_fanout, json_file):
         """
           JSON_FILE: Input raw data file.
           JSON_FILE: Output json configuration file.
@@ -462,6 +546,8 @@ if __name__ == '__main__':
                     EMULATOR_MODE = emulator_mode,
                     ENABLE_SOFTWARE_TPG = enable_software_tpg,
                     RUN_NUMBER = run_number,
+                    SUPERCHUNK_FACTOR = superchunk_factor,
+                    EMU_FANOUT = emu_fanout,
                     DATA_FILE = data_file,
                 ))
 
