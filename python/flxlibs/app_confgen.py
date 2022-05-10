@@ -22,7 +22,7 @@ import dunedaq.appfwk.cmd as cmd # AddressedCmd,
 import dunedaq.readoutlibs.readoutconfig as rconf 
 import dunedaq.readoutlibs.recorderconfig as bfs
 import dunedaq.flxlibs.felixcardreader as flxcr
-#import dunedaq.flxlibs.felixcardcontroller as flxcc
+import dunedaq.flxlibs.felixcardcontroller as flxcc
 import dunedaq.iomanager.connection as conn
 #import dunedaq.networkmanager.nwmgr as nwmgr
 
@@ -109,28 +109,28 @@ def generate(
             conn.ConnectionId(uid=f"data_requests_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:1000")
                 for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]
         ] + [
-            conn.ConnectionId(uid=f"{FRONTEND_TYPE}_link_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
+            conn.ConnectionId(uid=f"{FRONTEND_TYPE}_link_{idx}", partition="", service_type="kQueue", data_type=f"{FRONTEND_TYPE}", uri=f"queue://FollySPSC:100000")
                 for idx in range(min(5, n_links_0-n_tp_link_0))
         ] + [
-            conn.ConnectionId(uid=f"{FRONTEND_TYPE}_link_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
+            conn.ConnectionId(uid=f"{FRONTEND_TYPE}_link_{idx}", partition="", service_type="kQueue", data_type=f"{FRONTEND_TYPE}", uri=f"queue://FollySPSC:100000")
                 for idx in range(6, 6+n_links_1-n_tp_link_1)
         ] + [
-            conn.ConnectionId(uid=f"raw_tp_link_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
+            conn.ConnectionId(uid=f"raw_tp_link_{idx}", partition="", service_type="kQueue", data_type="raw_tp", uri=f"queue://FollySPSC:100000")
                 for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]
         ] + [
-            conn.ConnectionId(uid=f"raw_tp_link_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
+            conn.ConnectionId(uid=f"raw_tp_link_{idx}", partition="", service_type="kQueue", data_type="raw_tp", uri=f"queue://FollySPSC:100000")
                 for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]
         ] + [
-            conn.ConnectionId(uid=f"tp_fake_link_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
-                for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]
-        ] + [
-            conn.ConnectionId(uid=f"tp_fake_link_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
-                for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]
-        ] + [
-            conn.ConnectionId(uid=f"{FRONTEND_TYPE}_recording_link_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
+#            conn.ConnectionId(uid=f"tp_fake_link_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
+#                for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]
+#        ] + [
+#            conn.ConnectionId(uid=f"tp_fake_link_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
+#                for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]
+#        ] + [
+            conn.ConnectionId(uid=f"{FRONTEND_TYPE}_recording_link_{idx}", partition="", service_type="kQueue", data_type=f"{FRONTEND_TYPE}", uri=f"queue://FollySPSC:100000")
                 for idx in range(min(5, n_links_0-n_tp_link_0))
         ] + [
-            conn.ConnectionId(uid=f"{FRONTEND_TYPE}_recording_link_{idx}", partition="", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
+            conn.ConnectionId(uid=f"{FRONTEND_TYPE}_recording_link_{idx}", partition="", service_type="kQueue", data_type=f"{FRONTEND_TYPE}", uri=f"queue://FollySPSC:100000")
                 for idx in range(6, 6+n_links_1-n_tp_link_1)
         ] + [
                 conn.ConnectionId(uid="time_sync_q", topics=["Timesync"], partition="", service_type="kPubSub", data_type="", uri=f"tcp://127.0.0.1:6000") 
