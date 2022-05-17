@@ -3,12 +3,6 @@
 
 ## Initial setup
 ---
-### Integration test bash scripts
-
-[tar file with integration test scripts](files/integration-test-scripts.tar.gz)
-
-
----
 
 ### Firmware:
 Download a copy of the FELIX firmware [here](https://dune-fw.web.cern.ch/dune-fw/?dir=felix-pie/tags/v2.0.0/latest).
@@ -83,9 +77,12 @@ then it has successfully worked, if you see errors, then reboot the machine and 
 First ensure you have setup a dunedaq enivronmet, following these instructions:
 [https://dune-daq-sw.readthedocs.io/en/latest/packages/daq-buildtools/#running-a-release-from-cvmfs](https://dune-daq-sw.readthedocs.io/en/latest/packages/daq-buildtools/#running-a-release-from-cvmfs)
 
+Now to get access to the integration test bash scripts clone the flxlibs repository:
+```bash
+git clone https://github.com/DUNE-DAQ/flxlibs.git
+```
 
 Clone dtp-pattens in your working directory, a repository containing fake data patterns to test with the FELIX:
-
 ```bash
 git clone ssh://git@gitlab.cern.ch:7999/dune-daq/readout/dtp-patterns.git
 ```
@@ -94,25 +91,21 @@ git clone ssh://git@gitlab.cern.ch:7999/dune-daq/readout/dtp-patterns.git
 To test hitfinding with the appropriate firmware, `dtp-controls` and `wupper-toybox` are needed to control the TPG (***Note `wupper-toybox` to be replaced with `DUNE-DAQ/uhallibs`***).
 
 In your `sourcecode` directory, clone `wupper-toybox`:
-
 ```bash
 git clone ssh://git@gitlab.cern.ch:7999/dune-daq/readout/wupper-toybox.git
 ```
 
 and make a clean build of the dunedaq software:
-
 ```bash
 dbt-build.sh -c
 ```
 
 Next, clone `dtp-controls` in the working directory:
-
 ```bash
 git clone ssh://git@gitlab.cern.ch:7999/dune-daq/readout/dtp-controls.git -b aearle/felixSupport
 ```
 
 to begin using `dtp-controls`:
-
 ```bash
 source dtp-controls/env.sh
 ```
@@ -128,7 +121,7 @@ source dtp-controls/env.sh
 
 ## Running tests
 ### test dataflow with low level tools:
-
+Integration test scripts are located in `flxlibs/scripts/integration-tests`
 #### basic card communication
 run the bash script:
 ```bash
@@ -338,3 +331,52 @@ stop
 scrap
 ```
 then exit the program with Ctrl-D then Ctrl-C.
+
+### Test TP dataflow with `nanorc`
+***First ensure you are able to ssh into the machine you are working in, as nanorc will run the various DAQ modules as localhosts.***
+
+Create the following nanorc configuration:
+```bash
+daqconf_multiru_gen -f -e --host-ru localhost --region-id 0 --host-df localhost -o . -s 1 --number-of-data-producers 10 -t 0 --enable-firmware-tpg --enable-raw-recording --enable-tpset-writing --trigger-activity-config 'dict(prescale=500)' --trigger-candidate-config 'dict(prescale=20)' --tpg-channel-map ProtoDUNESP1ChannelMap flx-fw-json
+```
+to raw record data in nanorc you must create a file `record-cmd.json` with the following contents:
+```json
+{
+    "data": {
+        "modules": [
+            {
+                "data": {
+                    "duration": 1
+                },
+                "match": ""
+            }
+        ]
+    },
+    "id": "record"
+}
+```
+Now, depending on the tpye of data to readout you can follow the above steps to configure the FELIX a certain way. Here we will show how to readout data from the internal emulator.
+
+In a new terminal (with the dunedaq environment setup), configure the card:
+```bash
+./test-communication.sh
+```
+
+In another terminal run nanorc:
+```bash
+nanorc flx-fw-json/ boot init conf start resume wait 60 stop scrap terminate
+```
+
+Which will boot the localhosts, initilise and configure the card, start dataflow, wait 60s stop and terminate the program.
+During the wait period (a small loading bar will appear), configure the firmware tpg to process data from the elinks:
+```bash
+./set_gbt.sh
+```
+and once this is done you can record data for 1s using this command:
+```bash
+curl -d "@record.json" -H "Content-Type: application/json" -H "X-Answer-Port: 9876" -X POST <localhost-url>:3336/command
+```
+note if you are unsure of your local host url it will appear during the boot process of nanorc e.g. http://np04-srv-30:3336/
+
+if you are unable to run the above commands in time then extend the wait period, and if you want to record for more than 1s you can modify record-cmd.json **but be warned, the data rate is very high**.
+if successful, you will see output files for each link with a rather with file sizes of ~1GB
