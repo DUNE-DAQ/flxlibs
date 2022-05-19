@@ -379,4 +379,4 @@ curl -d "@record.json" -H "Content-Type: application/json" -H "X-Answer-Port: 98
 note if you are unsure of your local host url it will appear during the boot process of nanorc e.g. http://np04-srv-30:3336/
 
 if you are unable to run the above commands in time then extend the wait period, and if you want to record for more than 1s you can modify record-cmd.json **but be warned, the data rate is very high**.
-if successful, you will see output files for each link with a rather with file sizes of ~1GB
+if successful, you will see output files for each link with a rather with file sizes of ~1GB.
