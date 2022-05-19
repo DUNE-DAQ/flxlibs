@@ -364,7 +364,7 @@ In a new terminal (with the dunedaq environment setup), configure the card:
 
 In another terminal run nanorc:
 ```bash
-nanorc flx-fw-json/ boot init conf start resume wait 60 stop scrap terminate
+nanorc flx-fw-json/ boot test init conf start resume wait 60 stop scrap terminate
 ```
 
 Which will boot the localhosts, initilise and configure the card, start dataflow, wait 60s stop and terminate the program.
