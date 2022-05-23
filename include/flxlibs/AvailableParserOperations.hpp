@@ -228,19 +228,21 @@ varsizedShortchunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadout
   };
 }
 
+
 inline std::function<void(const felix::packetformat::chunk& chunk)>
 errorChunkIntoSink(std::shared_ptr<iomanager::SenderConcept<felix::packetformat::chunk>>& sink,
                    std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {
     try {
-#warning GLM -> What should we do here with the const chunk? 
-      //sink->send(chunk, timeout);
+      auto payload = chunk;
+      sink->send(std::move(payload), timeout);
     } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
       // ers
     }
   };
 }
+
 
 //// Implement here any other DUNE specific FELIX chunk/block to User payload parsers
 
