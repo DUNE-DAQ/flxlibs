@@ -39,6 +39,8 @@ This section describes which DUNE-DAQ software and `flxlibs` version are compati
    |  v2.4.0       | v1.0.0        | v1_1_1 e19:prof  | RM5 (2.)     | 1.1 & 1.2 below |
    |  v2.6.0       | v1.1.0        | v1_1_1 e19:prof  | RM5 (2.)     | 1.1 & 1.2 below |
    |  v2.8.0       | v1.2.0        | v1_2_0 e19:prof  | RM5 (3.)     | [Follow this](Enabling-links-and-setting-the-superchunk-factor.md) |
+   |  v3.0.0       | v1_6_0        | v1_2_2 e19:prof  | RM5 (3.)     | [Follow this](Enabling-links-and-setting-the-superchunk-factor.md) |
+   
 
 
 ## Register Map configuration files (SLR config files)
