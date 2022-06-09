@@ -41,8 +41,8 @@ def cli(partition_name, host_flx, ncards, opmon_impl, ers_impl, pocket_url, json
     console.log('Loading cardcontrollerapp config generator')
     from flxlibs.cardcontrollerapp import cardcontrollerapp_gen
 
-    the_system = System(partition_name)
-   
+    the_system = System()
+
     if opmon_impl == 'cern':
         info_svc_uri = "influx://opmondb.cern.ch:31002/write?db=influxdb"
     elif opmon_impl == 'pocket':
@@ -73,8 +73,10 @@ def cli(partition_name, host_flx, ncards, opmon_impl, ers_impl, pocket_url, json
    
 
     for i in (0,ncards-1):
-        nickname = 'flx_card_'+host_flx.replace('-', '_')+'_'+str(i*2)
-        the_system.apps[nickname]=cardcontrollerapp_gen.get_cardcontroller_app(nickname,i*2,host_flx)
+        nickname = 'flx_card_' + host_flx + '_' + str(i*2)
+        nickname = nickname.replace('-','_')
+        app = cardcontrollerapp_gen.get_cardcontroller_app(nickname, i*2, host_flx)
+        the_system.apps[nickname] = app
 
     ####################################################################
     # Application command data generation
@@ -82,7 +84,7 @@ def cli(partition_name, host_flx, ncards, opmon_impl, ers_impl, pocket_url, json
 
     # Arrange per-app command data into the format used by util.write_json_files()
     app_command_datas = {
-        name : make_app_command_data(the_system, app)
+        name : make_app_command_data(the_system, app, name)
         for name,app in the_system.apps.items()
     }
 
@@ -90,7 +92,7 @@ def cli(partition_name, host_flx, ncards, opmon_impl, ers_impl, pocket_url, json
     from daqconf.core.conf_utils import make_system_command_datas,generate_boot, write_json_files
     system_command_datas = make_system_command_datas(the_system)
     # Override the default boot.json with the one from minidaqapp
-    boot = generate_boot(the_system.apps, partition_name=partition_name, ers_settings=ers_settings, info_svc_uri=info_svc_uri,
+    boot = generate_boot(the_system.apps, ers_settings=ers_settings, info_svc_uri=info_svc_uri,
                               disable_trace=True, use_kafka=use_kafka)
 
     system_command_datas['boot'] = boot
