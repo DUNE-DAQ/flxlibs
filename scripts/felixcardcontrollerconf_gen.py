@@ -25,7 +25,6 @@ moo.io.default_load_path = get_moo_model_path()
 import click
 
 @click.command(context_settings=CONTEXT_SETTINGS)
-@click.option('-P', '--partition-name', default="global", help="Name of the partition to use, for ERS and OPMON")
 @click.option('--host-flx', default='localhost', help='Server hosing the FLX card')
 @click.option('--ncards', default=1, help='Number of FLX cards in host')
 @click.option('--opmon-impl', type=click.Choice(['json','cern','pocket'], case_sensitive=False),default='json', help="Info collector service implementation to use")
@@ -33,7 +32,7 @@ import click
 @click.option('--pocket-url', default='127.0.0.1', help="URL for connecting to Pocket services")
 @click.argument('json_dir', type=click.Path())
 
-def cli(partition_name, host_flx, ncards, opmon_impl, ers_impl, pocket_url, json_dir):
+def cli(host_flx, ncards, opmon_impl, ers_impl, pocket_url, json_dir):
 
     if exists(json_dir):
         raise RuntimeError(f"Directory {json_dir} already exists")
