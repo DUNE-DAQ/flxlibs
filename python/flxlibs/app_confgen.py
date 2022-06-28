@@ -13,6 +13,7 @@ moo.otypes.load_types('readoutlibs/readoutconfig.jsonnet')
 moo.otypes.load_types('readoutlibs/recorderconfig.jsonnet')
 moo.otypes.load_types('flxlibs/felixcardreader.jsonnet')
 moo.otypes.load_types('flxlibs/felixcardcontroller.jsonnet')
+moo.otypes.load_types('dtpctrllibs/dtpcontroller.jsonnet')
 
 # Import new types
 import dunedaq.cmdlib.cmd as basecmd # AddressedCmd, 
@@ -25,6 +26,7 @@ import dunedaq.flxlibs.felixcardreader as flxcr
 import dunedaq.flxlibs.felixcardcontroller as flxcc
 import dunedaq.iomanager.connection as conn
 #import dunedaq.networkmanager.nwmgr as nwmgr
+import dunedaq.dtpctrllibs.dtpcontroller as dtpcontroller
 
 from appfwk.utils import mcmd, mrccmd, mspec
 
@@ -83,7 +85,11 @@ def generate(
         RUN_NUMBER = 333,
         DATA_FILE="./frames.bin",
         SUPERCHUNK_FACTOR=12,
-        EMU_FANOUT=False
+        EMU_FANOUT=False,
+        CONNECTIONS_FILE="${DTPCONTROLS_SHARE}/config/dtp_connections.xml",
+        DATA_SOURCE="int",
+        UHAL_LOG_LEVEL="debug",
+        OUTPUT_PATH="."
     ):
 
     link_mask = parse_linkmask(FELIX_ELINK_MASK, NUMBER_OF_DATA_PRODUCERS+NUMBER_OF_TP_PRODUCERS)
@@ -211,6 +217,8 @@ def generate(
                         ]))
 
     mod_specs.append(mspec("flxcardctrl_0", "FelixCardController", []))
+    mod_specs.append(mspec("dtpctrl_0", "DTPController", []))
+    mod_specs.append(mspec("dtpctrl_1", "DTPController", []))
     init_specs = app.Init(connections=queue_specs, modules=mod_specs)
 
     jstr = json.dumps(init_specs.pod(), indent=4, sort_keys=True)
@@ -265,7 +273,17 @@ def generate(
                                     enabled=True, 
                                     dma_desc=0, 
                                     superchunk_factor=SUPERCHUNK_FACTOR
-                                    ) for i in link_mask[1]])]))
+                                    ) for i in link_mask[1]])])),
+        ("dtpctrl_0", dtpcontroller.ConfParams(
+            connections_file=CONNECTIONS_FILE,
+            device="flx-0-p2-hf",
+            source=DATA_SOURCE,
+            uhal_log_level=UHAL_LOG_LEVEL)),
+        ("dtpctrl_1", dtpcontroller.ConfParams(
+            connections_file=CONNECTIONS_FILE,
+            device="flx-1-p2-hf",
+            source=DATA_SOURCE,
+            uhal_log_level=UHAL_LOG_LEVEL))
             ] + [
                 (f"datahandler_{idx}", rconf.Conf(
                         readoutmodelconf= rconf.ReadoutModelConf(
@@ -408,6 +426,7 @@ def generate(
     startcmd = mrccmd("start", "CONFIGURED", "RUNNING", [
             ("datahandler_.*", startpars),
             ("flxcard_.*", startpars),
+            ("dtpctrl_.*", None),
             ("data_recorder_.*", startpars),
             ("fragment_consumer", startpars)
         ])
@@ -418,6 +437,7 @@ def generate(
 
     stopcmd = mrccmd("stop", "RUNNING", "CONFIGURED", [
             ("flxcard_.*", None),
+            ("dtpctrl_.*", None),
             ("datahandler_.*", None),
             ("data_recorder_.*", None),
             ("fragment_consumer", None)
@@ -529,8 +549,12 @@ if __name__ == '__main__':
     @click.option('-d', '--data-file', type=click.Path(), default='./frames.bin')
     @click.option('-S', '--superchunk-factor', default=12)
     @click.option('-E', '--emu-fanout', is_flag=True)
+    @click.option('-c', '--connections-file', default="${DTPCONTROLS_SHARE}/config/dtp_connections.xml")
+    @click.option('-u', '--uhal-log-level', default="notice")
+    @click.option('-S', '--source-data', default="int")
+    @click.option('-o', '--output-path', type=click.Path(), default='.')
     @click.argument('json_file', type=click.Path(), default='flx_readout.json')
-    def cli(frontend_type, number_of_data_producers, number_of_tp_producers, felix_elink_mask, data_rate_slowdown_factor, emulator_mode, enable_software_tpg, run_number, data_file, superchunk_factor, emu_fanout, json_file):
+    def cli(frontend_type, number_of_data_producers, number_of_tp_producers, felix_elink_mask, data_rate_slowdown_factor, emulator_mode, enable_software_tpg, run_number, data_file, superchunk_factor, emu_fanout, connections_file, uhal_log_level, source_data, output_path, json_file):
         """
           JSON_FILE: Input raw data file.
           JSON_FILE: Output json configuration file.
@@ -549,6 +573,10 @@ if __name__ == '__main__':
                     SUPERCHUNK_FACTOR = superchunk_factor,
                     EMU_FANOUT = emu_fanout,
                     DATA_FILE = data_file,
+                    CONNECTIONS_FILE=connections_file,
+                    DATA_SOURCE = source_data,
+                    UHAL_LOG_LEVEL = uhal_log_level,
+                    OUTPUT_PATH = output_path,
                 ))
 
         print(f"'{json_file}' generation completed.")
