@@ -52,7 +52,7 @@ main(int /*argc*/, char** /*argv[]*/)
 
   // 5 elink handlers
   for (int i = 0; i < 5; ++i) {
-    elinks[i * 64] = createElinkModel("wib");
+    elinks[i * 64] = std::make_unique<ElinkModel<types::WIB_SUPERCHUNK_STRUCT>>();
     auto& handler = elinks[i * 64];
     handler->init(cmd_params, 100000);
     handler->conf(cmd_params, 4096, true);

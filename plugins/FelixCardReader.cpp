@@ -11,6 +11,7 @@
 #include "FelixCardReader.hpp"
 #include "FelixIssues.hpp"
 
+#include "iomanager/IOManager.hpp"
 #include "logging/Logging.hpp"
 
 #include "flxcard/FlxException.h"
@@ -93,8 +94,11 @@ FelixCardReader::init(const data_t& args)
       } catch (const std::exception& ex) {
         ers::fatal(InitializationError(ERS_HERE, "Link ID could not be parsed on queue instance name! "));
       }
-      TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << target << " DLH number: " << linkid;
-      m_elinks[linkid] = createElinkModel(qi.uid);
+      auto connid = iomanager::IOManager::get()->ref_to_id(qi);
+      TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << qi.uid
+                                  << " DLH number: " << linkid 
+                                  << " DataType: " << connid.data_type;
+      m_elinks[linkid] = createElinkModel(qi.uid, connid.data_type);
       if (m_elinks[linkid] == nullptr) {
         ers::fatal(InitializationError(ERS_HERE, "CreateElink failed to provide an appropriate model for queue!"));
       }

@@ -36,6 +36,12 @@ QUEUE_POP_WAIT_MS=100;
 # local clock speed Hz
 CLOCK_SPEED_HZ = 50000000;
 
+READOUT_TYPES = {
+  "wib": "WIB_SUPERCHUNK_STRUCT",
+  "wib2": "WIB2_SUPERCHUNK_STRUCT",
+  "daphne": "DAPHNE_SUPERCHUNK_STRUCT"
+};
+
 def parse_linkmask(string, n_links):
     # check if format is correct
     if not re.search("[a-zA-Z]", string):
@@ -109,10 +115,10 @@ def generate(
             conn.ConnectionId(uid=f"data_requests_{idx}", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:1000")
                 for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]
         ] + [
-            conn.ConnectionId(uid=f"{FRONTEND_TYPE}_link_{idx}", service_type="kQueue", data_type=f"{FRONTEND_TYPE}", uri=f"queue://FollySPSC:100000")
+            conn.ConnectionId(uid=f"raw_link_{idx}", service_type="kQueue", data_type=READOUT_TYPES[FRONTEND_TYPE], uri=f"queue://FollySPSC:100000")
                 for idx in range(min(5, n_links_0-n_tp_link_0))
         ] + [
-            conn.ConnectionId(uid=f"{FRONTEND_TYPE}_link_{idx}", service_type="kQueue", data_type=f"{FRONTEND_TYPE}", uri=f"queue://FollySPSC:100000")
+            conn.ConnectionId(uid=f"raw_link_{idx}", service_type="kQueue", data_type=READOUT_TYPES[FRONTEND_TYPE], uri=f"queue://FollySPSC:100000")
                 for idx in range(6, 6+n_links_1-n_tp_link_1)
         ] + [
             conn.ConnectionId(uid=f"raw_tp_link_{idx}", service_type="kQueue", data_type="raw_tp", uri=f"queue://FollySPSC:100000")
@@ -127,10 +133,10 @@ def generate(
 #            conn.ConnectionId(uid=f"tp_fake_link_{idx}", service_type="kQueue", data_type="", uri=f"queue://FollySPSC:100000")
 #                for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]
 #        ] + [
-            conn.ConnectionId(uid=f"{FRONTEND_TYPE}_recording_link_{idx}", service_type="kQueue", data_type=f"{FRONTEND_TYPE}", uri=f"queue://FollySPSC:100000")
+            conn.ConnectionId(uid=f"raw_recording_link_{idx}", service_type="kQueue", data_type=READOUT_TYPES[FRONTEND_TYPE], uri=f"queue://FollySPSC:100000")
                 for idx in range(min(5, n_links_0-n_tp_link_0))
         ] + [
-            conn.ConnectionId(uid=f"{FRONTEND_TYPE}_recording_link_{idx}", service_type="kQueue", data_type=f"{FRONTEND_TYPE}", uri=f"queue://FollySPSC:100000")
+            conn.ConnectionId(uid=f"raw_recording_link_{idx}", service_type="kQueue", data_type=READOUT_TYPES[FRONTEND_TYPE], uri=f"queue://FollySPSC:100000")
                 for idx in range(6, 6+n_links_1-n_tp_link_1)
         ] + [
                 conn.ConnectionId(uid="time_sync_q", topics=["Timesync"], service_type="kNetSender", data_type="", uri=f"tcp://127.0.0.1:6000") 
@@ -142,20 +148,20 @@ def generate(
     #! omit DataRecorder for TP's for now
     mod_specs = [
                 mspec(f"datahandler_{idx}", "DataLinkHandler", [
-                            conn.ConnectionRef(name="raw_input", uid=f"{FRONTEND_TYPE}_link_{idx}", dir="kInput"),
+                            conn.ConnectionRef(name="raw_input", uid=f"raw_link_{idx}", dir="kInput"),
                             conn.ConnectionRef(name="timesync_output", uid="time_sync_q", dir="kOutput"),
                             conn.ConnectionRef(name="request_input", uid=f"data_requests_{idx}", dir="kInput"),
                             conn.ConnectionRef(name="fragment_queue", uid="data_fragments_q", dir="kOutput"),
-                            conn.ConnectionRef(name="raw_recording", uid=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="kOutput"),
+                            conn.ConnectionRef(name="raw_recording", uid=f"raw_recording_link_{idx}", dir="kOutput"),
                             conn.ConnectionRef(name="errored_frames", uid="errored_frames_q", dir="kOutput"),
                             ]) for idx in range(min(5, n_links_0-n_tp_link_0))
         ] + [
                 mspec(f"datahandler_{idx}", "DataLinkHandler", [
-                            conn.ConnectionRef(name="raw_input", uid=f"{FRONTEND_TYPE}_link_{idx}", dir="kInput"),
+                            conn.ConnectionRef(name="raw_input", uid=f"raw_link_{idx}", dir="kInput"),
                             conn.ConnectionRef(name="timesync_output", uid="time_sync_q", dir="kOutput"),
                             conn.ConnectionRef(name="request_input", uid=f"data_requests_{idx}", dir="kInput"),
                             conn.ConnectionRef(name="fragment_queue", uid="data_fragments_q", dir="kOutput"),
-                            conn.ConnectionRef(name="raw_recording", uid=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="kOutput"),
+                            conn.ConnectionRef(name="raw_recording", uid=f"raw_recording_link_{idx}", dir="kOutput"),
                             conn.ConnectionRef(name="errored_frames", uid="errored_frames_q", dir="kOutput"),
                             ]) for idx in range(6, 6+n_links_1-n_tp_link_1)
         ] + [
@@ -176,11 +182,11 @@ def generate(
                             ]) for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]
         ] + [
                 mspec(f"data_recorder_{idx}", "DataRecorder", [
-                            conn.ConnectionRef(name="raw_recording", uid=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="kInput")
+                            conn.ConnectionRef(name="raw_recording", uid=f"raw_recording_link_{idx}", dir="kInput")
                             ]) for idx in range(min(5, n_links_0-n_tp_link_0))
         ] + [
                 mspec(f"data_recorder_{idx}", "DataRecorder", [
-                            conn.ConnectionRef(name="raw_recording", uid=f"{FRONTEND_TYPE}_recording_link_{idx}", dir="kInput")
+                            conn.ConnectionRef(name="raw_recording", uid=f"raw_recording_link_{idx}", dir="kInput")
                             ]) for idx in range(6, 6+n_links_1-n_tp_link_1)
         ] + [            
                 mspec(f"fragment_consumer", "FragmentConsumer", [
@@ -191,7 +197,7 @@ def generate(
     
     if n_links_0 > 0:
         mod_specs.append(mspec("flxcard_0", "FelixCardReader", [
-                        conn.ConnectionRef(name=f"output_{idx}", uid=f"{FRONTEND_TYPE}_link_{idx}", dir="kOutput")
+                        conn.ConnectionRef(name=f"output_{idx}", uid=f"raw_link_{idx}", dir="kOutput")
                             for idx in range(min(5, n_links_0-n_tp_link_0))
                         ] + [
                         conn.ConnectionRef(name=f"output_{idx}", uid=f"raw_tp_link_{idx}", dir="kOutput")
@@ -201,7 +207,7 @@ def generate(
                         ]))
     if NUMBER_OF_DATA_PRODUCERS > 5 or n_links_1 > 0:
         mod_specs.append(mspec("flxcard_1", "FelixCardReader", [
-                        conn.ConnectionRef(name=f"output_{idx}", uid=f"{FRONTEND_TYPE}_link_{idx}", dir="kOutput")
+                        conn.ConnectionRef(name=f"output_{idx}", uid=f"raw_link_{idx}", dir="kOutput")
                             for idx in range(6, 6+n_links_1-n_tp_link_1)
                         ] + [
                         conn.ConnectionRef(name=f"output_{idx}", uid=f"raw_tp_link_{idx}", dir="kOutput")

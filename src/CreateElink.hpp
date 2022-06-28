@@ -20,15 +20,15 @@ namespace dunedaq {
 namespace flxlibs {
 
 std::unique_ptr<ElinkConcept>
-createElinkModel(const std::string& target)
+createElinkModel(const std::string& sink_name, const std::string& datatype)
 {
-  if (target.find("wib") != std::string::npos && target.find("wib2") == std::string::npos) {
+  if (datatype.find("WIB_SUPERCHUNK_STRUCT") != std::string::npos) {
     // WIB1 specific char arrays
     // Create Model
     auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::WIB_SUPERCHUNK_STRUCT>>();
 
-    // Setup sink (acquire pointer from QueueRegistry)
-    elink_model->set_sink(target);
+    // Setup sink from IOManager
+    elink_model->set_sink(sink_name);
 
     // Get parser and sink
     auto& parser = elink_model->get_parser();
@@ -45,36 +45,36 @@ createElinkModel(const std::string& target)
     // Return with setup model
     return elink_model;
 
-  } else if (target.find("wib2") != std::string::npos) {
+  } else if (datatype.find("WIB2_SUPERCHUNK_STRUCT") != std::string::npos) {
     // WIB2 specific char arrays
     auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::WIB2_SUPERCHUNK_STRUCT>>();
-    elink_model->set_sink(target);
+    elink_model->set_sink(sink_name);
     auto& parser = elink_model->get_parser();
     auto& sink = elink_model->get_sink();
     parser.process_chunk_func = parsers::fixsizedChunkInto<fdreadoutlibs::types::WIB2_SUPERCHUNK_STRUCT>(sink);
     return elink_model;
 
-  } else if (target.find("pds") != std::string::npos) {
+  } else if (datatype.find("DAPHNE_SUPERCHUNK_STRUCT") != std::string::npos) {
     // PDS specific char arrays
     auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::DAPHNE_SUPERCHUNK_STRUCT>>();
-    elink_model->set_sink(target);
+    elink_model->set_sink(sink_name);
     auto& parser = elink_model->get_parser();
     auto& sink = elink_model->get_sink();
     parser.process_chunk_func = parsers::fixsizedChunkInto<fdreadoutlibs::types::DAPHNE_SUPERCHUNK_STRUCT>(sink);
     return elink_model;
 
-  } else if (target.find("raw_tp") != std::string::npos) {
+  } else if (datatype.find("RAW_WIB_TRIGGERPRIMITIVE_STRUCT") != std::string::npos) {
     auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::RAW_WIB_TRIGGERPRIMITIVE_STRUCT>>();
-    elink_model->set_sink(target);
+    elink_model->set_sink(sink_name);
     auto& parser = elink_model->get_parser();
     auto& sink = elink_model->get_sink();
     parser.process_chunk_func = parsers::varsizedChunkIntoWithDatafield<fdreadoutlibs::types::RAW_WIB_TRIGGERPRIMITIVE_STRUCT>(sink);
     return elink_model;
 
-  } else if (target.find("varsize") != std::string::npos) {
+  } else if (datatype.find("VariableSizePayloadWrapper") != std::string::npos) {
     // Variable sized user payloads
     auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::VariableSizePayloadWrapper>>();
-    elink_model->set_sink(target);
+    elink_model->set_sink(sink_name);
     auto& parser = elink_model->get_parser();
     auto& sink = elink_model->get_sink();
     parser.process_chunk_func = parsers::varsizedChunkIntoWrapper(sink);
