@@ -81,9 +81,10 @@ def generate(
         EMULATOR_MODE = False,
         ENABLE_SOFTWARE_TPG=False,
         RUN_NUMBER = 333,
-        DATA_FILE="./frames.bin",
         SUPERCHUNK_FACTOR=12,
-        EMU_FANOUT=False
+        EMU_FANOUT=False,
+        DATA_FILE="./frames.bin",
+        TPG_CHANNEL_MAP="ProtoDUNESP1ChannelMap"
     ):
 
     link_mask = parse_linkmask(FELIX_ELINK_MASK, NUMBER_OF_DATA_PRODUCERS+NUMBER_OF_TP_PRODUCERS)
@@ -286,6 +287,7 @@ def generate(
                             element_id = idx,
                             enable_software_tpg = ENABLE_SOFTWARE_TPG,
                             emulator_mode = EMULATOR_MODE,
+                            channel_map_name = TPG_CHANNEL_MAP,
                         ),
                         requesthandlerconf= rconf.RequestHandlerConf(
                             latency_buffer_size = lb_size,
@@ -318,6 +320,7 @@ def generate(
                             element_id = idx,
                             enable_software_tpg = ENABLE_SOFTWARE_TPG,
                             emulator_mode = EMULATOR_MODE,
+                            channel_map_name = TPG_CHANNEL_MAP,
                         ),
                         requesthandlerconf= rconf.RequestHandlerConf(
                             latency_buffer_size = lb_size,
@@ -349,7 +352,9 @@ def generate(
                             region_id = 0,
                             element_id = idx,
                             enable_software_tpg = False,
+                            enable_firmware_tpg = True,
                             emulator_mode = EMULATOR_MODE,
+                            channel_map_name = TPG_CHANNEL_MAP,
                         ),
                         requesthandlerconf= rconf.RequestHandlerConf(
                             latency_buffer_size = lb_size,
@@ -381,7 +386,9 @@ def generate(
                             region_id = 0,
                             element_id = idx,
                             enable_software_tpg = False,
+                            enable_firmware_tpg = True,
                             emulator_mode = EMULATOR_MODE,
+                            channel_map_name = TPG_CHANNEL_MAP,
                         ),
                         requesthandlerconf= rconf.RequestHandlerConf(
                             latency_buffer_size = lb_size,
@@ -526,11 +533,12 @@ if __name__ == '__main__':
     @click.option('-e', '--emulator_mode', is_flag=True)   
     @click.option('-g', '--enable-software-tpg', is_flag=True)
     @click.option('-r', '--run-number', default=333)
-    @click.option('-d', '--data-file', type=click.Path(), default='./frames.bin')
     @click.option('-S', '--superchunk-factor', default=12)
     @click.option('-E', '--emu-fanout', is_flag=True)
+    @click.option('-d', '--data-file', type=click.Path(), default='./frames.bin')
+    @click.option('-c', '--tpg-channel-map', type=click.Choice(["VDColdboxChannelMap", "ProtoDUNESP1ChannelMap"]), default="ProtoDUNESP1ChannelMap")
     @click.argument('json_file', type=click.Path(), default='flx_readout.json')
-    def cli(frontend_type, number_of_data_producers, number_of_tp_producers, felix_elink_mask, data_rate_slowdown_factor, emulator_mode, enable_software_tpg, run_number, data_file, superchunk_factor, emu_fanout, json_file):
+    def cli(frontend_type, number_of_data_producers, number_of_tp_producers, felix_elink_mask, data_rate_slowdown_factor, emulator_mode, enable_software_tpg, run_number, superchunk_factor, emu_fanout, data_file, tpg_channel_map, json_file):
         """
           JSON_FILE: Input raw data file.
           JSON_FILE: Output json configuration file.
@@ -549,6 +557,7 @@ if __name__ == '__main__':
                     SUPERCHUNK_FACTOR = superchunk_factor,
                     EMU_FANOUT = emu_fanout,
                     DATA_FILE = data_file,
+                    TPG_CHANNEL_MAP = tpg_channel_map,
                 ))
 
         print(f"'{json_file}' generation completed.")

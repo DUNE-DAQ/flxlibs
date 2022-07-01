@@ -337,7 +337,7 @@ then exit the program with Ctrl-D then Ctrl-C.
 
 Create the following nanorc configuration:
 ```bash
-daqconf_multiru_gen -f -e --host-ru localhost --region-id 0 --host-df localhost -o . -s 1 --number-of-data-producers 10 -t 0 --enable-firmware-tpg --enable-raw-recording --enable-tpset-writing --trigger-activity-config 'dict(prescale=500)' --trigger-candidate-config 'dict(prescale=20)' --tpg-channel-map ProtoDUNESP1ChannelMap flx-fw-json
+daqconf_multiru_gen -f -e --host-ru localhost --region-id 0 --host-df localhost -o . -s 1 --number-of-data-producers 10 --enable-firmware-tpg --enable-raw-recording --enable-tpset-writing --trigger-activity-config 'dict(prescale=500)' --trigger-candidate-config 'dict(prescale=20)' --tpg-channel-map ProtoDUNESP1ChannelMap flx-fw-json
 ```
 to raw record data in nanorc you must create a file `record-cmd.json` with the following contents:
 ```json
