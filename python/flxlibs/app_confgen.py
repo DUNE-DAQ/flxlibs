@@ -83,14 +83,14 @@ def generate(
         EMULATOR_MODE = False,
         ENABLE_SOFTWARE_TPG=False,
         RUN_NUMBER = 333,
-        DATA_FILE="./frames.bin",
         SUPERCHUNK_FACTOR=12,
         EMU_FANOUT=False,
+        DATA_FILE="./frames.bin",
+        TPG_CHANNEL_MAP="ProtoDUNESP1ChannelMap",
         CONNECTIONS_FILE="${DTPCONTROLS_SHARE}/config/dtp_connections.xml",
         DATA_SOURCE="int",
         UHAL_LOG_LEVEL="debug",
-        OUTPUT_PATH=".",
-        TPG_CHANNEL_MAP="ProtoDUNESP1ChannelMap"
+        OUTPUT_PATH="."
     ):
 
     link_mask = parse_linkmask(FELIX_ELINK_MASK, NUMBER_OF_DATA_PRODUCERS+NUMBER_OF_TP_PRODUCERS)
@@ -553,7 +553,6 @@ if __name__ == '__main__':
     @click.option('-e', '--emulator_mode', is_flag=True)   
     @click.option('-g', '--enable-software-tpg', is_flag=True)
     @click.option('-r', '--run-number', default=333)
-    @click.option('-d', '--data-file', type=click.Path(), default='./frames.bin')
     @click.option('-S', '--superchunk-factor', default=12)
     @click.option('-E', '--emu-fanout', is_flag=True)
     @click.option('-d', '--data-file', type=click.Path(), default='./frames.bin')
@@ -564,6 +563,7 @@ if __name__ == '__main__':
     @click.option('-o', '--output-path', type=click.Path(), default='.')
     @click.argument('json_file', type=click.Path(), default='flx_readout.json')
     def cli(frontend_type, number_of_data_producers, number_of_tp_producers, felix_elink_mask, data_rate_slowdown_factor, emulator_mode, enable_software_tpg, run_number, superchunk_factor, emu_fanout, data_file, tpg_channel_map, connections_file, uhal_log_level, source_data, output_path, json_file):
+
         """
           JSON_FILE: Input raw data file.
           JSON_FILE: Output json configuration file.
