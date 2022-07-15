@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
-project(flxlibs VERSION 1.6.1)
+project(flxlibs VERSION 1.7.0)
 
 find_package(daq-cmake REQUIRED)
 
