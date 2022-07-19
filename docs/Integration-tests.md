@@ -48,8 +48,8 @@ https://github.com/DUNE-DAQ/flxlibs/wiki/Local-driver
 Ensure the FELIX is programmed, the first check is to enable and get the status of the drivers:
 
 ```bash
-sudo <location of local drivers>/drivers_flx start
-sudo <location of local drivers>/drivers_flx status
+sudo <location of local drivers>/drivers_flx_local start
+sudo <location of local drivers>/drivers_flx_local status
 ```
 
 if you see the following output after starting the drivers:
