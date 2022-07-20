@@ -30,9 +30,11 @@ import click
 @click.option('--opmon-impl', type=click.Choice(['json','cern','pocket'], case_sensitive=False),default='json', help="Info collector service implementation to use")
 @click.option('--ers-impl', type=click.Choice(['local','cern','pocket'], case_sensitive=False), default='local', help="ERS destination (Kafka used for cern and pocket)")
 @click.option('--pocket-url', default='127.0.0.1', help="URL for connecting to Pocket services")
+@click.option('--image', default="", type=str, help="Which docker image to use")
+@click.option('--use-k8s', is_flag=True, default=False, help="Whether to use k8s")
 @click.argument('json_dir', type=click.Path())
 
-def cli(host_flx, ncards, opmon_impl, ers_impl, pocket_url, json_dir):
+def cli(host_flx, ncards, opmon_impl, ers_impl, pocket_url, image, use_k8s, json_dir):
 
     if exists(json_dir):
         raise RuntimeError(f"Directory {json_dir} already exists")
@@ -69,11 +71,11 @@ def cli(host_flx, ncards, opmon_impl, ers_impl, pocket_url, json_dir):
         ers_settings["WARNING"] = "erstrace,throttle,lstdout"
         ers_settings["ERROR"] =   "erstrace,throttle,lstdout"
         ers_settings["FATAL"] =   "erstrace,lstdout"
-   
+
 
     for i in (0,ncards-1):
-        nickname = 'flx_card_' + host_flx + '_' + str(i*2)
-        nickname = nickname.replace('-','_')
+        nickname = 'FlxCard' + host_flx + str(i*2)
+        nickname = nickname.replace('-', '')
         app = cardcontrollerapp_gen.get_cardcontroller_app(nickname, i*2, host_flx)
         the_system.apps[nickname] = app
 
@@ -82,24 +84,52 @@ def cli(host_flx, ncards, opmon_impl, ers_impl, pocket_url, json_dir):
     ####################################################################
 
     # Arrange per-app command data into the format used by util.write_json_files()
-    app_command_datas = {
-        name : make_app_command_data(the_system, app, name)
-        for name,app in the_system.apps.items()
-    }
+    app_command_datas = {}
+    for name,app in the_system.apps.items():
+        print(name)
+        app_command_datas[name] = make_app_command_data(the_system, app, name)
 
     # Make boot.json config
-    from daqconf.core.conf_utils import make_system_command_datas,generate_boot, write_json_files
+    from daqconf.core.conf_utils import make_system_command_datas,generate_boot_common, write_json_files
     system_command_datas = make_system_command_datas(the_system)
     # Override the default boot.json with the one from minidaqapp
-    boot = generate_boot(the_system.apps, ers_settings=ers_settings, info_svc_uri=info_svc_uri,
-                              disable_trace=True, use_kafka=use_kafka)
+    boot = generate_boot_common(
+        ers_settings=ers_settings,
+        info_svc_uri=info_svc_uri,
+        disable_trace=True,
+        external_connections = [],
+        daq_app_exec_name = "daq_application_ssh" if not use_k8s else "daq_application_k8s",
+        use_kafka=use_kafka
+    )
+    base_command_port = 3333
+    if use_k8s:
+        from daqconf.core.conf_utils import update_with_k8s_boot_data
+        console.log("Generating k8s boot.json")
+        update_with_k8s_boot_data(
+            boot_data = boot,
+            apps = the_system.apps,
+            base_command_port = base_command_port,
+            boot_order = list(the_system.apps.keys()),
+            image = image,
+            verbose = False,
+        )
+    else:
+        from daqconf.core.conf_utils import update_with_ssh_boot_data
+        console.log("Generating ssh boot.json")
+        update_with_ssh_boot_data(
+            boot_data = boot,
+            apps = the_system.apps,
+            base_command_port = base_command_port,
+            verbose = False,
+        )
+
 
     system_command_datas['boot'] = boot
 
     write_json_files(app_command_datas, system_command_datas, json_dir)
 
     console.log(f"FLX card controller apps config generated in {json_dir}")
-    
+
     write_metadata_file(json_dir, "flxcardcontrollers_gen")
 
 if __name__ == '__main__':
