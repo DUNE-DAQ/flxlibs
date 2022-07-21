@@ -56,7 +56,7 @@ FelixCardReader::FelixCardReader(const std::string& name)
 
   register_command("conf", &FelixCardReader::do_configure);
   register_command("start", &FelixCardReader::do_start);
-  register_command("stop", &FelixCardReader::do_stop);
+  register_command("stop_trigger_sources", &FelixCardReader::do_stop);
 }
 
 inline void
