@@ -45,11 +45,11 @@ def cli(host_flx, ncards, opmon_impl, ers_impl, pocket_url, image, use_k8s, json
     the_system = System()
 
     if opmon_impl == 'cern':
-        info_svc_uri = "influx://opmondb.cern.ch:31002/write?db=influxdb"
+         info_svc_uri = "kafka://monkafka.cern.ch:30092/opmon"
     elif opmon_impl == 'pocket':
-        info_svc_uri = "influx://" + pocket_url + ":31002/write?db=influxdb"
+         info_svc_uri = "kafka://" + pocket_url + ":31002/opmon"
     else:
-        info_svc_uri = "file://info_${APP_NAME}_${APP_PORT}.json"
+         info_svc_uri = "file://info_{APP_NAME}_{APP_PORT}.json"
 
     ers_settings=dict()
 
@@ -74,7 +74,7 @@ def cli(host_flx, ncards, opmon_impl, ers_impl, pocket_url, image, use_k8s, json
 
 
     for i in (0,ncards-1):
-        nickname = 'FlxCard' + host_flx + str(i*2)
+        nickname = 'flxcard' + host_flx + str(i*2)
         nickname = nickname.replace('-', '')
         app = cardcontrollerapp_gen.get_cardcontroller_app(nickname, i*2, host_flx)
         the_system.apps[nickname] = app
