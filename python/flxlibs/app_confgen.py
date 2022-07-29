@@ -125,7 +125,8 @@ def generate(
                             conf = rconf.Conf(readoutmodelconf = rconf.ReadoutModelConf(
                                                                                     source_queue_timeout_ms= QUEUE_POP_WAIT_MS,
                                                                                     fake_trigger_flag=1,
-                                                                                    timesync_connection_name="timesync",
+                                                                                    timesync_connection_name=f"timesync_{idx}",
+                                                                                    timesync_topic_name = "Timesync",
                                                                                     region_id = 0,
                                                                                     element_id = idx),
                                               latencybufferconf = rconf.LatencyBufferConf(
@@ -154,7 +155,8 @@ def generate(
                             conf = rconf.Conf(readoutmodelconf = rconf.ReadoutModelConf(
                                                                                     source_queue_timeout_ms= QUEUE_POP_WAIT_MS,
                                                                                     fake_trigger_flag=1,
-                                                                                    timesync_connection_name="timesync",
+                                                                                    timesync_connection_name=f"timesync_{idx}",
+                                                                                    timesync_topic_name = "Timesync",
                                                                                     region_id = 0,
                                                                                     element_id = idx),
                                               latencybufferconf = rconf.LatencyBufferConf(
@@ -180,7 +182,10 @@ def generate(
                                                                                     enable_raw_recording = True)
                                             )) for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]]
         queues += [Queue(f'flxcard_0.output_{idx}',f"datahandler_{idx}.raw_input",f'{FRONTEND_TYPE}_link_{idx}', 100000 ) for idx in range(min(5, n_links_0-n_tp_link_0))]
-        queues += [Queue(f'flxcard_0.output_{idx}',f"datahandler_{idx}.raw_input",f'{FRONTEND_TYPE}_link_{idx}', 100000 ) for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]]
+        queues += [Queue(f'flxcard_0.output_{idx}',f"datahandler_{idx}.raw_input",f'raw_tp_link_{idx}', 100000 ) for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]]
+        queues += [Queue(f"datahandler_{idx}.errored_frames", 'errored_frame_consumer.input_queue', "errored_frames_q", 10000) for idx in range(min(5, n_links_0-n_tp_link_0))]
+        queues += [Queue(f"datahandler_{idx}.errored_frames", 'errored_frame_consumer.input_queue', "errored_frames_q", 10000) for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]]
+
 
     if NUMBER_OF_DATA_PRODUCERS > 5 or n_links_1 > 0:
         modules += [DAQModule(name = 'flxcard_1',
@@ -198,7 +203,8 @@ def generate(
                             conf = rconf.Conf(readoutmodelconf = rconf.ReadoutModelConf(
                                                                                     source_queue_timeout_ms= QUEUE_POP_WAIT_MS,
                                                                                     fake_trigger_flag=1,
-                                                                                    timesync_connection_name="timesync",
+                                                                                    timesync_connection_name=f"timesync_{idx}",
+                                                                                    timesync_topic_name = "Timesync",
                                                                                     region_id = 0,
                                                                                     element_id = idx),
                                               latencybufferconf = rconf.LatencyBufferConf(
@@ -227,7 +233,8 @@ def generate(
                             conf = rconf.Conf(readoutmodelconf = rconf.ReadoutModelConf(
                                                                                     source_queue_timeout_ms= QUEUE_POP_WAIT_MS,
                                                                                     fake_trigger_flag=1,
-                                                                                    timesync_connection_name="timesync",
+                                                                                    timesync_connection_name=f"timesync_{idx}",
+                                                                                    timesync_topic_name = "Timesync",
                                                                                     region_id = 0,
                                                                                     element_id = idx),
                                               latencybufferconf = rconf.LatencyBufferConf(
@@ -253,7 +260,15 @@ def generate(
                                                                                     enable_raw_recording = True)
                                             )) for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]]
         queues += [Queue(f'flxcard_1.output_{idx}',f"datahandler_{idx}.raw_input",f'{FRONTEND_TYPE}_link_{idx}', 100000 ) for idx in range(6, 6+n_links_1-n_tp_link_1)]
-        queues += [Queue(f'flxcard_1.output_{idx}',f"datahandler_{idx}.raw_input",f'{FRONTEND_TYPE}_link_{idx}', 100000 ) for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]]
+        queues += [Queue(f'flxcard_1.output_{idx}',f"datahandler_{idx}.raw_input",f'raw_tp_link_{idx}', 100000 ) for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]]
+        queues += [Queue(f"datahandler_{idx}.errored_frames", 'errored_frame_consumer.input_queue', "errored_frames_q", 10000) for idx in range(6, 6+n_links_1-n_tp_link_1)]
+        queues += [Queue(f"datahandler_{idx}.errored_frames", 'errored_frame_consumer.input_queue', "errored_frames_q", 10000) for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]]
+
+    modules += [DAQModule(name="timesync_consumer", plugin="TimeSyncConsumer")]
+    modules += [DAQModule(name="fragment_consumer", plugin="FragmentConsumer")]
+
+    if FRONTEND_TYPE == 'wib' and NUMBER_OF_DATA_PRODUCERS != 0:
+        modules += [DAQModule(name="errored_frame_consumer", plugin="ErroredFrameConsumer")]
 
     # jstr = json.dumps(confcmd.pod(), indent=4, sort_keys=True)
     # print(jstr)
@@ -364,11 +379,18 @@ def generate(
     # # Print them as json (to be improved/moved out)
     # jstr = json.dumps([c.pod() for c in cmd_seq], indent=4, sort_keys=True)
     mgraph = ModuleGraph(modules, queues=queues)
-    for idx in range(NUMBER_OF_DATA_PRODUCERS):        
+    for idx in range(n_links_0):
         mgraph.connect_modules(f"datahandler_{idx}.timesync_output", "timesync_consumer.input_queue", "timesync_q")
         mgraph.connect_modules(f"datahandler_{idx}.fragment_queue", "fragment_consumer.input_queue", "data_fragments_q", 100)
         mgraph.add_endpoint(f"requests_{idx}", f"datahandler_{idx}.request_input", Direction.IN)
         mgraph.add_endpoint(f"requests_{idx}", None, Direction.OUT) # Fake request endpoint
+    for idx in range(n_links_1):
+        i = 6 + idx
+        mgraph.connect_modules(f"datahandler_{i}.timesync_output", "timesync_consumer.input_queue", "timesync_q")
+        mgraph.connect_modules(f"datahandler_{i}.fragment_queue", "fragment_consumer.input_queue", "data_fragments_q", 100)
+        mgraph.add_endpoint(f"requests_{i}", f"datahandler_{i}.request_input", Direction.IN)
+        mgraph.add_endpoint(f"requests_{i}", None, Direction.OUT) # Fake request endpoint
+
     ru_app = App(modulegraph=mgraph, host=HOST, name="readout_app")
     return ru_app
 
