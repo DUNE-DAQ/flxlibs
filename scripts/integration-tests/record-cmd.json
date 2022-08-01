@@ -1,0 +1,15 @@
+{
+    "data": {
+        "modules": [
+            {
+                "data": {
+                    "duration": 1
+                },
+                "match": ""
+            }
+        ]
+    },
+    "entry_state": "READY",
+    "exit_state": "READY",
+    "id": "record"
+}
