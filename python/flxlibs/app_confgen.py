@@ -109,6 +109,30 @@ def generate(
     modules = []
     queues = []
 
+    if NUMBER_OF_DATA_PRODUCERS > 0:
+        modules += [DAQModule(name = "flxcardctrl_0",
+                             plugin = 'FelixCardController',
+                             conf = flxcc.Conf(
+                                    card_id = 0,
+                                    logical_units = [flxcc.LogicalUnit(
+                                        log_unit_id = 0,
+                                        emu_fanout = EMU_FANOUT,
+                                        links=[flxcc.Link(
+                                            link_id = i, 
+                                            enabled = True, 
+                                            dma_desc = 0, 
+                                            superchunk_factor = SUPERCHUNK_FACTOR
+                                            ) for i in link_mask[0]])]
+                                        +[flxcc.LogicalUnit(
+                                        log_unit_id = 1,
+                                        emu_fanout = EMU_FANOUT,
+                                        links=[flxcc.Link(
+                                            link_id = i, 
+                                            enabled = True, 
+                                            dma_desc = 0, 
+                                            superchunk_factor = SUPERCHUNK_FACTOR
+                                            ) for i in link_mask[1]])]))]
+
     if n_links_0 > 0:
         modules += [DAQModule(name = 'flxcard_0',
                             plugin = 'FelixCardReader',
