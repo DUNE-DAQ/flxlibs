@@ -78,6 +78,10 @@ def cli(host_flx, ncards, opmon_impl, ers_impl, pocket_url, image, use_k8s, json
         nickname = nickname.replace('-', '')
         app = cardcontrollerapp_gen.get_cardcontroller_app(nickname, i*2, host_flx)
         the_system.apps[nickname] = app
+        if use_k8s:
+            the_system.apps[nickname].resources = {
+                "felix.cern/flx0-ctrl": "1", # requesting FLX0
+            }
 
     ####################################################################
     # Application command data generation
@@ -88,6 +92,7 @@ def cli(host_flx, ncards, opmon_impl, ers_impl, pocket_url, image, use_k8s, json
     for name,app in the_system.apps.items():
         print(name)
         app_command_datas[name] = make_app_command_data(the_system, app, name)
+
 
     # Make boot.json config
     from daqconf.core.conf_utils import make_system_command_datas,generate_boot_common, write_json_files
