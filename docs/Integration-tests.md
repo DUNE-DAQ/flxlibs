@@ -33,10 +33,8 @@ to program the FELIX card (card number denoted by `-c`). Then to check if the fi
 ```bash
 fflashprog -c 0 -f 3 <.mcs file to program>
 ```
-Finally reboot the machine with the FELIX card:
-```bash
-sudo reboot
-```
+Finally, the machine needs to be fully power cycled for the firmware image to corectly load.
+
 *Note, the -f command indicates which partition to program, if programming on partition 3 doesn't work, run `flx-info` to get the correct partition number or program the card using vivado.*
 
 ### Drivers:
@@ -198,7 +196,7 @@ where `-e` enables generation of fake timestamps when using fake data patterns a
 Then run the following:
 ```bash
 ./test-communication.sh
-nanorc app_flx_10 test_emu
+nanorc app_flx_10 test-emu
 ```
 once in the daq_application run the commands:
 ```
@@ -250,11 +248,11 @@ Then run the following:
 ./test-communication.sh
 femu -d 0 -n
 femu -d 1 -n
-daq_application -c stdin://app_flx_10.json -n test_fe
+nanorc app_flx_10 test-fe
 ```
 once in the daq_application run the commands:
 ```
-init conf start
+boot conf start <run number>
 ```
 and here you should see no dataflow on any link handlers. Now configure the front end device to send data along the optical fibers and you should see the link handler information update similar to the previous test.
 
@@ -280,8 +278,8 @@ run the daq_app as before:
 ./test-communication.sh
 femu -d 0 -n
 femu -d 1 -n
-daq_application -c stdin://app_flx_2.json -n test_wib
-init conf start
+nanorc app_flx_2 test-wib
+boot conf start <run number>
 ```
 and then enable the wibulator in another terminal:
 ```bash
@@ -292,7 +290,7 @@ If successful you should see dataflow on the two link handlers.
 
 To record the raw ADC to file:
 ```
-expert_command app_flx_10/app_flx_10/readout_app record-cmd.json
+expert_command app_flx_2/app_flx_2/readout_app record-cmd.json
 ```
 
 To stop the test run the following:
@@ -310,8 +308,8 @@ python -m flxlibs.app_confgen -n 10 -t 2 -m "0-5:0-5" -e -E app_flx_12
 run the daq_app as before:
 ```bash
 ./test-communication.sh
-daq_application -c stdin://app_flx_12.json -n test_emu
-init conf start
+nanorc app_flx_12 test-emu
+boot conf start <run number>
 ```
 now enable the hitfinding TPG in GBT mode:
 ```bash
@@ -321,7 +319,7 @@ and you should see dataflow on link handlers 5 and 11. ***Note the TP links whic
 
 To record the raw ADC to file:
 ```
-expert_command app_flx_10/app_flx_10/readout_app record-cmd.json
+expert_command app_flx_12/app_flx_12/readout_app record-cmd.json
 ```
 
 To stop the test run the following:
@@ -341,8 +339,8 @@ run the daq_app as before:
 ./test-communication.sh
 femu -d 0 -n
 femu -d 1 -n
-daq_application -c stdin://app_flx_12.json -n test_fe
-init conf start
+nanorc app_flx_12 test-fe
+boot conf start <run number>
 ```
 Next configure the front end to send data. Once done the adc links should have non zero data rates. 
 
@@ -354,7 +352,7 @@ and you should see dataflow on link handlers 5 and 11.
 
 To record the raw ADC to file:
 ```
-expert_command app_flx_10/app_flx_10/readout_app record-cmd.json
+expert_command app_flx_12/app_flx_12/readout_app record-cmd.json
 ```
 
 To stop the test run the following:

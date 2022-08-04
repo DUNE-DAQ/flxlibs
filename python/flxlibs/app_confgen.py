@@ -109,7 +109,7 @@ def generate(
     modules = []
     queues = []
 
-    if NUMBER_OF_DATA_PRODUCERS > 0:
+    if NUMBER_OF_DATA_PRODUCERS+NUMBER_OF_TP_PRODUCERS > 0:
         modules += [DAQModule(name = "flxcardctrl_0",
                              plugin = 'FelixCardController',
                              conf = flxcc.Conf(
@@ -294,114 +294,6 @@ def generate(
     if FRONTEND_TYPE == 'wib' and NUMBER_OF_DATA_PRODUCERS != 0:
         modules += [DAQModule(name="errored_frame_consumer", plugin="ErroredFrameConsumer")]
 
-    # jstr = json.dumps(confcmd.pod(), indent=4, sort_keys=True)
-    # print(jstr)
-
-    # startpars = rccmd.StartParams(run=RUN_NUMBER)
-    # startcmd = mrccmd("start", "CONFIGURED", "RUNNING", [
-    #         ("datahandler_.*", startpars),
-    #         ("flxcard_.*", startpars),
-    #         ("data_recorder_.*", startpars),
-    #         ("fragment_consumer", startpars)
-    #     ])
-
-    # jstr = json.dumps(startcmd.pod(), indent=4, sort_keys=True)
-    # print("="*80+"\nStart\n\n", jstr)
-
-
-    # stopcmd = mrccmd("stop", "RUNNING", "CONFIGURED", [
-    #         ("flxcard_.*", None),
-    #         ("datahandler_.*", None),
-    #         ("data_recorder_.*", None),
-    #         ("fragment_consumer", None)
-    #     ])
-
-    # jstr = json.dumps(stopcmd.pod(), indent=4, sort_keys=True)
-    # print("="*80+"\nStop\n\n", jstr)
-
-    # scrapcmd = mrccmd("scrap", "CONFIGURED", "INITIAL", [
-    #         ("", None)
-    #     ])
-
-    # jstr = json.dumps(scrapcmd.pod(), indent=4, sort_keys=True)
-    # print("="*80+"\nScrap\n\n", jstr)
-
-    # # Create a list of commands
-    # cmd_seq = [initcmd, confcmd, startcmd, stopcmd, scrapcmd]
-
-    # record_cmd = mrccmd("record", "RUNNING", "RUNNING", [
-    #     ("datahandler_.*", rconf.RecordingParams(
-    #         duration=10
-    #     ))
-    # ])
-
-    # jstr = json.dumps(record_cmd.pod(), indent=4, sort_keys=True)
-    # print("="*80+"\nRecord\n\n", jstr)
-
-    # cmd_seq.append(record_cmd)
-
-    # get_reg_cmd = mrccmd("getregister", "RUNNING", "RUNNING", [
-    #     ("flxcardctrl_.*", flxcc.GetRegisters(
-    #         card_id=0,
-    #         log_unit_id=0,
-    #         reg_names=(
-    #             "REG_MAP_VERSION",
-    #         )
-    #     ))
-    # ])
-
-    # jstr = json.dumps(get_reg_cmd.pod(), indent=4, sort_keys=True)
-    # print("="*80+"\nGet Register\n\n", jstr)
-
-    # cmd_seq.append(get_reg_cmd)
-
-    # set_reg_cmd = mrccmd("setregister", "RUNNING", "RUNNING", [
-    #     ("flxcardctrl_.*", flxcc.SetRegisters(
-    #         card_id=0,
-    #         log_unit_id=0,
-    #         reg_val_pairs=(
-    #             flxcc.RegValPair(reg_name="REG_MAP_VERSION", reg_val=0),
-    #         )
-    #     ))
-    # ])
-
-    # jstr = json.dumps(set_reg_cmd.pod(), indent=4, sort_keys=True)
-    # print("="*80+"\nSet Register\n\n", jstr)
-
-    # cmd_seq.append(set_reg_cmd)
-
-    # get_bf_cmd = mrccmd("getbitfield", "RUNNING", "RUNNING", [
-    #     ("flxcardctrl_.*", flxcc.GetBFs(
-    #         card_id=0,
-    #         log_unit_id=0,
-    #         bf_names=(
-    #             "REG_MAP_VERSION",
-    #         )
-    #     ))
-    # ])
-
-    # jstr = json.dumps(get_bf_cmd.pod(), indent=4, sort_keys=True)
-    # print("="*80+"\nGet Bitfield\n\n", jstr)
-
-    # cmd_seq.append(get_bf_cmd)
-
-    # set_bf_cmd = mrccmd("setbitfield", "RUNNING", "RUNNING", [
-    #     ("flxcardcontrol_.*", flxcc.SetBFs(
-    #         card_id=0,
-    #         log_unit_id=0,
-    #         bf_val_pairs=(
-    #             flxcc.RegValPair(reg_name="REG_MAP_VERSION", reg_val=0),
-    #         )
-    #     ))
-    # ])
-
-    # jstr = json.dumps(set_bf_cmd.pod(), indent=4, sort_keys=True)
-    # print("="*80+"\nSet Bitfield\n\n", jstr)
-
-    # cmd_seq.append(set_bf_cmd)
-
-    # # Print them as json (to be improved/moved out)
-    # jstr = json.dumps([c.pod() for c in cmd_seq], indent=4, sort_keys=True)
     mgraph = ModuleGraph(modules, queues=queues)
     for idx in range(n_links_0):
         mgraph.connect_modules(f"datahandler_{idx}.timesync_output", "timesync_consumer.input_queue", "timesync_q")
