@@ -27,6 +27,7 @@ import click
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option('--host-flx', default='localhost', help='Server hosing the FLX card')
 @click.option('--ncards', default=1, help='Number of FLX cards in host')
+@click.option('-e','--emulator-mode', is_flag=True, help='Emulator mode')
 @click.option('--opmon-impl', type=click.Choice(['json','cern','pocket'], case_sensitive=False),default='json', help="Info collector service implementation to use")
 @click.option('--ers-impl', type=click.Choice(['local','cern','pocket'], case_sensitive=False), default='local', help="ERS destination (Kafka used for cern and pocket)")
 @click.option('--pocket-url', default='127.0.0.1', help="URL for connecting to Pocket services")
@@ -34,7 +35,7 @@ import click
 @click.option('--use-k8s', is_flag=True, default=False, help="Whether to use k8s")
 @click.argument('json_dir', type=click.Path())
 
-def cli(host_flx, ncards, opmon_impl, ers_impl, pocket_url, image, use_k8s, json_dir):
+def cli(host_flx, ncards, emulator_mode, opmon_impl, ers_impl, pocket_url, image, use_k8s, json_dir):
 
     if exists(json_dir):
         raise RuntimeError(f"Directory {json_dir} already exists")
@@ -76,7 +77,12 @@ def cli(host_flx, ncards, opmon_impl, ers_impl, pocket_url, image, use_k8s, json
     for i in (0,ncards-1):
         nickname = 'flxcard' + host_flx + str(i*2)
         nickname = nickname.replace('-', '')
-        app = cardcontrollerapp_gen.get_cardcontroller_app(nickname, i*2, host_flx)
+        app = cardcontrollerapp_gen.get_cardcontroller_app(
+            nickname = nickname,
+            card_id = i*2,
+            emulator_mode = emulator_mode,
+            host = host_flx,
+        )
         the_system.apps[nickname] = app
 
     ####################################################################
