@@ -17,8 +17,11 @@ from daqconf.core.app import App, ModuleGraph
 from daqconf.core.daqmodule import DAQModule
 
 #===============================================================================
-def get_cardcontroller_app(nickname, card_id, 
-                host="localhost"):
+def get_cardcontroller_app(
+        nickname,
+        card_id,
+        emulator_mode=False,
+        host="localhost"):
     '''
     Here an entire application controlling one physical FLX card is generated. 
     '''
@@ -34,7 +37,7 @@ def get_cardcontroller_app(nickname, card_id,
         links+=[flx.Link(link_id=i, enabled=True, dma_desc=0, superchunk_factor=12)]
     # Prepare standard config with 2 logical units per card
     for j in range(2):
-        lus+=[flx.LogicalUnit(log_unit_id=j, emu_fanout=False, links=links)]
+        lus+=[flx.LogicalUnit(log_unit_id=j, emu_fanout=emulator_mode, links=links)]
 
 
     modules += [DAQModule(name = nickname, 
