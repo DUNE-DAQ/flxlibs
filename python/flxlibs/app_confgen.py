@@ -23,6 +23,7 @@ import dunedaq.readoutlibs.readoutconfig as rconf
 import dunedaq.readoutlibs.recorderconfig as bfs
 import dunedaq.flxlibs.felixcardreader as flxcr
 import dunedaq.flxlibs.felixcardcontroller as flxcc
+from flxlibs.cardcontrollerapp import cardcontrollerapp_gen
 import dunedaq.iomanager.connection as conn
 
 from appfwk.utils import mrccmd, mspec
@@ -83,7 +84,7 @@ def generate(
         FRONTEND_TYPE='wib',
         NUMBER_OF_DATA_PRODUCERS=1,          
         NUMBER_OF_TP_PRODUCERS=1,      
-        FELIX_ELINK_MASK="0:0",    
+        LINK_MASK=[[0]]*2,    
         DATA_RATE_SLOWDOWN_FACTOR = 1,
         EMULATOR_MODE = False,
         ENABLE_SOFTWARE_TPG=False,
@@ -95,11 +96,10 @@ def generate(
         HOST="localhost"
     ):
 
-    link_mask = parse_linkmask(FELIX_ELINK_MASK, NUMBER_OF_DATA_PRODUCERS+NUMBER_OF_TP_PRODUCERS)
-    n_links_0 = len(link_mask[0])
-    n_links_1 = len(link_mask[1])
-    n_tp_link_0 = CountTPLink(link_mask[0])
-    n_tp_link_1 = CountTPLink(link_mask[1])
+    n_links_0 = len(LINK_MASK[0])
+    n_links_1 = len(LINK_MASK[1])
+    n_tp_link_0 = CountTPLink(LINK_MASK[0])
+    n_tp_link_1 = CountTPLink(LINK_MASK[1])
 
     lb_size = 3*CLOCK_SPEED_HZ/(25*12*DATA_RATE_SLOWDOWN_FACTOR)
     lb_remainder = lb_size % 4096
@@ -108,31 +108,7 @@ def generate(
     # Define modules and queues
     modules = []
     queues = []
-
-    if NUMBER_OF_DATA_PRODUCERS+NUMBER_OF_TP_PRODUCERS > 0:
-        modules += [DAQModule(name = "flxcardctrl_0",
-                             plugin = 'FelixCardController',
-                             conf = flxcc.Conf(
-                                    card_id = 0,
-                                    logical_units = [flxcc.LogicalUnit(
-                                        log_unit_id = 0,
-                                        emu_fanout = EMU_FANOUT,
-                                        links=[flxcc.Link(
-                                            link_id = i, 
-                                            enabled = True, 
-                                            dma_desc = 0, 
-                                            superchunk_factor = SUPERCHUNK_FACTOR
-                                            ) for i in link_mask[0]])]
-                                        +[flxcc.LogicalUnit(
-                                        log_unit_id = 1,
-                                        emu_fanout = EMU_FANOUT,
-                                        links=[flxcc.Link(
-                                            link_id = i, 
-                                            enabled = True, 
-                                            dma_desc = 0, 
-                                            superchunk_factor = SUPERCHUNK_FACTOR
-                                            ) for i in link_mask[1]])]))]
-
+    
     if n_links_0 > 0:
         modules += [DAQModule(name = 'flxcard_0',
                             plugin = 'FelixCardReader',
@@ -143,7 +119,7 @@ def generate(
                                               dma_block_size_kb = 4,
                                               dma_memory_size_gb = 4,
                                               numa_id = 0,
-                                              links_enabled = link_mask[0]))]
+                                              links_enabled = LINK_MASK[0]))]
         modules += [DAQModule(name = f"datahandler_{idx}",
                             plugin = "DataLinkHandler",
                             conf = rconf.Conf(readoutmodelconf = rconf.ReadoutModelConf(
@@ -204,11 +180,11 @@ def generate(
                                                                                     output_file = f"raw_output_{idx}.out",
                                                                                     stream_buffer_size = 8388608,
                                                                                     enable_raw_recording = True)
-                                            )) for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]]
+                                            )) for idx in range(n_links_0-1, n_links_0) if 5 in LINK_MASK[0]]
         queues += [Queue(f'flxcard_0.output_{idx}',f"datahandler_{idx}.raw_input",f'{FRONTEND_TYPE}_link_{idx}', 100000 ) for idx in range(min(5, n_links_0-n_tp_link_0))]
-        queues += [Queue(f'flxcard_0.output_{idx}',f"datahandler_{idx}.raw_input",f'raw_tp_link_{idx}', 100000 ) for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]]
+        queues += [Queue(f'flxcard_0.output_{idx}',f"datahandler_{idx}.raw_input",f'raw_tp_link_{idx}', 100000 ) for idx in range(n_links_0-1, n_links_0) if 5 in LINK_MASK[0]]
         queues += [Queue(f"datahandler_{idx}.errored_frames", 'errored_frame_consumer.input_queue', "errored_frames_q", 10000) for idx in range(min(5, n_links_0-n_tp_link_0))]
-        queues += [Queue(f"datahandler_{idx}.errored_frames", 'errored_frame_consumer.input_queue', "errored_frames_q", 10000) for idx in range(n_links_0-1, n_links_0) if 5 in link_mask[0]]
+        queues += [Queue(f"datahandler_{idx}.errored_frames", 'errored_frame_consumer.input_queue', "errored_frames_q", 10000) for idx in range(n_links_0-1, n_links_0) if 5 in LINK_MASK[0]]
 
 
     if NUMBER_OF_DATA_PRODUCERS > 5 or n_links_1 > 0:
@@ -221,7 +197,7 @@ def generate(
                                               dma_block_size_kb = 4,
                                               dma_memory_size_gb = 4,
                                               numa_id = 0,
-                                              links_enabled = link_mask[1]))]
+                                              links_enabled = LINK_MASK[1]))]
         modules += [DAQModule(name = f"datahandler_{idx}",
                             plugin = "DataLinkHandler",
                             conf = rconf.Conf(readoutmodelconf = rconf.ReadoutModelConf(
@@ -282,11 +258,11 @@ def generate(
                                                                                     output_file = f"raw_output_{idx}.out",
                                                                                     stream_buffer_size = 8388608,
                                                                                     enable_raw_recording = True)
-                                            )) for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]]
+                                            )) for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in LINK_MASK[1]]
         queues += [Queue(f'flxcard_1.output_{idx}',f"datahandler_{idx}.raw_input",f'{FRONTEND_TYPE}_link_{idx}', 100000 ) for idx in range(6, 6+n_links_1-n_tp_link_1)]
-        queues += [Queue(f'flxcard_1.output_{idx}',f"datahandler_{idx}.raw_input",f'raw_tp_link_{idx}', 100000 ) for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]]
+        queues += [Queue(f'flxcard_1.output_{idx}',f"datahandler_{idx}.raw_input",f'raw_tp_link_{idx}', 100000 ) for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in LINK_MASK[1]]
         queues += [Queue(f"datahandler_{idx}.errored_frames", 'errored_frame_consumer.input_queue', "errored_frames_q", 10000) for idx in range(6, 6+n_links_1-n_tp_link_1)]
-        queues += [Queue(f"datahandler_{idx}.errored_frames", 'errored_frame_consumer.input_queue', "errored_frames_q", 10000) for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in link_mask[1]]
+        queues += [Queue(f"datahandler_{idx}.errored_frames", 'errored_frame_consumer.input_queue', "errored_frames_q", 10000) for idx in range(5+n_links_1, 5+n_links_1+1) if 5 in LINK_MASK[1]]
 
     modules += [DAQModule(name="timesync_consumer", plugin="TimeSyncConsumer")]
     modules += [DAQModule(name="fragment_consumer", plugin="FragmentConsumer")]
@@ -419,11 +395,12 @@ if __name__ == '__main__':
             ers_settings["FATAL"] = "erstrace,lstdout"
 
         # add app
+        link_mask = parse_linkmask(felix_elink_mask, number_of_data_producers+number_of_tp_producers)
         the_system.apps["readout_app"] = generate(
         FRONTEND_TYPE = frontend_type,
         NUMBER_OF_DATA_PRODUCERS = number_of_data_producers,
         NUMBER_OF_TP_PRODUCERS = number_of_tp_producers,
-        FELIX_ELINK_MASK = felix_elink_mask,
+        LINK_MASK = link_mask,
         DATA_RATE_SLOWDOWN_FACTOR = data_rate_slowdown_factor,
         EMULATOR_MODE = emulator_mode,
         ENABLE_SOFTWARE_TPG = enable_software_tpg,
@@ -433,6 +410,13 @@ if __name__ == '__main__':
         DATA_FILE = data_file,
         TPG_CHANNEL_MAP = tpg_channel_map,
         HOST=host)
+        the_system.apps["flxcard_ctrl"] = cardcontrollerapp_gen.get_cardcontroller_app(
+            nickname = "flxcard_ctrl",
+            card_id = 0,
+            elinks = link_mask,
+            emulator_mode = emulator_mode,
+            host = host,
+        )
 
 
         ####################################################################
