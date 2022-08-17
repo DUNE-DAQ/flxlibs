@@ -33,10 +33,8 @@ to program the FELIX card (card number denoted by `-c`). Then to check if the fi
 ```bash
 fflashprog -c 0 -f 3 <.mcs file to program>
 ```
-Finally reboot the machine with the FELIX card:
-```bash
-sudo reboot
-```
+Finally, the machine needs to be fully power cycled for the firmware image to corectly load.
+
 *Note, the -f command indicates which partition to program, if programming on partition 3 doesn't work, run `flx-info` to get the correct partition number or program the card using vivado.*
 
 ### Drivers:
@@ -77,9 +75,13 @@ then it has successfully worked, if you see errors, then reboot the machine and 
 First ensure you have setup a dunedaq enivronmet, following these instructions:
 [https://dune-daq-sw.readthedocs.io/en/latest/packages/daq-buildtools/#running-a-release-from-cvmfs](https://dune-daq-sw.readthedocs.io/en/latest/packages/daq-buildtools/#running-a-release-from-cvmfs)
 
-Now to get access to the integration test bash scripts clone the flxlibs repository:
+Now to get access to the integration test scripts and create test configurations, clone the flxlibs repository:
 ```bash
+cd sourcecode
 git clone https://github.com/DUNE-DAQ/flxlibs.git
+dbt-workarea-env
+dbt-build.py
+cd ..
 ```
 
 Clone dtp-pattens in your working directory, a repository containing fake data patterns to test with the FELIX:
@@ -87,7 +89,7 @@ Clone dtp-pattens in your working directory, a repository containing fake data p
 git clone ssh://git@gitlab.cern.ch:7999/dune-daq/readout/dtp-patterns.git
 ```
 
-### DTP software (only for dunedaq versions less then v2.10.0):
+<!--### DTP software (only for dunedaq versions less then v2.10.0):
 To test hitfinding with the appropriate firmware, `dtp-controls` and `wupper-toybox` are needed to control the TPG (***Note `wupper-toybox` to be replaced with `DUNE-DAQ/uhallibs`***).
 
 In your `sourcecode` directory, clone `wupper-toybox`:
@@ -117,7 +119,7 @@ source /cvmfs/dunedaq.opensciencegrid.org/setup_dunedaq.sh
 setup_dbt dunedaq-v2.8.2
 dbt-workarea-env
 source dtp-controls/env.sh
-```
+```-->
 
 ## Running tests
 ### test dataflow with low level tools:
@@ -181,30 +183,26 @@ which will configure the hitfinding tpg to process data from the elinks. this wi
 ./set_gbt.sh watch-1 # watch processor on SLR 1
 ```
 ### test readout with DUNE-DAQ
-***to correctly generate the configurations in dunedaq-v2.11.0, the develop branch of flxlibs is required:***
-```bash
-cd sourcecode
-git clone https://github.com/DUNE-DAQ/flxlibs.git
-dbt-workarea-env
-dbt-build.py
-cd ..
-```
+***First ensure you are able to ssh into the machine you are working in, as nanorc will run the various DAQ modules as localhosts.***
+
+A custom command to raw record data is provided: `flxlibs/scripts/integration-tests/record-cmd.json`, which should be copied in the work area.
+
 #### Test ADC recording with the internal FELIX emulator
 to generate a 10 ADC link configuration run the following command:
 ```bash
-python -m flxlibs.app_confgen -n 10 -t 0 -m "0-4:0-4" -e -E app_flx_10.json
+python -m flxlibs.app_confgen -n 10 -t 0 -m "0-4:0-4" -e -E app_flx_10
 ```
 where `-e` enables generation of fake timestamps when using fake data patterns and `-E` enables the internal emulator.
 Then run the following:
 ```bash
 ./test-communication.sh
-daq_application -c stdin://app_flx_10.json -n test_emu
+nanorc app_flx_10 test-emu
 ```
 once in the daq_application run the commands:
 ```
-init conf start
+boot conf start <run number>
 ```
-and you should see dataflow on the datalinkhandlers. the key is to look for non-zero values in the following flags:
+and you should see dataflow on the datalinkhandlers. the key is to look for non-zero values in the following flags in the output file `info_333.json`:
 ```
 num_blocks_processed
 num_chunks_processed
@@ -222,18 +220,27 @@ num_subchunk_errors
 num_subchunk_trunc_errors
 num_subchunks_processed_with_error
 ```
-Note that during the start of dataflow some errors can occur, but this is due to data being readout between the start and end of a chunk. After ~10s the window should update and show no errors.
+Note that during the start of dataflow some errors can occur, but this is due to data being readout between the start and end of a chunk.
+
+To record the raw ADC to file you need to run the expert command which runs the json file `record-cmd.json`.
+
+```
+expert_command app_flx_10/app_flx_10/readout_app record-cmd.json
+```
 
 To stop the test run the following:
 ```
-stop
+stop_run
 scrap
+quit
 ```
-then exit the program with Ctrl-D then Ctrl-C.
+
+if the application terminates correctly nanorc will print an exit code 255.
+
 #### Test ADC recording with the optical links
 run the following command:
 ```bash
-python -m flxlibs.app_confgen -n 10 -t 0 -m "0-4:0-4" -e app_flx_10.json
+python -m flxlibs.app_confgen -n 10 -t 0 -m "0-4:0-4" -e app_flx_10
 ```
 which prevents the internal emulator from running.
 Then run the following:
@@ -241,56 +248,68 @@ Then run the following:
 ./test-communication.sh
 femu -d 0 -n
 femu -d 1 -n
-daq_application -c stdin://app_flx_10.json -n test_fe
+nanorc app_flx_10 test-fe
 ```
 once in the daq_application run the commands:
 ```
-init conf start
+boot conf start <run number>
 ```
 and here you should see no dataflow on any link handlers. Now configure the front end device to send data along the optical fibers and you should see the link handler information update similar to the previous test.
 
+To record the raw ADC to file:
+```
+expert_command app_flx_10/app_flx_10/readout_app record-cmd.json
+```
+
 To stop the test run the following:
 ```
-stop
+stop_run
 scrap
+quit
 ```
-then exit the program with Ctrl-D then Ctrl-C.
+
 #### Test TP dataflow with the wibulator
 run the following command:
 ```bash
-python -m flxlibs.app_confgen -n 0 -t 2 -m "5:5" -e app_flx_2.json
+python -m flxlibs.app_confgen -n 0 -t 2 -m "5:5" -e app_flx_2
 ```
 run the daq_app as before:
 ```bash
 ./test-communication.sh
 femu -d 0 -n
 femu -d 1 -n
-daq_application -c stdin://app_flx_2.json -n test_wib
-init conf start
+nanorc app_flx_2 test-wib
+boot conf start <run number>
 ```
 and then enable the wibulator in another terminal:
 ```bash
 ./set_wibulator.sh
 ```
 and you can spy on the link processors by adding either `watch-0` or `watch-1` as an argument.
-if successful you should see dataflow on the two link handlers.
+If successful you should see dataflow on the two link handlers.
+
+To record the raw ADC to file:
+```
+expert_command app_flx_2/app_flx_2/readout_app record-cmd.json
+```
 
 To stop the test run the following:
 ```
-stop
+stop_run
 scrap
+quit
 ```
-then exit the program with Ctrl-D then Ctrl-C.
+
 #### Test TP dataflow with the internal emulator
 run the following command:
 ```bash
-python -m flxlibs.app_confgen -n 10 -t 2 -m "0-5:0-5" -e -E app_flx_12.json
+python -m flxlibs.app_confgen -n 10 -t 2 -m "0-5:0-5" -e -E app_flx_12
 ```
 run the daq_app as before:
 ```bash
 ./test-communication.sh
-daq_application -c stdin://app_flx_12.json -n test_emu
-init conf start
+nanorc app_flx_12 test-emu
+boot conf start <run number>
 ```
 now enable the hitfinding TPG in GBT mode:
 ```bash
@@ -298,24 +317,30 @@ now enable the hitfinding TPG in GBT mode:
 ```
 and you should see dataflow on link handlers 5 and 11. ***Note the TP links which have a smaller data rate than the adc links.***
 
+To record the raw ADC to file:
+```
+expert_command app_flx_12/app_flx_12/readout_app record-cmd.json
+```
+
 To stop the test run the following:
 ```
-stop
+stop_run
 scrap
+quit
 ```
-then exit the program with Ctrl-D then Ctrl-C.
+
 #### Test TP dataflow with the optical links
 run the following command:
 ```bash
-python -m flxlibs.app_confgen -n 10 -t 2 -m "0-5:0-5" -e app_flx_12.json
+python -m flxlibs.app_confgen -n 10 -t 2 -m "0-5:0-5" -e app_flx_12
 ```
 run the daq_app as before:
 ```bash
 ./test-communication.sh
 femu -d 0 -n
 femu -d 1 -n
-daq_application -c stdin://app_flx_12.json -n test_fe
-init conf start
+nanorc app_flx_12 test-fe
+boot conf start <run number>
 ```
 Next configure the front end to send data. Once done the adc links should have non zero data rates. 
 
@@ -325,15 +350,19 @@ Now enable the hitfinding TPG in GBT mode:
 ```
 and you should see dataflow on link handlers 5 and 11.
 
+To record the raw ADC to file:
+```
+expert_command app_flx_12/app_flx_12/readout_app record-cmd.json
+```
+
 To stop the test run the following:
 ```
-stop
+stop_run
 scrap
+quit
 ```
-then exit the program with Ctrl-D then Ctrl-C.
 
 ### Test TP dataflow with `nanorc`
-***First ensure you are able to ssh into the machine you are working in, as nanorc will run the various DAQ modules as localhosts.***
 
 Create the following nanorc configuration:
 ```bash
