@@ -11,6 +11,7 @@ from os.path import exists, join
 from daqconf.core.system import System
 from daqconf.core.conf_utils import make_app_command_data
 from daqconf.core.metadata import write_metadata_file
+from daqconf.core.sourceid import *
 
 # Add -h as default help option
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
@@ -25,6 +26,7 @@ moo.io.default_load_path = get_moo_model_path()
 import click
 
 @click.command(context_settings=CONTEXT_SETTINGS)
+@click.option('--hardware-map-file', default='./HardwareMap.txt', help="File containing detector hardware map for configuration to run")
 @click.option('--host-flx', default='localhost', help='Server hosing the FLX card')
 @click.option('--ncards', default=1, help='Number of FLX cards in host')
 @click.option('-e','--emulator-mode', is_flag=True, help='Emulator mode')
@@ -35,7 +37,7 @@ import click
 @click.option('--use-k8s', is_flag=True, default=False, help="Whether to use k8s")
 @click.argument('json_dir', type=click.Path())
 
-def cli(host_flx, ncards, emulator_mode, opmon_impl, ers_impl, pocket_url, image, use_k8s, json_dir):
+def cli(hardware_map_file, host_flx, ncards, emulator_mode, opmon_impl, ers_impl, pocket_url, image, use_k8s, json_dir):
 
     if exists(json_dir):
         raise RuntimeError(f"Directory {json_dir} already exists")
@@ -43,7 +45,7 @@ def cli(host_flx, ncards, emulator_mode, opmon_impl, ers_impl, pocket_url, image
     console.log('Loading cardcontrollerapp config generator')
     from flxlibs.cardcontrollerapp import cardcontrollerapp_gen
 
-    the_system = System()
+    the_system = System() 
 
     if opmon_impl == 'cern':
          info_svc_uri = "kafka://monkafka.cern.ch:30092/opmon"
@@ -73,16 +75,35 @@ def cli(host_flx, ncards, emulator_mode, opmon_impl, ers_impl, pocket_url, image
         ers_settings["ERROR"] =   "erstrace,throttle,lstdout"
         ers_settings["FATAL"] =   "erstrace,lstdout"
 
+    # Load the hw map file here to extract ru hosts, cards, slr, links, forntend types, sourceIDs and geoIDs
+    # The ru apps are determined by the combinations of hostname and card_id, the SourceID determines the 
+    # DLH (with physical slr+link information), the detId acts as system_type allows to infer the frontend_type
+    hw_map_service = HardwareMapService(hardware_map_file)
 
-    for i in (0,ncards-1):
-        nickname = 'flxcard' + host_flx + str(i*2)
-        nickname = nickname.replace('-', '')
+    # Get the list of RU processes
+    dro_infos = hw_map_service.get_all_dro_info()
+
+    # Build card controllers based on DRO_INFO, not by parameters
+    for dro_info in dro_infos:
+        console.log(f"Generate controller for {dro_info.host} reading card {dro_info.card}.")
+        nickname = 'flxcard_' + dro_info.host + '_card_' + str(dro_info.card)
+        nickname = nickname.replace('-', '_')
         app = cardcontrollerapp_gen.get_cardcontroller_app(
             nickname = nickname,
-            card_id = i*2,
+            card_id = dro_info.card*2,
             emulator_mode = emulator_mode,
             host = host_flx,
+            dro_info = dro_info
         )
+#    for i in (0,ncards-1):
+#        nickname = 'flxcard' + host_flx + str(i*2)
+#        nickname = nickname.replace('-', '')
+#        app = cardcontrollerapp_gen.get_cardcontroller_app(
+#            nickname = nickname,
+#            card_id = i*2,
+#            emulator_mode = emulator_mode,
+#            host = host_flx,
+#        )
         the_system.apps[nickname] = app
         if use_k8s:
             the_system.apps[nickname].resources = {
@@ -96,7 +117,6 @@ def cli(host_flx, ncards, emulator_mode, opmon_impl, ers_impl, pocket_url, image
     # Arrange per-app command data into the format used by util.write_json_files()
     app_command_datas = {}
     for name,app in the_system.apps.items():
-        print(name)
         app_command_datas[name] = make_app_command_data(the_system, app, name)
 
 
@@ -141,7 +161,7 @@ def cli(host_flx, ncards, emulator_mode, opmon_impl, ers_impl, pocket_url, image
 
     console.log(f"FLX card controller apps config generated in {json_dir}")
 
-    write_metadata_file(json_dir, "flxcardcontrollers_gen")
+    write_metadata_file(json_dir, "flxcardcontrollers_gen", "conf.json")
 
 if __name__ == '__main__':
     try:

@@ -15,6 +15,7 @@ import dunedaq.flxlibs.felixcardcontroller as flx
 
 from daqconf.core.app import App, ModuleGraph
 from daqconf.core.daqmodule import DAQModule
+from detchannelmaps._daq_detchannelmaps_py import *
 
 #===============================================================================
 def get_cardcontroller_app(
@@ -22,25 +23,39 @@ def get_cardcontroller_app(
         card_id,
         elinks = [[0,1,2,3,4,5]]*2,
         emulator_mode=False,
-        host="localhost"):
+        host="localhost",
+        dro_info=None):
     '''
     Here an entire application controlling one physical FLX card is generated. 
     '''
-    if len(elinks) != 2:
-        raise Exception("elinks needs to be supplied two lists, one for each logical unit.")
+
+    # Get Elink infos for every SLR on this physical card.
+    slrs = {}
+    for link in dro_info.links:
+        if not link.dro_slr in slrs:
+            slrs[link.dro_slr] = []
+        slrs[link.dro_slr].append(link.dro_link)
+
+    # Sort elinks in each SLR
+    for slr in slrs:
+        slrs[slr].sort()
+
+    # RS: Not needed with HW map
+    #if len(elinks) != 2:
+    #    raise Exception("elinks needs to be supplied two lists, one for each logical unit.")
 
     # Define modules
-
     modules = []
-
     lus = []
-    for i in range(2):
-        links = []
-        for j in elinks[i]:
-            links+=[flx.Link(link_id=j, enabled=True, dma_desc=0, superchunk_factor=12)]
-        lus+=[flx.LogicalUnit(log_unit_id=i, emu_fanout=emulator_mode, links=links)]
 
+    # Create FelixCardController plugin configs
+    for slr in slrs:
+        elinks = []
+        for l in slrs[slr]:
+            elinks.append(flx.Link(link_id=l, enabled=True, dma_desc=0, superchunk_factor=12))
+        lus.append(flx.LogicalUnit(log_unit_id=slr, emu_fanout=emulator_mode, links=elinks))
 
+    # Create modules
     modules += [DAQModule(name = nickname, 
                           plugin = 'FelixCardController',
                           conf = flx.Conf(card_id = card_id, logical_units = lus)
