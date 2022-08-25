@@ -20,8 +20,7 @@ from detchannelmaps._daq_detchannelmaps_py import *
 #===============================================================================
 def get_cardcontroller_app(
         nickname,
-        card_id,
-        elinks = [[0,1,2,3,4,5]]*2,
+        card_id=0,
         emulator_mode=False,
         host="localhost",
         dro_info=None):
