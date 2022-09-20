@@ -27,7 +27,7 @@ moo.io.default_load_path = get_moo_model_path()
 import click
 
 @click.command(context_settings=CONTEXT_SETTINGS)
-@generate_cli_from_schema('flxlibs/confgen.jsonnet', 'flxcardcontrollerconf')
+@generate_cli_from_schema('flxlibs/confgen.jsonnet', 'flxlibs_gen')
 @click.option('--hardware-map-file', default=None, help="File containing detector hardware map for configuration to run")
 @click.option('-e/-ne','--emulator-mode/--no-emulator-mode', default=None, is_flag=True, help='Emulator mode')
 @click.option('--debug', default=False, is_flag=True, help="Switch to get a lot of printout and dot files")
@@ -111,7 +111,7 @@ def cli(config, hardware_map_file, emulator_mode, json_dir, debug):
 
     console.log(f"FLX card controller apps config generated in {json_dir}")
 
-    write_metadata_file(json_dir, "flxcardcontrollers_gen", "conf.json")
+    write_metadata_file(json_dir, "flxcardcontrollers_gen", config_file)
 
 if __name__ == '__main__':
     try:
