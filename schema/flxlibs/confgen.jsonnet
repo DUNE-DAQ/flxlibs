@@ -15,7 +15,7 @@ local cs = {
     s.field("emulator_mode",     daqconf.Flag, default=false, doc="If active, timestamps of data frames are overwritten when processed by the readout. This is necessary if the felix card does not set correct timestamps. Former -e"),
   ]),
 
-  flxlib_gen: s.record('flxlib_gen', [
+  flxlibs_gen: s.record('flxlibs_gen', [
     s.field('boot',              daqconf.boot,           default=daqconf.boot,           doc='Boot parameters'),
     s.field('flxcardcontroller', self.flxcardcontroller, default=self.flxcardcontroller, doc='FELIX conf parameters'),
   ]),
