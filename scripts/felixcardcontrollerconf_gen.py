@@ -76,7 +76,8 @@ def cli(config, hardware_map_file, emulator_mode, json_dir, debug):
     for dro_info in dro_infos:
         console.log(f"Generate controller for {dro_info.host} reading card {dro_info.card}.")
         nickname = 'flxcard_' + dro_info.host + '_card_' + str(dro_info.card)
-        nickname = nickname.replace('-', '_')
+        nickname = nickname.replace('_', '')
+        nickname = nickname.replace('-', '')
         app = cardcontrollerapp_gen.get_cardcontroller_app(
             nickname = nickname,
             card_id = dro_info.card*2,
