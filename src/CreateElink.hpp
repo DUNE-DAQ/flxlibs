@@ -13,6 +13,7 @@
 #include "flxlibs/AvailableParserOperations.hpp"
 #include "fdreadoutlibs/ProtoWIBSuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/DUNEWIBSuperChunkTypeAdapter.hpp"
+#include "fdreadoutlibs/DAPHNESuperChunkTypeAdapter.hpp"
 
 
 #include <memory>
@@ -58,11 +59,11 @@ createElinkModel(const std::string& target)
 
   } else if (target.find("pds") != std::string::npos) {
     // PDS specific char arrays
-    auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::DAPHNE_SUPERCHUNK_STRUCT>>();
+    auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::DAPHNESuperChunkTypeAdapter>>();
     elink_model->set_sink(target);
     auto& parser = elink_model->get_parser();
     auto& sink = elink_model->get_sink();
-    parser.process_chunk_func = parsers::fixsizedChunkInto<fdreadoutlibs::types::DAPHNE_SUPERCHUNK_STRUCT>(sink);
+    parser.process_chunk_func = parsers::fixsizedChunkInto<fdreadoutlibs::types::DAPHNESuperChunkTypeAdapter>(sink);
     return elink_model;
 
   } else if (target.find("raw_tp") != std::string::npos) {
