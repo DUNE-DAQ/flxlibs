@@ -15,6 +15,7 @@
 #include "fdreadoutlibs/DUNEWIBSuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/DAPHNESuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter.hpp"
+#include "fdreadoutlibs/VariableSizePayloadTypeAdapter.hpp"
 
 
 #include <memory>
@@ -78,7 +79,7 @@ createElinkModel(const std::string& target)
 
   } else if (target.find("varsize") != std::string::npos) {
     // Variable sized user payloads
-    auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::VariableSizePayloadWrapper>>();
+    auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::VariableSizePayloadTypeAdapter>>();
     elink_model->set_sink(target);
     auto& parser = elink_model->get_parser();
     auto& sink = elink_model->get_sink();
