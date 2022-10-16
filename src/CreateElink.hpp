@@ -11,7 +11,7 @@
 #include "ElinkConcept.hpp"
 #include "ElinkModel.hpp"
 #include "flxlibs/AvailableParserOperations.hpp"
-#include "fdreadoutlibs/FDReadoutTypes.hpp"
+#include "fdreadoutlibs/ProtoWIBSuperChunkTypeAdapter.hpp"
 
 #include <memory>
 #include <string>
@@ -25,7 +25,7 @@ createElinkModel(const std::string& target)
   if (target.find("wib") != std::string::npos && target.find("wib2") == std::string::npos) {
     // WIB1 specific char arrays
     // Create Model
-    auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::WIB_SUPERCHUNK_STRUCT>>();
+    auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::ProtoWIBSuperChunkTypeAdapter>>();
 
     // Setup sink (acquire pointer from QueueRegistry)
     elink_model->set_sink(target);
@@ -36,7 +36,7 @@ createElinkModel(const std::string& target)
     auto& error_sink = elink_model->get_error_sink();
 
     // Modify parser as needed...
-    parser.process_chunk_func = parsers::fixsizedChunkInto<fdreadoutlibs::types::WIB_SUPERCHUNK_STRUCT>(sink);
+    parser.process_chunk_func = parsers::fixsizedChunkInto<fdreadoutlibs::types::ProtoWIBSuperChunkTypeAdapter>(sink);
     if (error_sink != nullptr) {
       parser.process_chunk_with_error_func = parsers::errorChunkIntoSink(error_sink);
     }
