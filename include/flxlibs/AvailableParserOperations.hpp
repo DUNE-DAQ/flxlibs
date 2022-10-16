@@ -12,7 +12,7 @@
 #include "FelixIssues.hpp"
 
 #include "iomanager/Sender.hpp"
-#include "fdreadoutlibs/FDReadoutTypes.hpp"
+
 #include "fdreadoutlibs/VariableSizePayloadTypeAdapter.hpp"
 
 #include "packetformat/block_format.hpp"
