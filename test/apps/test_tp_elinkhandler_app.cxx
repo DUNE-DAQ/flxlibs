@@ -172,7 +172,7 @@ main(int argc, char* argv[])
 
       std::ostringstream oss;
       rwtpp->m_head.print(oss);
-      //types::RAW_WIB_TRIGGERPRIMITIVE_STRUCT rwtps; // TODO 2022-04-21 ivana.hristova@stfc.ac.uk: currently this pointer has been removed  
+      //types::DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter rwtps; // TODO 2022-04-21 ivana.hristova@stfc.ac.uk: currently this pointer has been removed  
       //rwtps.rwtp.reset(rwtpp);
       TLOG() << oss.str();
 

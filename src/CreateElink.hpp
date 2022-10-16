@@ -14,6 +14,7 @@
 #include "fdreadoutlibs/ProtoWIBSuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/DUNEWIBSuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/DAPHNESuperChunkTypeAdapter.hpp"
+#include "fdreadoutlibs/DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter.hpp"
 
 
 #include <memory>
@@ -67,12 +68,12 @@ createElinkModel(const std::string& target)
     return elink_model;
 
   } else if (target.find("raw_tp") != std::string::npos) {
-    auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::RAW_WIB_TRIGGERPRIMITIVE_STRUCT>>();
+    auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter>>();
     elink_model->set_sink(target);
     auto& parser = elink_model->get_parser();
     auto& sink = elink_model->get_sink();
-    parser.process_chunk_func = parsers::varsizedChunkIntoWithDatafield<fdreadoutlibs::types::RAW_WIB_TRIGGERPRIMITIVE_STRUCT>(sink);
-    parser.process_shortchunk_func = parsers::varsizedShortchunkIntoWithDatafield<fdreadoutlibs::types::RAW_WIB_TRIGGERPRIMITIVE_STRUCT>(sink);
+    parser.process_chunk_func = parsers::varsizedChunkIntoWithDatafield<fdreadoutlibs::types::DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter>(sink);
+    parser.process_shortchunk_func = parsers::varsizedShortchunkIntoWithDatafield<fdreadoutlibs::types::DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter>(sink);
     return elink_model;
 
   } else if (target.find("varsize") != std::string::npos) {
