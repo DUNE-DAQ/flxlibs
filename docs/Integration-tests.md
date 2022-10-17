@@ -190,13 +190,13 @@ A custom command to raw record data is provided: `flxlibs/scripts/integration-te
 #### Test ADC recording with the internal FELIX emulator
 to generate a 10 ADC link configuration run the following command:
 ```bash
-python -m flxlibs.app_confgen -n 10 -t 0 -m "0-4:0-4" -e -E app_flx_10
+readoutapp_gen -c ${DBT_AREA_ROOT}/sourcecode/flxlibs/scripts/integration-tests/flx_conf_emu.json app_flx_emu
 ```
 where `-e` enables generation of fake timestamps when using fake data patterns and `-E` enables the internal emulator.
 Then run the following:
 ```bash
 ./test-communication.sh
-nanorc app_flx_10 test-emu
+nanorc app_flx_emu test-emu
 ```
 once in the daq_application run the commands:
 ```
@@ -225,7 +225,7 @@ Note that during the start of dataflow some errors can occur, but this is due to
 To record the raw ADC to file you need to run the expert command which runs the json file `record-cmd.json`.
 
 ```
-expert_command app_flx_10/app_flx_10/readout_app record-cmd.json
+expert_command app_flx_emu/app_flx_emu/readout-app record-cmd.json
 ```
 
 To stop the test run the following:
@@ -240,7 +240,7 @@ if the application terminates correctly nanorc will print an exit code 255.
 #### Test ADC recording with the optical links
 run the following command:
 ```bash
-python -m flxlibs.app_confgen -n 10 -t 0 -m "0-4:0-4" -e app_flx_10
+readoutapp_gen -c ${DBT_AREA_ROOT}/sourcecode/flxlibs/scripts/integration-tests/flx_conf_fe.json app_flx_fe
 ```
 which prevents the internal emulator from running.
 Then run the following:
@@ -248,7 +248,7 @@ Then run the following:
 ./test-communication.sh
 femu -d 0 -n
 femu -d 1 -n
-nanorc app_flx_10 test-fe
+nanorc app_flx_fe test-fe
 ```
 once in the daq_application run the commands:
 ```
@@ -268,7 +268,7 @@ scrap
 quit
 ```
 
-#### Test TP dataflow with the wibulator
+#### Test TP dataflow with the wibulator (outdated)
 run the following command:
 ```bash
 python -m flxlibs.app_confgen -n 0 -t 2 -m "5:5" -e app_flx_2
@@ -303,12 +303,12 @@ quit
 #### Test TP dataflow with the internal emulator
 run the following command:
 ```bash
-python -m flxlibs.app_confgen -n 10 -t 2 -m "0-5:0-5" -e -E app_flx_12
+readoutapp_gen -c ${DBT_AREA_ROOT}/sourcecode/flxlibs/scripts/integration-tests/flx_fwtp_conf_emu.json app_flx_fwtp_emu
 ```
 run the daq_app as before:
 ```bash
 ./test-communication.sh
-nanorc app_flx_12 test-emu
+nanorc app_flx_fwtp_emu test-emu
 boot conf start <run number>
 ```
 now enable the hitfinding TPG in GBT mode:
@@ -319,7 +319,7 @@ and you should see dataflow on link handlers 5 and 11. ***Note the TP links whic
 
 To record the raw ADC to file:
 ```
-expert_command app_flx_12/app_flx_12/readout_app record-cmd.json
+expert_command app_flx_fwtp_emu/app_flx_fwtp_emu/readout_app record-cmd.json
 ```
 
 To stop the test run the following:
@@ -332,14 +332,14 @@ quit
 #### Test TP dataflow with the optical links
 run the following command:
 ```bash
-python -m flxlibs.app_confgen -n 10 -t 2 -m "0-5:0-5" -e app_flx_12
+readoutapp_gen -c ${DBT_AREA_ROOT}/sourcecode/flxlibs/scripts/integration-tests/flx_fwtp_conf_fe.json app_flx_fwtp_fe
 ```
 run the daq_app as before:
 ```bash
 ./test-communication.sh
 femu -d 0 -n
 femu -d 1 -n
-nanorc app_flx_12 test-fe
+nanorc app_flx_fwtp_fe test-fe
 boot conf start <run number>
 ```
 Next configure the front end to send data. Once done the adc links should have non zero data rates. 
@@ -362,28 +362,13 @@ scrap
 quit
 ```
 
-### Test TP dataflow with `nanorc`
+### Test TP dataflow with full system
 
-Create the following nanorc configuration:
+Create the following DAQ configuration:
 ```bash
-daqconf_multiru_gen -f -e --host-ru localhost --region-id 0 --host-df localhost -o . -s 1 --number-of-data-producers 10 --enable-firmware-tpg --enable-raw-recording --enable-tpset-writing --trigger-activity-config 'dict(prescale=500)' --trigger-candidate-config 'dict(prescale=20)' --tpg-channel-map ProtoDUNESP1ChannelMap flx-fw-json
+daqconf_multiru_gen -c ${DBT_AREA_ROOT}/sourcecode/flxlibs/scripts/integration-tests/daqconf_fw.json daqconf_fw
 ```
-to raw record data in nanorc you must create a file `record-cmd.json` with the following contents:
-```json
-{
-    "data": {
-        "modules": [
-            {
-                "data": {
-                    "duration": 1
-                },
-                "match": ""
-            }
-        ]
-    },
-    "id": "record"
-}
-```
+
 Now, depending on the tpye of data to readout you can follow the above steps to configure the FELIX a certain way. Here we will show how to readout data from the internal emulator.
 
 In a new terminal (with the dunedaq environment setup), configure the card:
@@ -393,19 +378,23 @@ In a new terminal (with the dunedaq environment setup), configure the card:
 
 In another terminal run nanorc:
 ```bash
-nanorc flx-fw-json/ boot test init conf start resume wait 60 stop scrap terminate
+nanorc flx-fw-json/ boot test conf start resume wait 60 stop scrap terminate
 ```
-
+<!-- 
 Which will boot the localhosts, initilise and configure the card, start dataflow, wait 60s stop and terminate the program.
 During the wait period (a small loading bar will appear), configure the firmware tpg to process data from the elinks:
 ```bash
 ./set_gbt.sh
-```
-and once this is done you can record data for 1s using this command:
+``` -->
+<!-- and once this is done you can record data for 1s using this command:
 ```bash
 curl -d "@record.json" -H "Content-Type: application/json" -H "X-Answer-Port: 9876" -X POST <localhost-url>:3336/command
+``` -->
+To record the raw ADC to file:
 ```
-note if you are unsure of your local host url it will appear during the boot process of nanorc e.g. http://np04-srv-30:3336/
+expert_command daqconf_fw/daqconf_fw/rulocalhost record-cmd.json
+```
+<!-- note if you are unsure of your local host url it will appear during the boot process of nanorc e.g. http://np04-srv-30:3336/ -->
 
 if you are unable to run the above commands in time then extend the wait period, and if you want to record for more than 1s you can modify record-cmd.json **but be warned, the data rate is very high**.
 if successful, you will see output files for each link with a rather with file sizes of ~1GB.

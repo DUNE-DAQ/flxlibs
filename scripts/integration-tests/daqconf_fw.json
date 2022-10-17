@@ -1,0 +1,20 @@
+{
+    "readout": {
+        "hardware_map_file": "${DBT_AREA_ROOT}/sourcecode/flxlibs/scripts/integration-tests/hw_map_10links.txt",
+        "emulator_mode": true,
+        "clock_speed_hz": 62500000,
+        "data_file": "./frames.bin",
+        "use_felix": true,
+        "latency_buffer_size": 499968,
+        "enable_software_tpg": false,
+        "enable_firmware_tpg": true,
+        "firmware_hit_threshold": 100,
+        "enable_raw_recording": true,
+        "raw_recording_output_dir": ".",
+        "readout_sends_tp_fragments": true
+    },
+    "trigger": {
+        "tpg_channel_map": "HDColdboxChannelMap",
+        "enable_tpset_writing": true
+    }
+}
