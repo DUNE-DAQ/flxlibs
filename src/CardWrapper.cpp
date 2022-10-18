@@ -85,7 +85,9 @@ CardWrapper::configure(const data_t& args)
     m_poll_time = m_cfg.poll_time;
     m_dma_memory_size = m_cfg.dma_memory_size_gb * 1024 * 1024 * 1024UL;
     m_numa_id = m_cfg.numa_id;
-    m_dma_processor.set_name(m_dma_processor_name, m_card_id);
+    std::ostringstream tnoss;
+    tnoss << m_dma_processor_name << "-" << m_card_id; // append physical card id
+    m_dma_processor.set_name(tnoss.str(), m_logical_unit); // set_name appends logical unit id
 
     std::ostringstream cardoss;
     cardoss << "[id:" << std::to_string(m_card_id) << " slr:" << std::to_string(m_logical_unit) << "]";
