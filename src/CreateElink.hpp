@@ -69,6 +69,7 @@ createElinkModel(const std::string& target)
     auto& parser = elink_model->get_parser();
     auto& sink = elink_model->get_sink();
     parser.process_chunk_func = parsers::varsizedChunkIntoWithDatafield<fdreadoutlibs::types::RAW_WIB_TRIGGERPRIMITIVE_STRUCT>(sink);
+    parser.process_shortchunk_func = parsers::varsizedShortchunkIntoWithDatafield<fdreadoutlibs::types::RAW_WIB_TRIGGERPRIMITIVE_STRUCT>(sink);
     return elink_model;
 
   } else if (target.find("varsize") != std::string::npos) {

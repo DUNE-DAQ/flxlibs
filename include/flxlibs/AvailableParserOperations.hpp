@@ -185,6 +185,24 @@ varsizedChunkIntoWithDatafield(std::shared_ptr<iomanager::SenderConcept<TargetWi
   };
 }
 
+template<class TargetWithDatafield>
+inline std::function<void(const felix::packetformat::shortchunk&)>
+varsizedShortchunkIntoWithDatafield(std::shared_ptr<iomanager::SenderConcept<TargetWithDatafield>>& sink,
+                               std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
+{
+  return [&](const felix::packetformat::shortchunk& shortchunk) {
+    TargetWithDatafield twd;
+    twd.get_data().reserve(shortchunk.length);
+    std::memcpy(static_cast<void*>(twd.get_data().data()), shortchunk.data, shortchunk.length);
+    twd.set_data_size(shortchunk.length);
+    try {
+      sink->send(std::move(twd), timeout);
+    } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
+      // ers::error
+    }
+  };
+}
+
 inline std::function<void(const felix::packetformat::chunk& chunk)>
 varsizedChunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadoutlibs::types::VariableSizePayloadWrapper>>& sink,
                          std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
