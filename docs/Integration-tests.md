@@ -70,6 +70,17 @@ then it has successfully worked, if you see errors, then reboot the machine and 
 
 *Note you can ignore error messeges about regmap verision mismatches*
 
+To check if you have programmed the correct file, check the git tag of the firmware with following command(from the dune-daq environment):
+```
+dtpbutler.py -v flx-0-p2-hf
+```
+This will result into:
+
+![Screenshot from 2022-11-02 18-29-55](https://user-images.githubusercontent.com/8162817/199957247-ea84783c-2de0-4e51-9f3c-66596d4fdec7.png)
+
+which is the tag information for FW v3.0.0
+
+
 ### DUNEDAQ software:
 
 First ensure you have setup a dunedaq enivronmet, following these instructions:
