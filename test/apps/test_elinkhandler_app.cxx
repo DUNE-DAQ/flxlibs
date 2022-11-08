@@ -12,7 +12,7 @@
 #include "flxlibs/AvailableParserOperations.hpp"
 
 #include "logging/Logging.hpp"
-#include "fdreadoutlibs/FDReadoutTypes.hpp"
+
 
 #include "packetformat/block_format.hpp"
 #include <nlohmann/json.hpp>

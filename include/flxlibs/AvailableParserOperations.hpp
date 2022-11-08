@@ -12,7 +12,8 @@
 #include "FelixIssues.hpp"
 
 #include "iomanager/Sender.hpp"
-#include "fdreadoutlibs/FDReadoutTypes.hpp"
+
+#include "fdreadoutlibs/VariableSizePayloadTypeAdapter.hpp"
 
 #include "packetformat/block_format.hpp"
 
@@ -185,8 +186,26 @@ varsizedChunkIntoWithDatafield(std::shared_ptr<iomanager::SenderConcept<TargetWi
   };
 }
 
+template<class TargetWithDatafield>
+inline std::function<void(const felix::packetformat::shortchunk&)>
+varsizedShortchunkIntoWithDatafield(std::shared_ptr<iomanager::SenderConcept<TargetWithDatafield>>& sink,
+                               std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
+{
+  return [&](const felix::packetformat::shortchunk& shortchunk) {
+    TargetWithDatafield twd;
+    twd.get_data().reserve(shortchunk.length);
+    std::memcpy(static_cast<void*>(twd.get_data().data()), shortchunk.data, shortchunk.length);
+    twd.set_data_size(shortchunk.length);
+    try {
+      sink->send(std::move(twd), timeout);
+    } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
+      // ers::error
+    }
+  };
+}
+
 inline std::function<void(const felix::packetformat::chunk& chunk)>
-varsizedChunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadoutlibs::types::VariableSizePayloadWrapper>>& sink,
+varsizedChunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadoutlibs::types::VariableSizePayloadTypeAdapter>>& sink,
                          std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {
@@ -202,7 +221,7 @@ varsizedChunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadoutlibs:
         subchunk_data[i], subchunk_sizes[i], static_cast<void*>(payload), bytes_copied_chunk, chunk_length);
       bytes_copied_chunk += subchunk_sizes[i];
     }
-    fdreadoutlibs::types::VariableSizePayloadWrapper payload_wrapper(chunk_length, payload);
+    fdreadoutlibs::types::VariableSizePayloadTypeAdapter payload_wrapper(chunk_length, payload);
     try {
       sink->send(std::move(payload_wrapper), timeout);
     } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
@@ -212,14 +231,14 @@ varsizedChunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadoutlibs:
 }
 
 inline std::function<void(const felix::packetformat::shortchunk& shortchunk)>
-varsizedShortchunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadoutlibs::types::VariableSizePayloadWrapper>>& sink,
+varsizedShortchunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadoutlibs::types::VariableSizePayloadTypeAdapter>>& sink,
                               std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::shortchunk& shortchunk) {
     auto shortchunk_length = shortchunk.length;
     char* payload = static_cast<char*>(malloc(shortchunk_length * sizeof(char)));
     std::memcpy(payload, shortchunk.data, shortchunk_length);
-    fdreadoutlibs::types::VariableSizePayloadWrapper payload_wrapper(shortchunk_length, payload);
+    fdreadoutlibs::types::VariableSizePayloadTypeAdapter payload_wrapper(shortchunk_length, payload);
     try {
       sink->send(std::move(payload_wrapper), timeout);
     } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {

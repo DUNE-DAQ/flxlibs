@@ -92,7 +92,7 @@ main(int argc, char* argv[])
   for (int i = 0; i < 5; ++i) {
     TLOG() << "Elink " << i << "...";
     //elinks[i * 64] = createElinkModel("wib");
-    elinks[i * 64] = std::make_unique<ElinkModel<types::WIB_SUPERCHUNK_STRUCT>>();
+    elinks[i * 64] = std::make_unique<ElinkModel<types::ProtoWIBSuperChunkTypeAdapter>>();
     auto& handler = elinks[i * 64];
     handler->init(cmd_params, 100000);
     handler->conf(cmd_params, 4096, true);
@@ -117,11 +117,11 @@ main(int argc, char* argv[])
     auto subchunk_data = chunk.subchunks();
     auto subchunk_sizes = chunk.subchunk_lengths();
     auto n_subchunks = chunk.subchunk_number();
-    types::WIB_SUPERCHUNK_STRUCT wss;
+    types::ProtoWIBSuperChunkTypeAdapter wss;
     uint32_t bytes_copied_chunk = 0; // NOLINT 
     for (unsigned i = 0; i < n_subchunks; i++) {
       parsers::dump_to_buffer(
-        subchunk_data[i], subchunk_sizes[i], static_cast<void*>(&wss.data), bytes_copied_chunk, sizeof(types::WIB_SUPERCHUNK_STRUCT));
+        subchunk_data[i], subchunk_sizes[i], static_cast<void*>(&wss.data), bytes_copied_chunk, sizeof(types::ProtoWIBSuperChunkTypeAdapter));
       bytes_copied_chunk += subchunk_sizes[i];
     }
 
@@ -172,7 +172,7 @@ main(int argc, char* argv[])
 
       std::ostringstream oss;
       rwtpp->m_head.print(oss);
-      //types::RAW_WIB_TRIGGERPRIMITIVE_STRUCT rwtps; // TODO 2022-04-21 ivana.hristova@stfc.ac.uk: currently this pointer has been removed  
+      //types::DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter rwtps; // TODO 2022-04-21 ivana.hristova@stfc.ac.uk: currently this pointer has been removed  
       //rwtps.rwtp.reset(rwtpp);
       TLOG() << oss.str();
 

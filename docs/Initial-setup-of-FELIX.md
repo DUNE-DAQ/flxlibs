@@ -30,7 +30,7 @@ Either of them needs `dkms` and `kernel-devel` installed on your system. The dri
 6. Acquire the FELIX software suite with the appropriate version that is usable with your loaded firmware and driver, then ensure that low-level functionalities work as expected. One can use the `felix` DUNE DAQ external package that contains these low level tools. 
 Preferably, acquire all the following tools' output:
 
-    * flx-info
-    * flx-init
+    * flx-info -c <0 or 1>
+    * flx-init -c <0 or 1>
     * flx-dma-test
 

@@ -85,7 +85,9 @@ CardWrapper::configure(const data_t& args)
     m_poll_time = m_cfg.poll_time;
     m_dma_memory_size = m_cfg.dma_memory_size_gb * 1024 * 1024 * 1024UL;
     m_numa_id = m_cfg.numa_id;
-    m_dma_processor.set_name(m_dma_processor_name, m_card_id);
+    std::ostringstream tnoss;
+    tnoss << m_dma_processor_name << "-" << std::to_string(m_card_id); // append physical card id
+    m_dma_processor.set_name(tnoss.str(), m_logical_unit); // set_name appends logical unit id
 
     std::ostringstream cardoss;
     cardoss << "[id:" << std::to_string(m_card_id) << " slr:" << std::to_string(m_logical_unit) << "]";
@@ -160,11 +162,18 @@ CardWrapper::set_running(bool should_run)
 void
 CardWrapper::open_card()
 {
-  TLOG_DEBUG(TLVL_WORK_STEPS) << "Opening FELIX card " << m_card_id_str;
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Opening FELIX card (with DMA lock mask)" << m_card_id_str;
   try {
     m_card_mutex.lock();
     auto absolute_card_id = m_card_id + m_logical_unit;
-    m_flx_card->card_open(static_cast<int>(absolute_card_id), LOCK_NONE); // FlxCard.h
+    u_int current_lock_mask = m_flx_card->get_lock_mask(absolute_card_id);
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "Current lock mask for FELIX card " << m_card_id_str << " mask:" << int(current_lock_mask);
+    u_int to_lock_mask = u_int(m_dma_id+1);
+    if (current_lock_mask & to_lock_mask) { // LOCK_NONE=0, LOCK_DMA0=1, LOCK_DMA1=2 from FlxCard.h
+      ers::fatal(flxlibs::CardError(ERS_HERE, "FELIX card's DMA is locked by another process!"));
+      exit(EXIT_FAILURE);
+    }
+    m_flx_card->card_open(static_cast<int>(absolute_card_id), to_lock_mask); // FlxCard.h
     m_card_mutex.unlock();
   } catch (FlxException& ex) {
     ers::error(flxlibs::CardError(ERS_HERE, ex.what()));
@@ -193,8 +202,8 @@ CardWrapper::allocate_CMEM(uint8_t numa, u_long bsize, u_long* paddr, u_long* va
   int handle;
   unsigned ret = CMEM_Open(); // cmem_rcc.h
   if (!ret) {
-    ret = CMEM_NumaSegmentAllocate(bsize, numa, const_cast<char*>("FelixRO"), &handle); // NUMA aware
-    // ret = CMEM_GFPBPASegmentAllocate(bsize, const_cast<char*>("FelixRO"), &handle); // non NUMA aware
+    ret = CMEM_NumaSegmentAllocate(bsize, numa, const_cast<char*>(m_card_id_str.c_str()), &handle); // NUMA aware
+    // ret = CMEM_GFPBPASegmentAllocate(bsize, const_cast<char*>(m_card_id_str.c_str()), &handle); // non NUMA aware
   }
   if (!ret) {
     ret = CMEM_SegmentPhysicalAddress(handle, paddr);
