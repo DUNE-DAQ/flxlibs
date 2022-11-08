@@ -14,6 +14,7 @@
 #include "fdreadoutlibs/ProtoWIBSuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/DUNEWIBSuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/DAPHNESuperChunkTypeAdapter.hpp"
+#include "fdreadoutlibs/DAPHNEStreamSuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/VariableSizePayloadTypeAdapter.hpp"
 
@@ -61,11 +62,11 @@ createElinkModel(const std::string& target)
 
   } else if (target.find("pds_stream") != std::string::npos) {
     // PDS specific char arrays
-    auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::DAPHNE_STREAM_SUPERCHUNK_STRUCT>>();
+    auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::DAPHNEStreamSuperChunkTypeAdapter>>();
     elink_model->set_sink(target);
     auto& parser = elink_model->get_parser();
     auto& sink = elink_model->get_sink();
-    parser.process_chunk_func = parsers::fixsizedChunkInto<fdreadoutlibs::types::DAPHNE_STREAM_SUPERCHUNK_STRUCT>(sink);
+    parser.process_chunk_func = parsers::fixsizedChunkInto<fdreadoutlibs::types::DAPHNEStreamSuperChunkTypeAdapter>(sink);
     return elink_model;
 
   } else if (target.find("pds") != std::string::npos && target.find("pds_stream") == std::string::npos) {
