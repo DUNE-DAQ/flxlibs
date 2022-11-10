@@ -37,7 +37,7 @@ public:
   {
     m_parser = std::make_unique<felix::packetformat::BlockParser<DefaultParserImpl>>(m_parser_impl);
   }
-  ~ElinkConcept() {}
+  virtual ~ElinkConcept() {}
 
   ElinkConcept(const ElinkConcept&) = delete;            ///< ElinkConcept is not copy-constructible
   ElinkConcept& operator=(const ElinkConcept&) = delete; ///< ElinkConcept is not copy-assginable
