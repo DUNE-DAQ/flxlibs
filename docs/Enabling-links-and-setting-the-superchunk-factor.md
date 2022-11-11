@@ -24,7 +24,7 @@ for i in $(seq 0 4); do flx-config -d 0 set DECODING_LINK0${i}_EGROUP0_CTRL_EPAT
 for i in $(seq 0 4); do flx-config -d 1 set DECODING_LINK0${i}_EGROUP0_CTRL_EPATH_ENA=1; done;
 
 ```
-
+If two cards are installed in the host, repeat those operations also using the commandline options -d2 and -d3!
 ### Set SuperChunk factors per link
 Be careful, as these register are SuperLogic Region (SLR) based! To change the register values for factor 12, for both SLRs' first 10 virtual links, run the following:
 ```
@@ -32,8 +32,9 @@ for i in $(seq 0 9); do flx-config -d 0 set SUPER_CHUNK_FACTOR_LINK_0${i}=0x0c; 
 for i in $(seq 0 9); do flx-config -d 1 set SUPER_CHUNK_FACTOR_LINK_0${i}=0x0c; done;
 
 ```
+If two cards are installed in the host, repeat those operations also using the commandline options -d2 and -d3!
 
-and then rerun `flx-config list | grep SUPER` to check all the values changed. The superchunk factor is changed to `0x0c` as the readout software is prepared to receive chunks with an aggregation factor of 12:
+and then rerun `flx-config -d (0...3) list | grep SUPER` to check all the values changed. The superchunk factor is changed to `0x0c` as the readout software is prepared to receive chunks with an aggregation factor of 12:
 ```
 0x2de0 [RW 07:00]                 SUPER_CHUNK_FACTOR_LINK_00                0x0c  number of chunks glued together
 0x2df0 [RW 07:00]                 SUPER_CHUNK_FACTOR_LINK_01                0x0c  number of chunks glued together
