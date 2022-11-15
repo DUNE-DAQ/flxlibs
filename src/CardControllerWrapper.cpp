@@ -73,7 +73,7 @@ CardControllerWrapper::init() {
     TLOG()<< bad_channels << " not aligned.";
  }
  if(bad_channels > 2){ // Here I am assuming that the total number of links is 12 per card, so 2 are reserved for tp links and are expected to not be aligned.
-    ers::error(flxlibs::ChannelAlignment(ERS_HERE, "More than 2 links are not aligned, ADC data from the front end will not be recieved on those links."));
+    ers::error(flxlibs::InitializationError(ERS_HERE, "More than 2 links are not aligned, ADC data from the front end will not be recieved on those links."));
  }
  m_flx_card->irq_disable( ALL_IRQS );
  
