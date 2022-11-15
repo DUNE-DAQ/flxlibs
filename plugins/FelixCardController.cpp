@@ -81,16 +81,23 @@ FelixCardController::get_info(opmonlib::InfoCollector& ci, int /*level*/)
      uint32_t id = m_cfg.card_id+lu.log_unit_id;
      uint64_t aligned = m_card_wrappers.at(id)->get_register(REG_GBT_ALIGNMENT_DONE);
      for( auto li : lu.links) {
-	felixcardcontrollerinfo::LinkInfo info;
-	info.device_id = id;
-	info.link_id = li.link_id;
-	info.enabled = li.enabled;
-	info.aligned = aligned & (1<<li.link_id);
+        std::stringstream info_name;
+        info_name << "device_" << id << "_link_" << li.link_id; 
+
+        // here we want to print out a log message when the links do not appear to be aligned.
+        bool is_aligned = li.aligned & (1<<li.link_id);
+        if(lu.emu_fanout && !is_aligned){
+          ers::error(flxlibs::CardError(ERS_HERE, info_name << "is not aligned! no data will be recieved from the front end."));
+        }
+
+        felixcardcontrollerinfo::LinkInfo info;
+        info.device_id = id;
+        info.link_id = li.link_id;
+        info.enabled = li.enabled;
+        info.aligned = is_aligned;
         opmonlib::InfoCollector tmp_ic;
-	std::stringstream info_name;
-	info_name << "device_" << id << "_link_" << li.link_id; 
         tmp_ic.add(info);
-	ci.add(info_name.str(),tmp_ic);
+        ci.add(info_name.str(),tmp_ic);
      }
   }
 }
