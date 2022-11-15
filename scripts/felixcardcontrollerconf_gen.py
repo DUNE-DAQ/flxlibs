@@ -82,6 +82,7 @@ def cli(config, hardware_map_file, emulator_mode, json_dir, debug):
             nickname = nickname,
             card_id = dro_info.card*2,
             emulator_mode = flxconf.emulator_mode,
+            enable_firmware_tpg = flxconf.enable_firmware_tpg,
             host = dro_info.host,
             dro_info = dro_info
         )

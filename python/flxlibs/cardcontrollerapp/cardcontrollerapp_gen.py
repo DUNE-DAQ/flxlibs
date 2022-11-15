@@ -22,6 +22,7 @@ def get_cardcontroller_app(
         nickname,
         card_id=0,
         emulator_mode=False,
+        enable_firmware_tpg=False,
         host="localhost",
         dro_info=None):
     '''
@@ -52,6 +53,8 @@ def get_cardcontroller_app(
         elinks = []
         for l in slrs[slr]:
             elinks.append(flx.Link(link_id=l, enabled=True, dma_desc=0, superchunk_factor=12))
+        if enable_firmware_tpg:
+            elinks.append(flx.Link(link_id=5, enabled=True, dma_desc=0, superchunk_factor=64))
         lus.append(flx.LogicalUnit(log_unit_id=slr, emu_fanout=emulator_mode, links=elinks))
 
     # Create modules

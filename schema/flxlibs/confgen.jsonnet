@@ -13,6 +13,8 @@ local cs = {
   flxcardcontroller: s.record('flxcardcontroller', [
     s.field("hardware_map_file", daqconf.Path, default='./HardwareMap.txt', doc="File containing detector hardware map for configuration to run"),
     s.field("emulator_mode",     daqconf.Flag, default=false, doc="If active, timestamps of data frames are overwritten when processed by the readout. This is necessary if the felix card does not set correct timestamps. Former -e"),
+    s.field("enable_firmware_tpg", daqconf.Flag, default=false, doc="If active, will add the tp links to the FELIX card controller when configuring."),
+
   ]),
 
   flxlibs_gen: s.record('flxlibs_gen', [
