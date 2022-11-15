@@ -72,6 +72,9 @@ CardControllerWrapper::init() {
  if(bad_channels) {
     TLOG()<< bad_channels << " not aligned.";
  }
+ if(bad_channels > 2){ // Here I am assuming that the total number of links is 12 per card, so 2 are reserved for tp links and are expected to not be aligned.
+    ers::error(flxlibs::ChannelAlignment(ERS_HERE, "More than 2 links are not aligned, ADC data from the front end will not be recieved on those links."));
+ }
  m_flx_card->irq_disable( ALL_IRQS );
  
 }
@@ -110,7 +113,15 @@ CardControllerWrapper::configure(const felixcardcontroller::LogicalUnit & lu_cfg
     set_bitfield("GBT_TOFRONTEND_FANOUT_SEL", 0);
     set_bitfield("GBT_TOHOST_FANOUT_SEL", 0);
   }
-   
+  
+  // check links are aligned while configuring:
+  for(auto li : lu_cfg.links){
+    if(li.enabled && !lu_cfg.emu_fanout){
+      std::stringstream log = "device_" << m_device_id << "_link_" << li.link_id << "is not aligned! no data will be recieved from the front end."
+      ers::fatal(flxlibs::CardError(ERS_HERE, log));
+    }
+  }
+
  // Enable and configure the right links
  
   for(auto li : lu_cfg.links) {

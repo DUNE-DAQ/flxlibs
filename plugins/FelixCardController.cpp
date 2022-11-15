@@ -87,7 +87,7 @@ FelixCardController::get_info(opmonlib::InfoCollector& ci, int /*level*/)
         // here we want to print out a log message when the links do not appear to be aligned.
         bool is_aligned = li.aligned & (1<<li.link_id);
         if(lu.emu_fanout && !is_aligned){
-          ers::error(flxlibs::CardError(ERS_HERE, info_name << "is not aligned! no data will be recieved from the front end."));
+          ers::error(flxlibs::ChannelAlignment(ERS_HERE, info_name << "is not aligned! no data will be recieved from the front end."));
         }
 
         felixcardcontrollerinfo::LinkInfo info;
