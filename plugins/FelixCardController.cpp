@@ -85,8 +85,9 @@ FelixCardController::get_info(opmonlib::InfoCollector& ci, int /*level*/)
         info_name << "device_" << id << "_link_" << li.link_id; 
 
         // here we want to print out a log message when the links do not appear to be aligned.
+        // for WIB readout link_id 5 is always reserved for tp links, so alignemnt is not expected fort these
         bool is_aligned = aligned & (1<<li.link_id);
-        if(!lu.emu_fanout && !is_aligned){
+        if(li.link_id != 5 && !lu.emu_fanout && !is_aligned){
           ers::error(flxlibs::ChannelAlignment(ERS_HERE, li.link_id));
         }
 
