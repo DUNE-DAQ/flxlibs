@@ -55,7 +55,7 @@ CardControllerWrapper::~CardControllerWrapper()
 }
 
 void
-CardControllerWrapper::init(const int misalignment_size) {
+CardControllerWrapper::init() {
 
  // Card initialization
  // this is complicated....should we repeat all code in flx_init?
@@ -71,11 +71,6 @@ CardControllerWrapper::init(const int misalignment_size) {
  int bad_channels = m_flx_card->gbt_setup( FLX_GBT_ALIGNMENT_ONE, FLX_GBT_TMODE_FEC ); //What does this do?
  if(bad_channels) {
     TLOG()<< bad_channels << " not aligned.";
-    if(bad_channels > misalignment_size){
-        std::stringstream ss;
-        ss << std::to_string(bad_channels) << " links are not aligned (expected " << std::to_string(misalignment_size) << " to not be aligned) ADC data from the front end will not be recieved on those links.";
-        ers::error(flxlibs::InitializationError(ERS_HERE, ss.str()));
-    }
  }
  m_flx_card->irq_disable( ALL_IRQS );
  
@@ -197,6 +192,25 @@ CardControllerWrapper::gth_reset()
   for (auto i=0 ; i< 6; ++i) {
       m_flx_card->gth_rx_reset(i);
   }    
+}
+
+void
+CardControllerWrapper::check_alignment(const felixcardcontroller::LogicalUnit & lu_cfg, const uint64_t & aligned)
+{
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Checking link alignment for " << lu_cfg.log_unit_id;
+  std::vector<uint32_t> alignment_mask = lu_cfg.ignore_alignment_mask;
+  // check the alingment on a logical unit
+  for(auto li : lu_cfg.links) {
+    // here we want to print out a log message when the links do not appear to be aligned.
+    // for WIB readout link_id 5 is always reserved for tp links, so alignemnt is not expected fort these
+    bool is_aligned = aligned & (1<<li.link_id);
+    auto found_link = std::find(std::begin(alignment_mask), std::end(alignment_mask), li.link_id);
+    if(found_link == std::end(alignment_mask)) {
+      if(!lu_cfg.emu_fanout && !is_aligned) {
+        ers::error(flxlibs::ChannelAlignment(ERS_HERE, li.link_id));
+      }
+    }
+  }
 }
 
 } // namespace flxlibs
