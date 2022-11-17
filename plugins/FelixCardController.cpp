@@ -68,7 +68,7 @@ FelixCardController::do_configure(const data_t& args)
      m_card_wrappers.emplace(std::make_pair(id,std::make_unique<CardControllerWrapper>(id)));
      if(m_card_wrappers.size() == 1) {
 	 // Do the init only for the first device (whole card)
-         m_card_wrappers.begin()->second->init();
+         m_card_wrappers.begin()->second->init(lu);
      }
      m_card_wrappers.at(m_cfg.card_id+lu.log_unit_id)->configure(lu);
   }
@@ -80,6 +80,7 @@ FelixCardController::get_info(opmonlib::InfoCollector& ci, int /*level*/)
   for (auto lu : m_cfg.logical_units) {
      uint32_t id = m_cfg.card_id+lu.log_unit_id;
      uint64_t aligned = m_card_wrappers.at(id)->get_register(REG_GBT_ALIGNMENT_DONE);
+     std::vector<uint32_t> alignment_mask = lu.ignore_alignment_mask;
      for( auto li : lu.links) {
         std::stringstream info_name;
         info_name << "device_" << id << "_link_" << li.link_id; 
@@ -87,7 +88,8 @@ FelixCardController::get_info(opmonlib::InfoCollector& ci, int /*level*/)
         // here we want to print out a log message when the links do not appear to be aligned.
         // for WIB readout link_id 5 is always reserved for tp links, so alignemnt is not expected fort these
         bool is_aligned = aligned & (1<<li.link_id);
-        if(li.link_id != 5 && !lu.emu_fanout && !is_aligned){
+        auto found_link = std::find(std::begin(alignment_mask), std::end(alignment_mask), li.link_id);
+        if(found_link != std::end(alignment_mask) && !lu.emu_fanout && !is_aligned){
           ers::error(flxlibs::ChannelAlignment(ERS_HERE, li.link_id));
         }
 

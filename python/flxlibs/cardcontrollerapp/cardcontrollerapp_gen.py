@@ -23,6 +23,7 @@ def get_cardcontroller_app(
         card_id=0,
         emulator_mode=False,
         enable_firmware_tpg=False,
+        ignore_alignment_mask=([], []),
         host="localhost",
         dro_info=None):
     '''
@@ -55,7 +56,7 @@ def get_cardcontroller_app(
             elinks.append(flx.Link(link_id=l, enabled=True, dma_desc=0, superchunk_factor=12))
         if enable_firmware_tpg:
             elinks.append(flx.Link(link_id=5, enabled=True, dma_desc=0, superchunk_factor=64))
-        lus.append(flx.LogicalUnit(log_unit_id=slr, emu_fanout=emulator_mode, links=elinks))
+        lus.append(flx.LogicalUnit(log_unit_id=slr, emu_fanout=emulator_mode, links=elinks, ignore_alignment_mask=ignore_alignment_mask[slr]))
 
     # Create modules
     modules += [DAQModule(name = nickname, 

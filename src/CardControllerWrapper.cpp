@@ -55,7 +55,7 @@ CardControllerWrapper::~CardControllerWrapper()
 }
 
 void
-CardControllerWrapper::init() {
+CardControllerWrapper::init(const felixcardcontroller::LogicalUnit & lu_cfg) {
 
  // Card initialization
  // this is complicated....should we repeat all code in flx_init?
@@ -72,8 +72,11 @@ CardControllerWrapper::init() {
  if(bad_channels) {
     TLOG()<< bad_channels << " not aligned.";
  }
- if(bad_channels > 2){ // Here I am assuming that the total number of links is 12 per card, so 2 are reserved for tp links and are expected to not be aligned.
-    ers::error(flxlibs::InitializationError(ERS_HERE, "More than 2 links are not aligned, ADC data from the front end will not be recieved on those links."));
+ int expected_misalignment = lu_cfg.ignore_alignment_mask.size();
+ if(bad_channels > expected_misalignment){
+    std::stringstream ss;
+    ss << std::to_string(bad_channels) << "are not aligned (expected" << std::to_string(expected_misalignment) << ") ADC data from the front end will not be recieved on those links.";
+    ers::error(flxlibs::InitializationError(ERS_HERE, ss.str()));
  }
  m_flx_card->irq_disable( ALL_IRQS );
  
