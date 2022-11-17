@@ -35,7 +35,7 @@ public:
   CardControllerWrapper& operator=(CardControllerWrapper&&) = delete;      ///< Not move-assignable
 
   using data_t = nlohmann::json;
-  void init(const felixcardcontroller::LogicalUnit & lu_cfg);
+  void init(const int misalignment_size);
   void configure(const felixcardcontroller::LogicalUnit & lu_cfg);
 
   uint64_t get_register(std::string key);             // NOLINT(build/unsigned)

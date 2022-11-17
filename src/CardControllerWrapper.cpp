@@ -55,7 +55,7 @@ CardControllerWrapper::~CardControllerWrapper()
 }
 
 void
-CardControllerWrapper::init(const felixcardcontroller::LogicalUnit & lu_cfg) {
+CardControllerWrapper::init(const int misalignment_size) {
 
  // Card initialization
  // this is complicated....should we repeat all code in flx_init?
@@ -71,12 +71,11 @@ CardControllerWrapper::init(const felixcardcontroller::LogicalUnit & lu_cfg) {
  int bad_channels = m_flx_card->gbt_setup( FLX_GBT_ALIGNMENT_ONE, FLX_GBT_TMODE_FEC ); //What does this do?
  if(bad_channels) {
     TLOG()<< bad_channels << " not aligned.";
- }
- int expected_misalignment = lu_cfg.ignore_alignment_mask.size();
- if(bad_channels > expected_misalignment){
-    std::stringstream ss;
-    ss << std::to_string(bad_channels) << "are not aligned (expected" << std::to_string(expected_misalignment) << ") ADC data from the front end will not be recieved on those links.";
-    ers::error(flxlibs::InitializationError(ERS_HERE, ss.str()));
+    if(bad_channels && bad_channels > misalignment_size){
+        std::stringstream ss;
+        ss << std::to_string(bad_channels) << " links are not aligned (expected " << std::to_string(misalignment_size) << " to not be aligned) ADC data from the front end will not be recieved on those links.";
+        ers::error(flxlibs::InitializationError(ERS_HERE, ss.str()));
+    }
  }
  m_flx_card->irq_disable( ALL_IRQS );
  

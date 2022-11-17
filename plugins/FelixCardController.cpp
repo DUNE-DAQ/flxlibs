@@ -63,12 +63,17 @@ void
 FelixCardController::do_configure(const data_t& args)
 {
   m_cfg = args.get<felixcardcontroller::Conf>();
+  // get the number of misaligned links, this is needed since we only run init on device 0 but it checks alignment for both
+  int misalignment_size = 0;
+  for(auto lu : m_cfg.logical_units) {
+    misalignment_size += lu.ignore_alignment_mask.size();
+  }
   for (auto lu : m_cfg.logical_units) {
      uint32_t id = m_cfg.card_id+lu.log_unit_id;
      m_card_wrappers.emplace(std::make_pair(id,std::make_unique<CardControllerWrapper>(id)));
      if(m_card_wrappers.size() == 1) {
 	 // Do the init only for the first device (whole card)
-         m_card_wrappers.begin()->second->init(lu);
+         m_card_wrappers.begin()->second->init(misalignment_size);
      }
      m_card_wrappers.at(m_cfg.card_id+lu.log_unit_id)->configure(lu);
   }
@@ -89,7 +94,7 @@ FelixCardController::get_info(opmonlib::InfoCollector& ci, int /*level*/)
         // for WIB readout link_id 5 is always reserved for tp links, so alignemnt is not expected fort these
         bool is_aligned = aligned & (1<<li.link_id);
         auto found_link = std::find(std::begin(alignment_mask), std::end(alignment_mask), li.link_id);
-        if(found_link != std::end(alignment_mask) && !lu.emu_fanout && !is_aligned){
+        if(found_link == std::end(alignment_mask) && !lu.emu_fanout && !is_aligned){
           ers::error(flxlibs::ChannelAlignment(ERS_HERE, li.link_id));
         }
 
