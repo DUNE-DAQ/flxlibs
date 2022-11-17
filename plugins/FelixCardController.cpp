@@ -94,8 +94,10 @@ FelixCardController::get_info(opmonlib::InfoCollector& ci, int /*level*/)
         // for WIB readout link_id 5 is always reserved for tp links, so alignemnt is not expected fort these
         bool is_aligned = aligned & (1<<li.link_id);
         auto found_link = std::find(std::begin(alignment_mask), std::end(alignment_mask), li.link_id);
-        if(found_link == std::end(alignment_mask) && !lu.emu_fanout && !is_aligned){
-          ers::error(flxlibs::ChannelAlignment(ERS_HERE, li.link_id));
+        if(found_link == std::end(alignment_mask)) {
+          if(!lu.emu_fanout && !is_aligned) {
+            ers::error(flxlibs::ChannelAlignment(ERS_HERE, li.link_id));
+          }
         }
 
         felixcardcontrollerinfo::LinkInfo info;
