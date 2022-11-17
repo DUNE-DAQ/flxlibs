@@ -1,7 +1,8 @@
 {
     "flxcardcontroller": {
         "hardware_map_file": "HardwareMap_VST.txt",
-        "emulator_mode": true
+        "emulator_mode": true,
+        "ignore_alignment_mask": [[0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5]]
     },
     "boot":{
         "opmon_impl": "cern",

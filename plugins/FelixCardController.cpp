@@ -63,6 +63,11 @@ void
 FelixCardController::do_configure(const data_t& args)
 {
   m_cfg = args.get<felixcardcontroller::Conf>();
+  // get the number of misaligned links, this is needed since we only run init on device 0 but it checks alignment for both
+  int misalignment_size = 0;
+  for(auto lu : m_cfg.logical_units) {
+    misalignment_size += lu.ignore_alignment_mask.size();
+  }
   for (auto lu : m_cfg.logical_units) {
      uint32_t id = m_cfg.card_id+lu.log_unit_id;
      m_card_wrappers.emplace(std::make_pair(id,std::make_unique<CardControllerWrapper>(id)));
@@ -70,7 +75,9 @@ FelixCardController::do_configure(const data_t& args)
 	 // Do the init only for the first device (whole card)
          m_card_wrappers.begin()->second->init();
      }
-     m_card_wrappers.at(m_cfg.card_id+lu.log_unit_id)->configure(lu);
+     uint64_t aligned = m_card_wrappers.at(id)->get_register(REG_GBT_ALIGNMENT_DONE);
+     m_card_wrappers.at(id)->configure(lu);
+     m_card_wrappers.at(id)->check_alignment(lu, aligned);
   }
 }
 
@@ -80,17 +87,20 @@ FelixCardController::get_info(opmonlib::InfoCollector& ci, int /*level*/)
   for (auto lu : m_cfg.logical_units) {
      uint32_t id = m_cfg.card_id+lu.log_unit_id;
      uint64_t aligned = m_card_wrappers.at(id)->get_register(REG_GBT_ALIGNMENT_DONE);
+
+     m_card_wrappers.at(id)->check_alignment(lu, aligned); // check links are aligned
+
      for( auto li : lu.links) {
-	felixcardcontrollerinfo::LinkInfo info;
-	info.device_id = id;
-	info.link_id = li.link_id;
-	info.enabled = li.enabled;
-	info.aligned = aligned & (1<<li.link_id);
+        std::stringstream info_name;
+        info_name << "device_" << id << "_link_" << li.link_id;
+        felixcardcontrollerinfo::LinkInfo info;
+        info.device_id = id;
+        info.link_id = li.link_id;
+        info.enabled = li.enabled;
+        info.aligned = aligned & (1<<li.link_id);
         opmonlib::InfoCollector tmp_ic;
-	std::stringstream info_name;
-	info_name << "device_" << id << "_link_" << li.link_id; 
         tmp_ic.add(info);
-	ci.add(info_name.str(),tmp_ic);
+        ci.add(info_name.str(),tmp_ic);
      }
   }
 }
