@@ -18,6 +18,8 @@ local felixcardcontroller = {
     string : s.string("String",
                        doc="A string field"),
 
+    array : s.sequence("Array", self.uint4, doc="list of numbers"),
+
     regvalpair : s.record("RegValPair", [
     s.field("reg_name", self.string, "",
                 doc="The name of a register"),
@@ -45,6 +47,7 @@ local felixcardcontroller = {
     s.field("log_unit_id", self.uint4, doc="Logical unit identifier"),
     s.field("emu_fanout", self.boolean, doc="Toggle emulator on/off"),
     s.field("links", self.links, doc="List of links in the logical unit"),
+    s.field("ignore_alignment_mask", self.array, [5], doc="Elinks to ignore when checking alignment."),
     ], doc=""),
     
     logical_units : s.sequence("LogicalUnitList", self.logical_unit,

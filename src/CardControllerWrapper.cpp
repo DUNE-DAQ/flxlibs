@@ -110,8 +110,7 @@ CardControllerWrapper::configure(const felixcardcontroller::LogicalUnit & lu_cfg
     set_bitfield("GBT_TOFRONTEND_FANOUT_SEL", 0);
     set_bitfield("GBT_TOHOST_FANOUT_SEL", 0);
   }
-   
- // Enable and configure the right links
+  // Enable and configure the right links
  
   for(auto li : lu_cfg.links) {
     if(li.enabled) {
@@ -193,6 +192,25 @@ CardControllerWrapper::gth_reset()
   for (auto i=0 ; i< 6; ++i) {
       m_flx_card->gth_rx_reset(i);
   }    
+}
+
+void
+CardControllerWrapper::check_alignment(const felixcardcontroller::LogicalUnit & lu_cfg, const uint64_t & aligned)
+{
+  TLOG_DEBUG(TLVL_WORK_STEPS) << "Checking link alignment for " << lu_cfg.log_unit_id;
+  std::vector<uint32_t> alignment_mask = lu_cfg.ignore_alignment_mask;
+  // check the alingment on a logical unit
+  for(auto li : lu_cfg.links) {
+    // here we want to print out a log message when the links do not appear to be aligned.
+    // for WIB readout link_id 5 is always reserved for tp links, so alignemnt is not expected fort these
+    bool is_aligned = aligned & (1<<li.link_id);
+    auto found_link = std::find(std::begin(alignment_mask), std::end(alignment_mask), li.link_id);
+    if(found_link == std::end(alignment_mask)) {
+      if(!lu_cfg.emu_fanout && !is_aligned) {
+        ers::error(flxlibs::ChannelAlignment(ERS_HERE, li.link_id));
+      }
+    }
+  }
 }
 
 } // namespace flxlibs
