@@ -88,7 +88,7 @@ def cli(config, hardware_map_file, emulator_mode, json_dir, debug):
         the_system.apps[nickname] = app
         if boot.use_k8s:
             the_system.apps[nickname].resources = {
-                "felix.cern/flx0-ctrl": "1", # requesting FLX0
+                f"felix.cern/flx{dro_info.card*2}-ctrl": "1", # requesting FLX {dro_info.card*2}
             }
 
     ####################################################################
