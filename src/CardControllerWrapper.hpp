@@ -43,6 +43,7 @@ public:
   uint64_t get_bitfield(std::string key);             // NOLINT(build/unsigned)
   void set_bitfield(std::string key, uint64_t value); // NOLINT(build/unsigned)
   void gth_reset();
+  void check_alignment(const felixcardcontroller::LogicalUnit & lu_cfg, const uint64_t & aligned);
 
 private:
 
