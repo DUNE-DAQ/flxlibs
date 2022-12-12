@@ -169,7 +169,7 @@ varsizedChunkIntoWithDatafield(std::shared_ptr<iomanager::SenderConcept<TargetWi
     TargetWithDatafield twd;
     twd.get_data().reserve(chunk.length());
     uint32_t bytes_copied_chunk = 0;
-    for (unsigned i = 0; i< n_subchunks; ++i) {
+    for (unsigned i = 0; i < n_subchunks; ++i) {
       dump_to_buffer(subchunk_data[i],
                      subchunk_sizes[i],
                      static_cast<void*>(twd.get_data().data()),
@@ -189,7 +189,7 @@ varsizedChunkIntoWithDatafield(std::shared_ptr<iomanager::SenderConcept<TargetWi
 template<class TargetWithDatafield>
 inline std::function<void(const felix::packetformat::shortchunk&)>
 varsizedShortchunkIntoWithDatafield(std::shared_ptr<iomanager::SenderConcept<TargetWithDatafield>>& sink,
-                               std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
+                                    std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::shortchunk& shortchunk) {
     TargetWithDatafield twd;
@@ -205,8 +205,9 @@ varsizedShortchunkIntoWithDatafield(std::shared_ptr<iomanager::SenderConcept<Tar
 }
 
 inline std::function<void(const felix::packetformat::chunk& chunk)>
-varsizedChunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadoutlibs::types::VariableSizePayloadTypeAdapter>>& sink,
-                         std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
+varsizedChunkIntoWrapper(
+  std::shared_ptr<iomanager::SenderConcept<fdreadoutlibs::types::VariableSizePayloadTypeAdapter>>& sink,
+  std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {
     auto subchunk_data = chunk.subchunks();
@@ -231,8 +232,9 @@ varsizedChunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadoutlibs:
 }
 
 inline std::function<void(const felix::packetformat::shortchunk& shortchunk)>
-varsizedShortchunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadoutlibs::types::VariableSizePayloadTypeAdapter>>& sink,
-                              std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
+varsizedShortchunkIntoWrapper(
+  std::shared_ptr<iomanager::SenderConcept<fdreadoutlibs::types::VariableSizePayloadTypeAdapter>>& sink,
+  std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::shortchunk& shortchunk) {
     auto shortchunk_length = shortchunk.length;
@@ -247,7 +249,6 @@ varsizedShortchunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadout
   };
 }
 
-
 inline std::function<void(const felix::packetformat::chunk& chunk)>
 errorChunkIntoSink(std::shared_ptr<iomanager::SenderConcept<felix::packetformat::chunk>>& sink,
                    std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
@@ -261,7 +262,6 @@ errorChunkIntoSink(std::shared_ptr<iomanager::SenderConcept<felix::packetformat:
     }
   };
 }
-
 
 //// Implement here any other DUNE specific FELIX chunk/block to User payload parsers
 

@@ -84,13 +84,13 @@ private:
   uint8_t m_card_id;      // NOLINT
   uint8_t m_logical_unit; // NOLINT
   std::string m_card_id_str;
-  uint8_t m_dma_id;         // NOLINT
-  size_t m_margin_blocks;   // NOLINT
-  size_t m_block_threshold; // NOLINT
-  bool m_interrupt_mode;    // NOLINT
-  size_t m_poll_time;       // NOLINT
-  uint8_t m_numa_id;        // NOLINT
-  std::vector<unsigned int> m_links_enabled;      // NOLINT
+  uint8_t m_dma_id;                          // NOLINT
+  size_t m_margin_blocks;                    // NOLINT
+  size_t m_block_threshold;                  // NOLINT
+  bool m_interrupt_mode;                     // NOLINT
+  size_t m_poll_time;                        // NOLINT
+  uint8_t m_numa_id;                         // NOLINT
+  std::vector<unsigned int> m_links_enabled; // NOLINT
   std::string m_info_str;
 
   // Card object

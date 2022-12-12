@@ -11,9 +11,9 @@
 #include "ElinkConcept.hpp"
 #include "flxlibs/AvailableParserOperations.hpp"
 
+#include "detdataformats/wib/RawWIBTp.hpp"
 #include "logging/Logging.hpp"
 #include "readoutlibs/ReadoutTypes.hpp"
-#include "detdataformats/wib/RawWIBTp.hpp"
 
 #include "packetformat/block_format.hpp"
 #include <nlohmann/json.hpp>
@@ -25,12 +25,11 @@
 #include <future>
 #include <map>
 #include <memory>
-#include <string>
 #include <sstream>
+#include <string>
 
 using namespace dunedaq::flxlibs;
 using namespace dunedaq::fdreadoutlibs;
-
 
 struct TP_SUPERCHUNK_STRUCT
 {
@@ -38,7 +37,8 @@ struct TP_SUPERCHUNK_STRUCT
   TP_SUPERCHUNK_STRUCT(size_t size, char* data)
     : size(size)
     , data(data)
-  {}
+  {
+  }
 
   size_t size = 0;
   std::unique_ptr<char> data = nullptr;
@@ -64,20 +64,16 @@ main(int argc, char* argv[])
 
   // config command to specify card ID
   nlohmann::json conf_params_slr1 = "{\"card_id\":0,\"logical_unit\":0}"_json;
-  if(argc > 2)
-  {
+  if (argc > 2) {
     std::string card_id = argv[1];
     std::string logical_unit = argv[2];
-    if(std::all_of(card_id.begin(), card_id.end(), ::isdigit) && std::all_of(logical_unit.begin(), logical_unit.end(), ::isdigit))
-    {
-      conf_params_slr1 = {{"card_id", std::stoi(card_id)},{"logical_unit", std::stoi(logical_unit)}};
-    }
-    else
-    {
+    if (std::all_of(card_id.begin(), card_id.end(), ::isdigit) &&
+        std::all_of(logical_unit.begin(), logical_unit.end(), ::isdigit)) {
+      conf_params_slr1 = { { "card_id", std::stoi(card_id) }, { "logical_unit", std::stoi(logical_unit) } };
+    } else {
       TLOG() << "invalid card id/logical unit specified, setting id to 0 and logical unit to 0.";
     }
   }
-
 
   // Counter
   std::atomic<int> block_counter{ 0 };
@@ -91,7 +87,7 @@ main(int argc, char* argv[])
   // 5 elink handlers
   for (int i = 0; i < 5; ++i) {
     TLOG() << "Elink " << i << "...";
-    //elinks[i * 64] = createElinkModel("wib");
+    // elinks[i * 64] = createElinkModel("wib");
     elinks[i * 64] = std::make_unique<ElinkModel<types::ProtoWIBSuperChunkTypeAdapter>>();
     auto& handler = elinks[i * 64];
     handler->init(cmd_params, 100000);
@@ -101,13 +97,13 @@ main(int argc, char* argv[])
 
   // Add TP link
   TLOG() << "Creating TP link...";
-  //elinks[5 * 64] = createElinkModel("raw_tp");
+  // elinks[5 * 64] = createElinkModel("raw_tp");
   elinks[5 * 64] = std::make_unique<ElinkModel<TP_SUPERCHUNK_STRUCT>>();
   auto& tphandler = elinks[5 * 64];
   tphandler->init(cmd_params, 100000);
   tphandler->conf(cmd_params, 4096, true);
-  std::unique_ptr<folly::ProducerConsumerQueue<TP_SUPERCHUNK_STRUCT>> tpbuffer = std::make_unique<LatencyBuffer>(1000000);
-
+  std::unique_ptr<folly::ProducerConsumerQueue<TP_SUPERCHUNK_STRUCT>> tpbuffer =
+    std::make_unique<LatencyBuffer>(1000000);
 
   // Modify a specific elink handler
   bool first = true;
@@ -118,10 +114,13 @@ main(int argc, char* argv[])
     auto subchunk_sizes = chunk.subchunk_lengths();
     auto n_subchunks = chunk.subchunk_number();
     types::ProtoWIBSuperChunkTypeAdapter wss;
-    uint32_t bytes_copied_chunk = 0; // NOLINT 
+    uint32_t bytes_copied_chunk = 0; // NOLINT
     for (unsigned i = 0; i < n_subchunks; i++) {
-      parsers::dump_to_buffer(
-        subchunk_data[i], subchunk_sizes[i], static_cast<void*>(&wss.data), bytes_copied_chunk, sizeof(types::ProtoWIBSuperChunkTypeAdapter));
+      parsers::dump_to_buffer(subchunk_data[i],
+                              subchunk_sizes[i],
+                              static_cast<void*>(&wss.data),
+                              bytes_copied_chunk,
+                              sizeof(types::ProtoWIBSuperChunkTypeAdapter));
       bytes_copied_chunk += subchunk_sizes[i];
     }
 
@@ -146,14 +145,15 @@ main(int argc, char* argv[])
       auto subchunk_sizes = chunk.subchunk_lengths();
       auto n_subchunks = chunk.subchunk_number();
       auto chunk_length = chunk.length();
-      
-      TLOG() << "TP subchunk number: " << n_subchunks; 
+
+      TLOG() << "TP subchunk number: " << n_subchunks;
       TLOG() << "TP chunk length: " << chunk_length;
 
       uint32_t bytes_copied_chunk = 0;
-      dunedaq::detdataformats::wib::RawWIBTp* rwtpp = static_cast<dunedaq::detdataformats::wib::RawWIBTp*>(std::malloc(chunk_length)); //+ sizeof(int)));
-      //auto* rwtpip = reinterpret_cast<uint8_t*>(rwtpp);
-      
+      dunedaq::detdataformats::wib::RawWIBTp* rwtpp =
+        static_cast<dunedaq::detdataformats::wib::RawWIBTp*>(std::malloc(chunk_length)); //+ sizeof(int)));
+      // auto* rwtpip = reinterpret_cast<uint8_t*>(rwtpp);
+
       char* payload = static_cast<char*>(malloc(chunk_length * sizeof(char)));
       TP_SUPERCHUNK_STRUCT payload_struct(chunk_length, payload);
       for (unsigned i = 0; i < n_subchunks; i++) {
@@ -166,14 +166,15 @@ main(int argc, char* argv[])
         // Buffer full
       }
 
-      if ((uint32_t)(rwtpp->m_head.m_crate_no) == 21) { // RS FIXME -> read from cmdline the list of signatures loaded to EMU
+      if ((uint32_t)(rwtpp->m_head.m_crate_no) ==
+          21) { // RS FIXME -> read from cmdline the list of signatures loaded to EMU
         ++good_counter;
       }
 
       std::ostringstream oss;
       rwtpp->m_head.print(oss);
-      //types::DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter rwtps; // TODO 2022-04-21 ivana.hristova@stfc.ac.uk: currently this pointer has been removed  
-      //rwtps.rwtp.reset(rwtpp);
+      // types::DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter rwtps; // TODO 2022-04-21
+      // ivana.hristova@stfc.ac.uk: currently this pointer has been removed rwtps.rwtp.reset(rwtpp);
       TLOG() << oss.str();
 
       if (amount > 1000) {
@@ -249,7 +250,6 @@ main(int argc, char* argv[])
   TLOG() << "  -> Dropping data to file: " << fnamestr.str();
   std::string fname = fnamestr.str();
   done_futures[5] = std::async(std::launch::async, write_to_file, fname, std::ref(tpbuffer));
-
 
   TLOG() << "Wait for them. This might take a while...";
   for (auto& [id, fut] : done_futures) {
