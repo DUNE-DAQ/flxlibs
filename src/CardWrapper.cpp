@@ -44,13 +44,12 @@ CardWrapper::CardWrapper()
   , m_interrupt_mode(false)
   , m_poll_time(0)
   , m_numa_id(0)
-  , m_links_enabled({ 0 })
+  , m_links_enabled({0})
   , m_info_str("")
   , m_run_lock{ false }
   , m_dma_processor(0)
   , m_handle_block_addr(nullptr)
-{
-}
+{}
 
 CardWrapper::~CardWrapper()
 {
@@ -88,7 +87,7 @@ CardWrapper::configure(const data_t& args)
     m_numa_id = m_cfg.numa_id;
     std::ostringstream tnoss;
     tnoss << m_dma_processor_name << "-" << std::to_string(m_card_id); // append physical card id
-    m_dma_processor.set_name(tnoss.str(), m_logical_unit);             // set_name appends logical unit id
+    m_dma_processor.set_name(tnoss.str(), m_logical_unit); // set_name appends logical unit id
 
     std::ostringstream cardoss;
     cardoss << "[id:" << std::to_string(m_card_id) << " slr:" << std::to_string(m_logical_unit) << "]";
@@ -168,9 +167,8 @@ CardWrapper::open_card()
     m_card_mutex.lock();
     auto absolute_card_id = m_card_id + m_logical_unit;
     u_int current_lock_mask = m_flx_card->get_lock_mask(absolute_card_id);
-    TLOG_DEBUG(TLVL_WORK_STEPS) << "Current lock mask for FELIX card " << m_card_id_str
-                                << " mask:" << int(current_lock_mask);
-    u_int to_lock_mask = u_int(m_dma_id + 1);
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "Current lock mask for FELIX card " << m_card_id_str << " mask:" << int(current_lock_mask);
+    u_int to_lock_mask = u_int(m_dma_id+1);
     if (current_lock_mask & to_lock_mask) { // LOCK_NONE=0, LOCK_DMA0=1, LOCK_DMA1=2 from FlxCard.h
       ers::fatal(flxlibs::CardError(ERS_HERE, "FELIX card's DMA is locked by another process!"));
       exit(EXIT_FAILURE);

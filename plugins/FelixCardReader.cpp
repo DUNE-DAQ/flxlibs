@@ -45,7 +45,7 @@ FelixCardReader::FelixCardReader(const std::string& name)
   , m_configured(false)
   , m_card_id(0)
   , m_logical_unit(0)
-  , m_links_enabled({ 0 })
+  , m_links_enabled({0})
   , m_num_links(0)
   , m_block_size(0)
   , m_block_router(nullptr)
@@ -131,76 +131,76 @@ FelixCardReader::init(const data_t& args)
 void
 FelixCardReader::do_configure(const data_t& args)
 {
-  m_cfg = args.get<felixcardreader::Conf>();
-  m_card_id = m_cfg.card_id;
-  m_logical_unit = m_cfg.logical_unit;
-  m_links_enabled = m_cfg.links_enabled;
-  m_num_links = m_links_enabled.size();
-  m_block_size = m_cfg.dma_block_size_kb * m_1kb_block_size;
-  m_chunk_trailer_size = m_cfg.chunk_trailer_size;
-  bool is_32b_trailer = false;
+    m_cfg = args.get<felixcardreader::Conf>();
+    m_card_id = m_cfg.card_id;
+    m_logical_unit = m_cfg.logical_unit;
+    m_links_enabled = m_cfg.links_enabled;
+    m_num_links = m_links_enabled.size();
+    m_block_size = m_cfg.dma_block_size_kb * m_1kb_block_size;
+    m_chunk_trailer_size = m_cfg.chunk_trailer_size;
+    bool is_32b_trailer = false;
 
-  TLOG(TLVL_BOOKKEEPING) << "Number of elinks specified in configuration: " << m_links_enabled.size();
-  TLOG(TLVL_BOOKKEEPING) << "Number of data link handlers: " << m_elinks.size();
+    TLOG(TLVL_BOOKKEEPING) << "Number of elinks specified in configuration: " << m_links_enabled.size();
+    TLOG(TLVL_BOOKKEEPING) << "Number of data link handlers: " << m_elinks.size();
 
-  // Config checks
-  if (m_num_links != m_elinks.size()) {
-    ers::fatal(ElinkConfigurationInconsistency(ERS_HERE, m_links_enabled.size()));
-  }
-  if (m_block_size % m_1kb_block_size != 0) {
-    ers::fatal(BlockSizeConfigurationInconsistency(ERS_HERE, m_block_size));
-  } else if (m_block_size != m_1kb_block_size && m_chunk_trailer_size != m_32b_trailer_size) {
-    ers::fatal(BlockSizeConfigurationInconsistency(ERS_HERE, m_block_size));
-  } else if (m_chunk_trailer_size == m_32b_trailer_size) {
-    is_32b_trailer = true;
-  }
+    // Config checks
+    if (m_num_links != m_elinks.size()) {
+      ers::fatal(ElinkConfigurationInconsistency(ERS_HERE, m_links_enabled.size()));
+    }
+    if (m_block_size % m_1kb_block_size != 0) {
+      ers::fatal(BlockSizeConfigurationInconsistency(ERS_HERE, m_block_size));
+    } else if (m_block_size != m_1kb_block_size && m_chunk_trailer_size != m_32b_trailer_size) {
+      ers::fatal(BlockSizeConfigurationInconsistency(ERS_HERE, m_block_size));
+    } else if (m_chunk_trailer_size == m_32b_trailer_size) {
+      is_32b_trailer = true;
+    }
 
-  // Configure components
-  TLOG(TLVL_WORK_STEPS) << "Card ID: " << m_card_id;
-  TLOG(TLVL_WORK_STEPS) << "Configuring components with Block size:" << m_block_size
-                        << " & trailer size: " << m_chunk_trailer_size;
-  m_card_wrapper->configure(args);
-  // get linkids defined by queues
-  std::vector<int> linkids;
-  for (auto& [id, elink] : m_elinks) {
-    linkids.push_back(id);
-  }
-  // loop through all elinkmodels, change the linkids to link tags and configure
-  for (unsigned i = 0; i < m_num_links; ++i) {
-    auto elink = m_elinks.extract(linkids[i]);
-    auto tag = m_links_enabled[i] * m_elink_multiplier;
-    elink.key() = tag;
-    m_elinks.insert(std::move(elink));
-    m_elinks[tag]->set_ids(m_card_id, m_logical_unit, m_links_enabled[i], tag);
-    m_elinks[tag]->conf(args, m_block_size, is_32b_trailer);
-  }
+    // Configure components
+    TLOG(TLVL_WORK_STEPS) << "Card ID: " << m_card_id;
+    TLOG(TLVL_WORK_STEPS) << "Configuring components with Block size:" << m_block_size
+                          << " & trailer size: " << m_chunk_trailer_size;
+    m_card_wrapper->configure(args);
+    // get linkids defined by queues
+    std::vector<int> linkids;
+    for(auto& [id, elink] : m_elinks) {
+      linkids.push_back(id);
+    }
+    // loop through all elinkmodels, change the linkids to link tags and configure
+    for (unsigned i = 0; i < m_num_links; ++i) {
+      auto elink = m_elinks.extract(linkids[i]);
+      auto tag = m_links_enabled[i] * m_elink_multiplier;
+      elink.key() = tag;
+      m_elinks.insert(std::move(elink));
+      m_elinks[tag]->set_ids(m_card_id, m_logical_unit, m_links_enabled[i], tag);
+      m_elinks[tag]->conf(args, m_block_size, is_32b_trailer);
+    }
 }
 
 void
 FelixCardReader::do_start(const data_t& args)
 {
-  m_card_wrapper->start(args);
-  for (auto& [tag, elink] : m_elinks) {
-    elink->start(args);
-  }
+    m_card_wrapper->start(args);
+    for (auto& [tag, elink] : m_elinks) {
+      elink->start(args);
+    }
 }
 
 void
 FelixCardReader::do_stop(const data_t& args)
 {
-  m_card_wrapper->stop(args);
-  for (auto& [tag, elink] : m_elinks) {
-    elink->stop(args);
-  }
+    m_card_wrapper->stop(args);
+    for (auto& [tag, elink] : m_elinks) {
+      elink->stop(args);
+    }
 }
 
 void
 FelixCardReader::get_info(opmonlib::InfoCollector& ci, int level)
 {
-  for (unsigned lid = 0; lid < m_num_links; ++lid) {
-    auto tag = m_links_enabled[lid] * m_elink_multiplier;
-    m_elinks[tag]->get_info(ci, level);
-  }
+    for (unsigned lid = 0; lid < m_num_links; ++lid) {
+      auto tag = m_links_enabled[lid] * m_elink_multiplier;
+      m_elinks[tag]->get_info(ci, level);
+    }
 }
 
 } // namespace flxlibs
