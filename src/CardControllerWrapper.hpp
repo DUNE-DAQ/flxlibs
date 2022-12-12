@@ -36,17 +36,16 @@ public:
 
   using data_t = nlohmann::json;
   void init();
-  void configure(const felixcardcontroller::LogicalUnit & lu_cfg);
+  void configure(const felixcardcontroller::LogicalUnit& lu_cfg);
 
   uint64_t get_register(std::string key);             // NOLINT(build/unsigned)
   void set_register(std::string key, uint64_t value); // NOLINT(build/unsigned)
   uint64_t get_bitfield(std::string key);             // NOLINT(build/unsigned)
   void set_bitfield(std::string key, uint64_t value); // NOLINT(build/unsigned)
   void gth_reset();
-  void check_alignment(const felixcardcontroller::LogicalUnit & lu_cfg, const uint64_t & aligned);
+  void check_alignment(const felixcardcontroller::LogicalUnit& lu_cfg, const uint64_t& aligned);
 
 private:
-
   // Card
   void open_card();
   void close_card();
