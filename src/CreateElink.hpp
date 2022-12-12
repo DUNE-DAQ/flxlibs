@@ -10,13 +10,14 @@
 
 #include "ElinkConcept.hpp"
 #include "ElinkModel.hpp"
-#include "fdreadoutlibs/DAPHNEStreamSuperChunkTypeAdapter.hpp"
-#include "fdreadoutlibs/DAPHNESuperChunkTypeAdapter.hpp"
-#include "fdreadoutlibs/DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter.hpp"
-#include "fdreadoutlibs/DUNEWIBSuperChunkTypeAdapter.hpp"
-#include "fdreadoutlibs/ProtoWIBSuperChunkTypeAdapter.hpp"
-#include "fdreadoutlibs/VariableSizePayloadTypeAdapter.hpp"
 #include "flxlibs/AvailableParserOperations.hpp"
+#include "fdreadoutlibs/ProtoWIBSuperChunkTypeAdapter.hpp"
+#include "fdreadoutlibs/DUNEWIBSuperChunkTypeAdapter.hpp"
+#include "fdreadoutlibs/DAPHNESuperChunkTypeAdapter.hpp"
+#include "fdreadoutlibs/DAPHNEStreamSuperChunkTypeAdapter.hpp"
+#include "fdreadoutlibs/DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter.hpp"
+#include "fdreadoutlibs/VariableSizePayloadTypeAdapter.hpp"
+
 
 #include <memory>
 #include <string>
@@ -65,8 +66,7 @@ createElinkModel(const std::string& target)
     elink_model->set_sink(target);
     auto& parser = elink_model->get_parser();
     auto& sink = elink_model->get_sink();
-    parser.process_chunk_func =
-      parsers::fixsizedChunkInto<fdreadoutlibs::types::DAPHNEStreamSuperChunkTypeAdapter>(sink);
+    parser.process_chunk_func = parsers::fixsizedChunkInto<fdreadoutlibs::types::DAPHNEStreamSuperChunkTypeAdapter>(sink);
     return elink_model;
 
   } else if (target.find("pds") != std::string::npos && target.find("pds_stream") == std::string::npos) {
@@ -79,15 +79,12 @@ createElinkModel(const std::string& target)
     return elink_model;
 
   } else if (target.find("raw_tp") != std::string::npos) {
-    auto elink_model =
-      std::make_unique<ElinkModel<fdreadoutlibs::types::DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter>>();
+    auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter>>();
     elink_model->set_sink(target);
     auto& parser = elink_model->get_parser();
     auto& sink = elink_model->get_sink();
-    parser.process_chunk_func = parsers::varsizedChunkIntoWithDatafield<
-      fdreadoutlibs::types::DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter>(sink);
-    parser.process_shortchunk_func = parsers::varsizedShortchunkIntoWithDatafield<
-      fdreadoutlibs::types::DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter>(sink);
+    parser.process_chunk_func = parsers::varsizedChunkIntoWithDatafield<fdreadoutlibs::types::DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter>(sink);
+    parser.process_shortchunk_func = parsers::varsizedShortchunkIntoWithDatafield<fdreadoutlibs::types::DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter>(sink);
     return elink_model;
 
   } else if (target.find("varsize") != std::string::npos) {

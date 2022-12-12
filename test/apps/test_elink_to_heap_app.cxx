@@ -37,8 +37,7 @@ struct PayloadWrapper
   PayloadWrapper(size_t size, char* data)
     : size(size)
     , data(data)
-  {
-  }
+  {}
 
   size_t size = 0;
   std::unique_ptr<char> data = nullptr;

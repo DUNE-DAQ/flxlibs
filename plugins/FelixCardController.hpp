@@ -55,7 +55,7 @@ private:
   module_conf_t m_cfg;
 
   // FELIX Card
-  std::map<uint32_t, std::unique_ptr<CardControllerWrapper>> m_card_wrappers;
+  std::map<uint32_t, std::unique_ptr<CardControllerWrapper> > m_card_wrappers;
 };
 
 } // namespace flxlibs

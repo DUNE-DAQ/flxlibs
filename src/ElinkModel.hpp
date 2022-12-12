@@ -13,9 +13,9 @@
 #include "packetformat/block_format.hpp"
 
 #include "appfwk/DAQModuleHelper.hpp"
-#include "flxlibs/felixcardreaderinfo/InfoNljs.hpp"
 #include "iomanager/IOManager.hpp"
 #include "iomanager/Sender.hpp"
+#include "flxlibs/felixcardreaderinfo/InfoNljs.hpp"
 #include "logging/Logging.hpp"
 #include "readoutlibs/utils/ReusableThread.hpp"
 
@@ -46,8 +46,7 @@ public:
     : ElinkConcept()
     , m_run_marker{ false }
     , m_parser_thread(0)
-  {
-  }
+  {}
   ~ElinkModel() {}
 
   void set_sink(const std::string& sink_name) override
