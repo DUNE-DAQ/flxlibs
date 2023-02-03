@@ -55,7 +55,8 @@ def get_cardcontroller_app(
         for l in slrs[slr]:
             elinks.append(flx.Link(link_id=l, enabled=True, dma_desc=0, superchunk_factor=12))
         if enable_firmware_tpg:
-            elinks.append(flx.Link(link_id=5, enabled=True, dma_desc=0, superchunk_factor=64))
+            elinks.append(flx.Link(link_id=6, enabled=True, dma_desc=0, superchunk_factor=64))
+            elinks.append(flx.Link(link_id=7, enabled=True, dma_desc=0, superchunk_factor=64))
         lus.append(flx.LogicalUnit(log_unit_id=slr, emu_fanout=emulator_mode, links=elinks, ignore_alignment_mask=ignore_alignment_mask[slr]))
 
     # Create modules
