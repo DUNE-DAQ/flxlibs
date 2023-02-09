@@ -11,13 +11,13 @@
 #include "ElinkConcept.hpp"
 #include "ElinkModel.hpp"
 #include "flxlibs/AvailableParserOperations.hpp"
+#include "readoutlibs/ReadoutIssues.hpp"
 #include "fdreadoutlibs/ProtoWIBSuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/DUNEWIBSuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/DAPHNESuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/DAPHNEStreamSuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/VariableSizePayloadTypeAdapter.hpp"
-
 
 #include <memory>
 #include <string>
@@ -26,15 +26,24 @@ namespace dunedaq {
 namespace flxlibs {
 
 std::unique_ptr<ElinkConcept>
-createElinkModel(const std::string& target)
+createElinkModel(const std::string& conn_uid)
 {
-  if (target.find("wib") != std::string::npos && target.find("wib2") == std::string::npos) {
+  auto datatypes = dunedaq::iomanager::IOManager::get()->get_datatypes(conn_uid);
+  if (datatypes.size() != 1) {
+    ers::error(dunedaq::readoutlibs::GenericConfigurationError(ERS_HERE,
+      "Multiple output data types specified! Expected only a single type!"));
+  }
+  std::string raw_dt{ *datatypes.begin() };
+  TLOG() << "Choosing specializations for ElinkModel for output connection "
+         << " [uid:" << conn_uid << " , data_type:" << raw_dt << ']';
+
+  if (raw_dt.find("WIBFrame") != std::string::npos) {
     // WIB1 specific char arrays
     // Create Model
     auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::ProtoWIBSuperChunkTypeAdapter>>();
 
     // Setup sink (acquire pointer from QueueRegistry)
-    elink_model->set_sink(target);
+    elink_model->set_sink(conn_uid);
 
     // Get parser and sink
     auto& parser = elink_model->get_parser();
@@ -51,46 +60,46 @@ createElinkModel(const std::string& target)
     // Return with setup model
     return elink_model;
 
-  } else if (target.find("wib2") != std::string::npos) {
+  } else if (raw_dt.find("WIB2Frame") != std::string::npos) {
     // WIB2 specific char arrays
     auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::DUNEWIBSuperChunkTypeAdapter>>();
-    elink_model->set_sink(target);
+    elink_model->set_sink(conn_uid);
     auto& parser = elink_model->get_parser();
     auto& sink = elink_model->get_sink();
     parser.process_chunk_func = parsers::fixsizedChunkInto<fdreadoutlibs::types::DUNEWIBSuperChunkTypeAdapter>(sink);
     return elink_model;
 
-  } else if (target.find("pds_stream") != std::string::npos) {
+  } else if (raw_dt.find("PDSStreamFrame") != std::string::npos) {
     // PDS specific char arrays
     auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::DAPHNEStreamSuperChunkTypeAdapter>>();
-    elink_model->set_sink(target);
+    elink_model->set_sink(conn_uid);
     auto& parser = elink_model->get_parser();
     auto& sink = elink_model->get_sink();
     parser.process_chunk_func = parsers::fixsizedChunkInto<fdreadoutlibs::types::DAPHNEStreamSuperChunkTypeAdapter>(sink);
     return elink_model;
 
-  } else if (target.find("pds") != std::string::npos && target.find("pds_stream") == std::string::npos) {
+  } else if (raw_dt.find("PDSFrame") != std::string::npos) {
     // PDS specific char arrays
     auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::DAPHNESuperChunkTypeAdapter>>();
-    elink_model->set_sink(target);
+    elink_model->set_sink(conn_uid);
     auto& parser = elink_model->get_parser();
     auto& sink = elink_model->get_sink();
     parser.process_chunk_func = parsers::fixsizedChunkInto<fdreadoutlibs::types::DAPHNESuperChunkTypeAdapter>(sink);
     return elink_model;
 
-  } else if (target.find("raw_tp") != std::string::npos) {
+  } else if (raw_dt.find("FWTriggerPrimitive") != std::string::npos) {
     auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter>>();
-    elink_model->set_sink(target);
+    elink_model->set_sink(conn_uid);
     auto& parser = elink_model->get_parser();
     auto& sink = elink_model->get_sink();
     parser.process_chunk_func = parsers::varsizedChunkIntoWithDatafield<fdreadoutlibs::types::DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter>(sink);
     parser.process_shortchunk_func = parsers::varsizedShortchunkIntoWithDatafield<fdreadoutlibs::types::DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter>(sink);
     return elink_model;
 
-  } else if (target.find("varsize") != std::string::npos) {
+  } else if (raw_dt.find("varsize") != std::string::npos) {
     // Variable sized user payloads
     auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::VariableSizePayloadTypeAdapter>>();
-    elink_model->set_sink(target);
+    elink_model->set_sink(conn_uid);
     auto& parser = elink_model->get_parser();
     auto& sink = elink_model->get_sink();
     parser.process_chunk_func = parsers::varsizedChunkIntoWrapper(sink);
