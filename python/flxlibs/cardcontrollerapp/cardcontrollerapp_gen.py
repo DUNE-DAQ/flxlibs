@@ -22,7 +22,6 @@ def get_cardcontroller_app(
         nickname,
         card_id=0,
         emulator_mode=False,
-        # enable_firmware_tpg=False,
         ignore_alignment_mask=([], []),
         host="localhost",
         ru_desc=None):
@@ -32,10 +31,10 @@ def get_cardcontroller_app(
 
     # Get Elink infos for every SLR on this physical card.
     slrs = {}
-    for link in ru_desc.links:
-        if not link.config.slr in slrs:
-            slrs[link.config.slr] = []
-        slrs[link.config.slr].append(link.config.link)
+    for stream in ru_desc.streams:
+        if not stream.config.slr in slrs:
+            slrs[stream.config.slr] = []
+        slrs[stream.config.slr].append(stream.config.link)
 
     # Sort elinks in each SLR
     for slr in slrs:
