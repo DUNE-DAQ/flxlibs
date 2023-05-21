@@ -24,10 +24,13 @@ def get_cardcontroller_app(
         emulator_mode=False,
         ignore_alignment_mask=([], []),
         host="localhost",
-        ru_desc=None):
+        ru_desc=None) -> App:
     '''
     Here an entire application controlling one physical FLX card is generated. 
     '''
+
+    if ru_desc.kind != 'flx':
+        raise ValueError(f"Felix controller app creation requrested for RU of kinf {ru_desc.kind}")
 
     # Get Elink infos for every SLR on this physical card.
     slrs = {}

@@ -91,7 +91,7 @@ def cli(config, detector_readout_map_file, emulator_mode, only_check_args, dry_r
     # for dro_info in dro_infos:
     for ru_name, ru_desc in ru_descs.items():
 
-        if ru_desc.tech != 'flx':
+        if ru_desc.kind != 'flx':
             continue
         
         console.log(f"Generate controller for {ru_desc.host_name} reading card {ru_desc.iface}.")
