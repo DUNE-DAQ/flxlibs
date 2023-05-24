@@ -22,20 +22,22 @@ def get_cardcontroller_app(
         nickname,
         card_id=0,
         emulator_mode=False,
-        enable_firmware_tpg=False,
         ignore_alignment_mask=([], []),
         host="localhost",
-        dro_info=None):
+        ru_desc=None) -> App:
     '''
     Here an entire application controlling one physical FLX card is generated. 
     '''
 
+    if ru_desc.kind != 'flx':
+        raise ValueError(f"Felix controller app creation requrested for RU of kinf {ru_desc.kind}")
+
     # Get Elink infos for every SLR on this physical card.
     slrs = {}
-    for link in dro_info.links:
-        if not link.dro_slr in slrs:
-            slrs[link.dro_slr] = []
-        slrs[link.dro_slr].append(link.dro_link)
+    for stream in ru_desc.streams:
+        if not stream.parameters.slr in slrs:
+            slrs[stream.parameters.slr] = []
+        slrs[stream.parameters.slr].append(stream.parameters.link)
 
     # Sort elinks in each SLR
     for slr in slrs:
@@ -54,8 +56,8 @@ def get_cardcontroller_app(
         elinks = []
         for l in slrs[slr]:
             elinks.append(flx.Link(link_id=l, enabled=True, dma_desc=0, superchunk_factor=12))
-        if enable_firmware_tpg:
-            elinks.append(flx.Link(link_id=5, enabled=True, dma_desc=0, superchunk_factor=64))
+        # if enable_firmware_tpg:
+            # elinks.append(flx.Link(link_id=5, enabled=True, dma_desc=0, superchunk_factor=64))
         lus.append(flx.LogicalUnit(log_unit_id=slr, emu_fanout=emulator_mode, links=elinks, ignore_alignment_mask=ignore_alignment_mask[slr]))
 
     # Create modules

@@ -14,6 +14,8 @@ from daqconf.core.metadata import write_metadata_file
 from daqconf.core.sourceid import *
 from daqconf.core.config_file import generate_cli_from_schema
 
+import daqconf.detreadoutmap as dromap
+
 # Add -h as default help option
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
@@ -28,13 +30,18 @@ import click
 
 @click.command(context_settings=CONTEXT_SETTINGS)
 @generate_cli_from_schema('flxlibs/confgen.jsonnet', 'flxlibs_gen')
-@click.option('--hardware-map-file', default=None, help="File containing detector hardware map for configuration to run")
+@click.option('--detector-readout-map-file', default=None, help="File containing detector hardware map for configuration to run")
 @click.option('-e/-ne','--emulator-mode/--no-emulator-mode', default=None, is_flag=True, help='Emulator mode')
+@click.option('-a', '--only-check-args', default=False, is_flag=True, help="Dry run, do not generate output files")
+@click.option('-n', '--dry-run', default=False, is_flag=True, help="Dry run, do not generate output files")
 @click.option('--debug', default=False, is_flag=True, help="Switch to get a lot of printout and dot files")
 @click.argument('json_dir', type=click.Path())
-def cli(config, hardware_map_file, emulator_mode, json_dir, debug):
+def cli(config, detector_readout_map_file, emulator_mode, only_check_args, dry_run, json_dir, debug):
 
-    if exists(json_dir):
+    if only_check_args:
+        return
+    
+    if exists(json_dir) and not dry_run:
         raise RuntimeError(f"Directory {json_dir} already exists")
 
     config_data = config[0]
@@ -52,8 +59,8 @@ def cli(config, hardware_map_file, emulator_mode, json_dir, debug):
     flxconf = confgen.flxcardcontroller(**config_data.flxcardcontroller)
     if debug: console.log(f"flxconf configuration object: {flxconf.pod()}")
 
-    if hardware_map_file is not None:
-        flxconf.hardware_map_file = hardware_map_file
+    if detector_readout_map_file is not None:
+        flxconf.detector_readout_map_file = detector_readout_map_file
 
     if emulator_mode is not None:
         flxconf.emulator_mode = emulator_mode
@@ -64,33 +71,43 @@ def cli(config, hardware_map_file, emulator_mode, json_dir, debug):
     the_system = System() 
 
 
+    # Load the Detector Readout map
+    dro_map = dromap.DetReadoutMapService()
+    dro_map.load(flxconf.detector_readout_map_file)
+
+
+    ru_descs = dro_map.get_ru_descriptors()
+
+
     # Load the hw map file here to extract ru hosts, cards, slr, links, forntend types, sourceIDs and geoIDs
     # The ru apps are determined by the combinations of hostname and card_id, the SourceID determines the 
     # DLH (with physical slr+link information), the detId acts as system_type allows to infer the frontend_type
-    hw_map_service = HardwareMapService(flxconf.hardware_map_file)
+    # hw_map_service = HardwareMapService(flxconf.detector_readout_map_file)
 
     # Get the list of RU processes
-    dro_infos = hw_map_service.get_all_dro_info()
+    # dro_infos = hw_map_service.get_all_dro_info()
 
     # Build card controllers based on DRO_INFO, not by parameters
-    for dro_info in dro_infos:
-        console.log(f"Generate controller for {dro_info.host} reading card {dro_info.card}.")
-        nickname = 'flxcard_' + dro_info.host + '_card_' + str(dro_info.card)
-        nickname = nickname.replace('_', '')
-        nickname = nickname.replace('-', '')
+    # for dro_info in dro_infos:
+    for ru_name, ru_desc in ru_descs.items():
+
+        if ru_desc.kind != 'flx':
+            continue
+        
+        console.log(f"Generate controller for {ru_desc.host_name} reading card {ru_desc.iface}.")
+        nickname = 'flxcard' + ru_desc.safe_host_name + 'card' + str(ru_desc.iface)
         app = cardcontrollerapp_gen.get_cardcontroller_app(
             nickname = nickname,
-            card_id = dro_info.card*2,
+            card_id = ru_desc.iface*2,
             emulator_mode = flxconf.emulator_mode,
-            enable_firmware_tpg = flxconf.enable_firmware_tpg,
             ignore_alignment_mask = flxconf.ignore_alignment_mask,
-            host = dro_info.host,
-            dro_info = dro_info
+            host = ru_desc.host_name,
+            ru_desc = ru_desc
         )
         the_system.apps[nickname] = app
         if boot.use_k8s:
             the_system.apps[nickname].resources = {
-                f"felix.cern/flx{dro_info.card*2}-ctrl": "1", # requesting FLX {dro_info.card*2}
+                f"felix.cern/flx{ru_desc.iface*2}-ctrl": "1", # requesting FLX {dro_info.card*2}
             }
 
     ####################################################################
@@ -110,11 +127,13 @@ def cli(config, hardware_map_file, emulator_mode, json_dir, debug):
         the_system,
         verbose=debug,
     )
-    write_json_files(app_command_datas, system_command_datas, json_dir)
 
-    console.log(f"FLX card controller apps config generated in {json_dir}")
+    if not dry_run:
+        write_json_files(app_command_datas, system_command_datas, json_dir)
 
-    write_metadata_file(json_dir, "flxcardcontrollers_gen", config_file)
+        console.log(f"FLX card controller apps config generated in {json_dir}")
+
+        write_metadata_file(json_dir, "flxcardcontrollers_gen", config_file)
 
 if __name__ == '__main__':
     try:

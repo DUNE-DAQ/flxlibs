@@ -14,9 +14,8 @@ local cs = {
   alignment_mask: s.sequence("alignment_mask", self.array, "A list of arrays, should be 2 (1 for each SLR)"),
 
   flxcardcontroller: s.record('flxcardcontroller', [
-    s.field("hardware_map_file", daqconf.Path, default='./HardwareMap.txt', doc="File containing detector hardware map for configuration to run"),
+    s.field("detector_readout_map_file", daqconf.Path, default='./detro_map.json', doc="File containing detector readout map for configuration to run"),
     s.field("emulator_mode",     daqconf.Flag, default=false, doc="If active, timestamps of data frames are overwritten when processed by the readout. This is necessary if the felix card does not set correct timestamps. Former -e"),
-    s.field("enable_firmware_tpg", daqconf.Flag, default=false, doc="If active, will add the tp links to the FELIX card controller when configuring."),
     s.field("ignore_alignment_mask", self.alignment_mask, default=[[],[]], doc="elink numbers to ignore when checking link alignment."),
   ]),
 
