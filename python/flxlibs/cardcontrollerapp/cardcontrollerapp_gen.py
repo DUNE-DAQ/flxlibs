@@ -35,9 +35,9 @@ def get_cardcontroller_app(
     # Get Elink infos for every SLR on this physical card.
     slrs = {}
     for stream in ru_desc.streams:
-        if not stream.config.slr in slrs:
-            slrs[stream.config.slr] = []
-        slrs[stream.config.slr].append(stream.config.link)
+        if not stream.parameters.slr in slrs:
+            slrs[stream.parameters.slr] = []
+        slrs[stream.parameters.slr].append(stream.parameters.link)
 
     # Sort elinks in each SLR
     for slr in slrs:
