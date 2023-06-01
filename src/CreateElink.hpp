@@ -16,7 +16,6 @@
 #include "fdreadoutlibs/DUNEWIBSuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/DAPHNESuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/DAPHNEStreamSuperChunkTypeAdapter.hpp"
-#include "fdreadoutlibs/DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/VariableSizePayloadTypeAdapter.hpp"
 
 #include <memory>
@@ -28,7 +27,6 @@ DUNE_DAQ_TYPESTRING(dunedaq::fdreadoutlibs::types::ProtoWIBSuperChunkTypeAdapter
 DUNE_DAQ_TYPESTRING(dunedaq::fdreadoutlibs::types::DUNEWIBSuperChunkTypeAdapter, "WIB2Frame")
 DUNE_DAQ_TYPESTRING(dunedaq::fdreadoutlibs::types::DAPHNESuperChunkTypeAdapter, "PDSFrame")
 DUNE_DAQ_TYPESTRING(dunedaq::fdreadoutlibs::types::DAPHNEStreamSuperChunkTypeAdapter, "PDSStreamFrame")
-DUNE_DAQ_TYPESTRING(dunedaq::fdreadoutlibs::types::DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter, "FWTriggerPrimitive")
 
 namespace flxlibs {
 
@@ -94,14 +92,6 @@ createElinkModel(const std::string& conn_uid)
     parser.process_chunk_func = parsers::fixsizedChunkInto<fdreadoutlibs::types::DAPHNESuperChunkTypeAdapter>(sink);
     return elink_model;
 
-  } else if (raw_dt.find("FWTriggerPrimitive") != std::string::npos) {
-    auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter>>();
-    elink_model->set_sink(conn_uid);
-    auto& parser = elink_model->get_parser();
-    auto& sink = elink_model->get_sink();
-    parser.process_chunk_func = parsers::varsizedChunkIntoWithDatafield<fdreadoutlibs::types::DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter>(sink);
-    parser.process_shortchunk_func = parsers::varsizedShortchunkIntoWithDatafield<fdreadoutlibs::types::DUNEWIBFirmwareTriggerPrimitiveSuperChunkTypeAdapter>(sink);
-    return elink_model;
 
   } else if (raw_dt.find("varsize") != std::string::npos) {
     // Variable sized user payloads
