@@ -20,6 +20,7 @@ local cs = {
   ]),
 
   flxlibs_gen: s.record('flxlibs_gen', [
+    s.field('detector',          daqconf.detector,       default=daqconf.detector,       doc='detector parameters'),
     s.field('boot',              daqconf.boot,           default=daqconf.boot,           doc='Boot parameters'),
     s.field('flxcardcontroller', self.flxcardcontroller, default=self.flxcardcontroller, doc='FELIX conf parameters'),
   ]),
