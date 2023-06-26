@@ -72,10 +72,10 @@ def cli(
 
     moo.otypes.load_types('flxlibs/confgen.jsonnet')
     import dunedaq.flxlibs.confgen as confgen
-    moo.otypes.load_types('daqconf/confgen.jsonnet')
-    import dunedaq.daqconf.confgen as daqconf
+    moo.otypes.load_types('daqconf/bootgen.jsonnet')
+    import dunedaq.daqconf.bootgen as bootgen
 
-    boot = daqconf.boot(**config_data.boot)
+    boot = bootgen.boot(**config_data.boot)
     if debug: console.log(f"boot configuration object: {boot.pod()}")
 
     ## etc...
