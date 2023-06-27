@@ -6,8 +6,11 @@ import math
 import sys
 import glob
 import rich.traceback
+import shutil
 from rich.console import Console
-from os.path import exists, join
+# from os.path import exists, join
+from pathlib import Path
+
 from daqconf.core.system import System
 from daqconf.core.conf_utils import make_app_command_data
 from daqconf.core.metadata import write_metadata_file
@@ -30,40 +33,70 @@ import click
 
 @click.command(context_settings=CONTEXT_SETTINGS)
 @generate_cli_from_schema('flxlibs/confgen.jsonnet', 'flxlibs_gen')
-@click.option('--detector-readout-map-file', default=None, help="File containing detector hardware map for configuration to run")
+@click.option('--force-pm', default=None, type=click.Choice(['ssh', 'k8s']), help="Force process manager")
+@click.option('-m', '--detector-readout-map-file', default=None, help="File containing detector detector-readout map for configuration to run")
 @click.option('-e/-ne','--emulator-mode/--no-emulator-mode', default=None, is_flag=True, help='Emulator mode')
 @click.option('-a', '--only-check-args', default=False, is_flag=True, help="Dry run, do not generate output files")
 @click.option('-n', '--dry-run', default=False, is_flag=True, help="Dry run, do not generate output files")
+@click.option('-f', '--force', default=False, is_flag=True, help="Force configuration generation - delete ")
 @click.option('--debug', default=False, is_flag=True, help="Switch to get a lot of printout and dot files")
 @click.argument('json_dir', type=click.Path())
-def cli(config, detector_readout_map_file, emulator_mode, only_check_args, dry_run, json_dir, debug):
+def cli(
+        config,
+        force_pm,
+        detector_readout_map_file,
+        emulator_mode,
+        only_check_args,
+        dry_run,
+        force,
+        debug,
+        json_dir
+    ):
 
     if only_check_args:
         return
     
-    if exists(json_dir) and not dry_run:
-        raise RuntimeError(f"Directory {json_dir} already exists")
+    output_dir = Path(json_dir)
+    if output_dir.exists():
+        if dry_run:
+            pass
+        elif force:
+            console.log(f"Removing existing {output_dir}")
+            # Delete output folder if it exists
+            shutil.rmtree(output_dir)
+        else:
+            raise RuntimeError(f"Directory {output_dir} already exists")
 
     config_data = config[0]
     config_file = config[1]
 
     moo.otypes.load_types('flxlibs/confgen.jsonnet')
     import dunedaq.flxlibs.confgen as confgen
-    moo.otypes.load_types('daqconf/confgen.jsonnet')
-    import dunedaq.daqconf.confgen as daqconf
+    moo.otypes.load_types('daqconf/bootgen.jsonnet')
+    import dunedaq.daqconf.bootgen as bootgen
 
-    boot = daqconf.boot(**config_data.boot)
+    boot = bootgen.boot(**config_data.boot)
     if debug: console.log(f"boot configuration object: {boot.pod()}")
 
     ## etc...
     flxconf = confgen.flxcardcontroller(**config_data.flxcardcontroller)
     if debug: console.log(f"flxconf configuration object: {flxconf.pod()}")
 
+
+    # Update with command-line options
+    if force_pm is not None:
+        boot.process_manager = force_pm
+        console.log(f"boot.boot.process_manager set to {boot.process_manager}")
+
     if detector_readout_map_file is not None:
+        console.log(f"readout.detector_readout_map_file set to {flxconf.detector_readout_map_file}")
         flxconf.detector_readout_map_file = detector_readout_map_file
 
     if emulator_mode is not None:
+        console.log(f"flxconf.emulator_mode set to {flxconf.emulator_mode}")
         flxconf.emulator_mode = emulator_mode
+
+
     console.print(f'flxconf.emulator_mode {flxconf.emulator_mode}')
     console.log('Loading cardcontrollerapp config generator')
     from flxlibs.cardcontrollerapp import cardcontrollerapp_gen
@@ -105,7 +138,7 @@ def cli(config, detector_readout_map_file, emulator_mode, only_check_args, dry_r
             ru_desc = ru_desc
         )
         the_system.apps[nickname] = app
-        if boot.use_k8s:
+        if boot.process_manager == 'k8s':
             the_system.apps[nickname].resources = {
                 f"felix.cern/flx{ru_desc.iface*2}-ctrl": "1", # requesting FLX {dro_info.card*2}
             }
@@ -129,14 +162,15 @@ def cli(config, detector_readout_map_file, emulator_mode, only_check_args, dry_r
     )
 
     if not dry_run:
-        write_json_files(app_command_datas, system_command_datas, json_dir)
+        write_json_files(app_command_datas, system_command_datas, output_dir)
 
-        console.log(f"FLX card controller apps config generated in {json_dir}")
+        console.log(f"FLX card controller apps config generated in {output_dir}")
 
-        write_metadata_file(json_dir, "flxcardcontrollers_gen", config_file)
+        write_metadata_file(output_dir, "flxcardcontrollers_gen", config_file)
 
 if __name__ == '__main__':
     try:
         cli(show_default=True, standalone_mode=True)
     except Exception as e:
         console.print_exception()
+        raise SystemExit(-1)
