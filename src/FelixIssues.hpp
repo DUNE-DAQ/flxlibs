@@ -24,8 +24,8 @@ ERS_DECLARE_ISSUE(flxlibs, QueueTimeoutError, " FELIX queue timed out: " << queu
 
 ERS_DECLARE_ISSUE(flxlibs, ChannelAlignment, " Channel not aligned: " << channel, ((int)channel)) // NOLINT
 
-ERS_DECLARE_ISSUE(flxlibs, UnexpectedChunk, " Unexpected chunk size: " << chunksize,
-                  ((int)chunksize)) // NOLINT
+ERS_DECLARE_ISSUE(flxlibs, UnexpectedChunk, " Unexpected chunk size: " << chunksize << " (observed) != " << expected << " (expected)",
+                  ((int)chunksize)((size_t)expected)) // NOLINT
 
 ERS_DECLARE_ISSUE(flxlibs,
                   ParserOperationQueuePushFailure,
