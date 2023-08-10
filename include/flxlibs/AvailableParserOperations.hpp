@@ -74,7 +74,7 @@ fixsizedChunkInto(std::shared_ptr<iomanager::SenderConcept<TargetStruct>>& sink,
 
     // Only dump to buffer if possible
     if (chunk.length() != target_size) {
-      ers::error(UnexpectedChunk(ERS_HERE, chunk.length()));
+      ers::error(UnexpectedChunk(ERS_HERE, chunk.length(), target_size));
     } else {
       TargetStruct payload;
       uint32_t bytes_copied_chunk = 0; // NOLINT
