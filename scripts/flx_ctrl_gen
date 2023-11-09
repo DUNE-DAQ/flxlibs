@@ -142,6 +142,17 @@ def cli(
             the_system.apps[nickname].resources = {
                 f"felix.cern/flx{ru_desc.iface*2}-ctrl": "1", # requesting FLX {dro_info.card*2}
             }
+            
+            the_system.apps[nickname].pod_privileged = True
+
+            the_system.apps[nickname].mounted_dirs += [
+                {
+                    'name': 'devfs',
+                    'physical_location': '/dev',
+                    'in_pod_location':   '/dev',
+                    'read_only': False,
+                }
+            ]
 
     ####################################################################
     # Application command data generation
