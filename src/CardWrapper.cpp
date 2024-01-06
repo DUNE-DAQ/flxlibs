@@ -33,23 +33,37 @@ enum
 namespace dunedaq {
 namespace flxlibs {
 
-CardWrapper::CardWrapper()
+CardWrapper::CardWrapper(const appdal::FelixInterface * cfg)
   : m_run_marker{ false }
-  , m_card_id(0)
-  , m_logical_unit(0)
-  , m_card_id_str("")
-  , m_dma_id(0)
-  , m_margin_blocks(0)
-  , m_block_threshold(0)
-  , m_interrupt_mode(false)
-  , m_poll_time(0)
-  , m_numa_id(0)
-  , m_links_enabled({0})
+  , m_card_id(cfg->get_card())
+  , m_logical_unit(cfg->get_slr())
+  , m_dma_id(cfg->get_dma_id())
+  , m_margin_blocks(cfg->get_dma_margin_blocks())
+  , m_block_threshold(cfg->get_dmablock_threshold())
+  , m_interrupt_mode(cfg->get_interrupt_mode())
+  , m_poll_time(cfg->get_poll_time())
+  , m_numa_id(cfg->get_numa_id())
   , m_info_str("")
   , m_run_lock{ false }
   , m_dma_processor(0)
   , m_handle_block_addr(nullptr)
-{}
+{
+  m_dma_memory_size = cfg->get_dma_memory_size_gb * 1024 * 1024 * 1024UL;
+  m_links_enabled = cfg->get_links_enabled();
+
+  std::ostringstream tnoss;
+  tnoss << m_dma_processor_name << "-" << std::to_string(m_card_id); // append physical card id
+  m_dma_processor.set_name(tnoss.str(), m_logical_unit); // set_name appends logical unit id
+
+  std::ostringstream cardoss;
+  cardoss << "[id:" << std::to_string(m_card_id) << " slr:" << std::to_string(m_logical_unit) << "]";
+  m_card_id_str = cardoss.str();
+
+  m_flx_card = std::make_unique<FlxCard>();
+  if (m_flx_card == nullptr) {
+    throw flxlibs::CardError(ERS_HERE, "Couldn't create FlxCard object.");
+  }
+}
 
 CardWrapper::~CardWrapper()
 {
@@ -59,39 +73,13 @@ CardWrapper::~CardWrapper()
   TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << "CardWrapper destroyed.";
 }
 
-void
-CardWrapper::init(const data_t& /*args*/)
-{
-  m_flx_card = std::make_unique<FlxCard>();
-  if (m_flx_card == nullptr) {
-    ers::fatal(flxlibs::CardError(ERS_HERE, "Couldn't create FlxCard object."));
-  }
-}
 
 void
-CardWrapper::configure(const data_t& args)
+CardWrapper::configure()
 {
   if (m_configured) {
     TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << "Card is already configured! Won't touch it.";
   } else {
-    // Load config
-    m_cfg = args.get<felixcardreader::Conf>();
-    m_card_id = m_cfg.card_id;
-    m_logical_unit = m_cfg.logical_unit;
-    m_dma_id = m_cfg.dma_id;
-    m_margin_blocks = m_cfg.dma_margin_blocks;
-    m_block_threshold = m_cfg.dma_block_threshold;
-    m_interrupt_mode = m_cfg.interrupt_mode;
-    m_poll_time = m_cfg.poll_time;
-    m_dma_memory_size = m_cfg.dma_memory_size_gb * 1024 * 1024 * 1024UL;
-    m_numa_id = m_cfg.numa_id;
-    std::ostringstream tnoss;
-    tnoss << m_dma_processor_name << "-" << std::to_string(m_card_id); // append physical card id
-    m_dma_processor.set_name(tnoss.str(), m_logical_unit); // set_name appends logical unit id
-
-    std::ostringstream cardoss;
-    cardoss << "[id:" << std::to_string(m_card_id) << " slr:" << std::to_string(m_logical_unit) << "]";
-    m_card_id_str = cardoss.str();
     TLOG_DEBUG(TLVL_WORK_STEPS) << "Configuring CardWrapper of card " << m_card_id_str;
     // Open card
     open_card();
@@ -113,7 +101,7 @@ CardWrapper::configure(const data_t& args)
 }
 
 void
-CardWrapper::start(const data_t& /*args*/)
+CardWrapper::start()
 {
   TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << "Starting CardWrapper of card " << m_card_id_str << "...";
   if (!m_run_marker.load()) {
@@ -147,7 +135,7 @@ CardWrapper::graceful_stop()
 }
 
 void
-CardWrapper::stop(const data_t& /*args*/)
+CardWrapper::stop()
 {
   graceful_stop();
 }

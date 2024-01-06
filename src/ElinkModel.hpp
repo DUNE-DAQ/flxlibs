@@ -63,12 +63,12 @@ public:
 
   std::shared_ptr<err_sink_t>& get_error_sink() { return m_error_sink_queue; }
 
-  void init(const data_t& /*args*/, const size_t block_queue_capacity)
+  void init(const size_t block_queue_capacity)
   {
     m_block_addr_queue = std::make_unique<folly::ProducerConsumerQueue<uint64_t>>(block_queue_capacity); // NOLINT
   }
 
-  void conf(const data_t& /*args*/, size_t block_size, bool is_32b_trailers)
+  void conf(size_t block_size, bool is_32b_trailers)
   {
     if (m_configured) {
       TLOG_DEBUG(5) << "ElinkModel is already configured!";
@@ -82,7 +82,7 @@ public:
     }
   }
 
-  void start(const data_t& /*args*/)
+  void start()
   {
     m_t0 = std::chrono::high_resolution_clock::now();
     if (!m_run_marker.load()) {
@@ -94,7 +94,7 @@ public:
     }
   }
 
-  void stop(const data_t& /*args*/)
+  void stop()
   {
     if (m_run_marker.load()) {
       set_running(false);

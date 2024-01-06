@@ -14,7 +14,7 @@
 
 #include "appfwk/DAQModule.hpp"
 #include "packetformat/detail/block_parser.hpp"
-#include <nlohmann/json.hpp>
+
 
 #include <memory>
 #include <sstream>
@@ -44,11 +44,11 @@ public:
   ElinkConcept(ElinkConcept&&) = delete;                 ///< ElinkConcept is not move-constructible
   ElinkConcept& operator=(ElinkConcept&&) = delete;      ///< ElinkConcept is not move-assignable
 
-  virtual void init(const nlohmann::json& args, const size_t block_queue_capacity) = 0;
+  virtual void init(const size_t block_queue_capacity) = 0;
   virtual void set_sink(const std::string& sink_name) = 0;
-  virtual void conf(const nlohmann::json& args, size_t block_size, bool is_32b_trailers) = 0;
-  virtual void start(const nlohmann::json& args) = 0;
-  virtual void stop(const nlohmann::json& args) = 0;
+  virtual void conf(size_t block_size, bool is_32b_trailers) = 0;
+  virtual void start() = 0;
+  virtual void stop() = 0;
   virtual void get_info(opmonlib::InfoCollector& ci, int level) = 0;
 
   virtual bool queue_in_block_address(uint64_t block_addr) = 0; // NOLINT

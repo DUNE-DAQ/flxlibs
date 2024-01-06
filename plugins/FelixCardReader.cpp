@@ -5,7 +5,14 @@
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
-#include "flxlibs/felixcardreader/Nljs.hpp"
+//#include "flxlibs/felixcardreader/Nljs.hpp"
+#include "coredal/Connection.hpp"
+#include "coredal/DROStreamConf.hpp"
+#include "coredal/GeoId.hpp"
+
+#include "appdal/DataReader.hpp"
+#include "appdal/FelixInterface.hpp"
+#include "appdal/FelixStreamParameters"
 
 #include "CreateElink.hpp"
 #include "FelixCardReader.hpp"
@@ -52,8 +59,7 @@ FelixCardReader::FelixCardReader(const std::string& name)
 //, block_ptr_sinks_{ }
 
 {
-  m_card_wrapper = std::make_unique<CardWrapper>();
-
+ 
   register_command("conf", &FelixCardReader::do_configure);
   register_command("start", &FelixCardReader::do_start);
   register_command("stop_trigger_sources", &FelixCardReader::do_stop);
@@ -71,32 +77,46 @@ tokenize(std::string const& str, const char delim, std::vector<std::string>& out
 }
 
 void
-FelixCardReader::init(const data_t& args)
+FelixCardReader::init(const std::shared_ptf<appfwk::ModuleConfiguration> mcfg)
 {
-  auto ini = args.get<appfwk::app::ModInit>();
-  m_card_wrapper->init(args);
-  for (const auto& qi : ini.conn_refs) {
-    if (qi.uid == "errored_chunks_q") {
-      continue;
-    } else {
-      TLOG_DEBUG(TLVL_WORK_STEPS) << ": CardReader output queue is " << qi.uid;
-      const char delim = '_';
-      std::string target = qi.uid;
-      std::vector<std::string> words;
-      tokenize(target, delim, words);
-      int linkid = -1;
-      try {
-        linkid = std::stoi(words.back());
-      } catch (const std::exception& ex) {
-        ers::fatal(InitializationError(ERS_HERE, "Link ID could not be parsed on queue instance name! "));
-      }
-      TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << target << " DLH number: " << linkid;
-      m_elinks[linkid] = createElinkModel(qi.uid);
-      if (m_elinks[linkid] == nullptr) {
-        ers::fatal(InitializationError(ERS_HERE, "CreateElink failed to provide an appropriate model for queue!"));
-      }
-      m_elinks[linkid]->init(args, m_block_queue_capacity);
+  //auto ini = args.get<appfwk::app::ModInit>();
+  
+  auto modconf = mcfg->module<appdal::DataReader>(get_name());
+
+  if (modconf->get_interfaces().size() != 1) {
+    throw InitializationError(ERS_HERE, "FLX Data Reader does not have a unique associated interface");
+  }
+
+  auto interface = modconf->get_interfaces()[0].cast<appdal::FelixInterface>();
+  m_card_wrapper = std::make_unique<CardWrapper>(interface);
+  m_card_id = interface->get_card_id();
+  m_logical_unit = interface->get_slr();
+  m_links_enabled = interface->get_links_enabled();
+  m_num_links = m_links_enabled.size();
+  m_block_size = interface->get_dma_block_size() * m_1kb_block_size;
+  m_chunk_trailer_size = interface->get_chunk_trailer_size();
+  
+
+// Create a source_id to local elink map
+  std::map<uint, uint> src_id_to_elink_map;
+  for (auto res : modconf->get_interfaces()[0]->get_contains()) {
+    auto stream = res->cast<coredal::DROStreamConf>();
+    const appdal::FelixStreamParameters* stream_pars = stream->get_stream_params().cast<appdal::FelixStreamParameters>();
+    src_id_to_elink_map[stream->get_src_id()] = stream_pars->get_link();
+  }
+
+  for (auto qi : modconf->get_outputs()) {
+    auto q_with_id = qi.cast<coredal::QueueWithId>();
+    if (q_with_id == nullptr) continue;
+    LOG_DEBUG(TLVL_WORK_STEPS) << ": CardReader output queue is " << q_with_id->UID();
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << q_with_id->UID() << " DLH number: " << q_with_id->get_id();
+    auto elink = src_id_to_elink_map[q_with_id->UID()];
+    m_elinks[link] = createElinkModel(q_with_id->UID());
+    if (m_elinks[link] == nullptr) {
+      ers::fatal(InitializationError(ERS_HERE, "CreateElink failed to provide an appropriate model for queue!"));
     }
+    m_elinks[link]->init(m_block_queue_capacity);
+    //m_elinks[q_with_id->get_id()]->init(args, m_block_queue_capacity);
   }
 
   // Router function of block to appropriate ElinkHandlers
@@ -129,15 +149,9 @@ FelixCardReader::init(const data_t& args)
 }
 
 void
-FelixCardReader::do_configure(const data_t& args)
+FelixCardReader::do_configure(const data_t& /*args*/)
 {
-    m_cfg = args.get<felixcardreader::Conf>();
-    m_card_id = m_cfg.card_id;
-    m_logical_unit = m_cfg.logical_unit;
-    m_links_enabled = m_cfg.links_enabled;
-    m_num_links = m_links_enabled.size();
-    m_block_size = m_cfg.dma_block_size_kb * m_1kb_block_size;
-    m_chunk_trailer_size = m_cfg.chunk_trailer_size;
+   
     bool is_32b_trailer = false;
 
     TLOG(TLVL_BOOKKEEPING) << "Number of elinks specified in configuration: " << m_links_enabled.size();
@@ -159,7 +173,7 @@ FelixCardReader::do_configure(const data_t& args)
     TLOG(TLVL_WORK_STEPS) << "Card ID: " << m_card_id;
     TLOG(TLVL_WORK_STEPS) << "Configuring components with Block size:" << m_block_size
                           << " & trailer size: " << m_chunk_trailer_size;
-    m_card_wrapper->configure(args);
+    m_card_wrapper->configure();
     // get linkids defined by queues
     std::vector<int> linkids;
     for(auto& [id, elink] : m_elinks) {
@@ -172,25 +186,25 @@ FelixCardReader::do_configure(const data_t& args)
       elink.key() = tag;
       m_elinks.insert(std::move(elink));
       m_elinks[tag]->set_ids(m_card_id, m_logical_unit, m_links_enabled[i], tag);
-      m_elinks[tag]->conf(args, m_block_size, is_32b_trailer);
+      m_elinks[tag]->conf(m_block_size, is_32b_trailer);
     }
 }
 
 void
-FelixCardReader::do_start(const data_t& args)
+FelixCardReader::do_start(const data_t& /*args*/)
 {
-    m_card_wrapper->start(args);
+    m_card_wrapper->start();
     for (auto& [tag, elink] : m_elinks) {
-      elink->start(args);
+      elink->start();
     }
 }
 
 void
-FelixCardReader::do_stop(const data_t& args)
+FelixCardReader::do_stop(const data_t& /*args*/)
 {
-    m_card_wrapper->stop(args);
+    m_card_wrapper->stop();
     for (auto& [tag, elink] : m_elinks) {
-      elink->stop(args);
+      elink->stop();
     }
 }
 

@@ -8,9 +8,10 @@
 #ifndef FLXLIBS_SRC_CARDWRAPPER_HPP_
 #define FLXLIBS_SRC_CARDWRAPPER_HPP_
 
-#include "flxlibs/felixcardreader/Nljs.hpp"
-#include "flxlibs/felixcardreader/Structs.hpp"
+//#include "flxlibs/felixcardreader/Nljs.hpp"
+//#include "flxlibs/felixcardreader/Structs.hpp"
 
+#include "appdal/FelixInterface.hpp"
 #include "readoutlibs/utils/ReusableThread.hpp"
 
 #include "flxcard/FlxCard.h"
@@ -32,18 +33,16 @@ public:
    * @brief CardWrapper Constructor
    * @param name Instance name for this CardWrapper instance
    */
-  CardWrapper();
+  CardWrapper(const appdal::FelixInterface * cfg);
   ~CardWrapper();
   CardWrapper(const CardWrapper&) = delete;            ///< CardWrapper is not copy-constructible
   CardWrapper& operator=(const CardWrapper&) = delete; ///< CardWrapper is not copy-assignable
   CardWrapper(CardWrapper&&) = delete;                 ///< CardWrapper is not move-constructible
   CardWrapper& operator=(CardWrapper&&) = delete;      ///< CardWrapper is not move-assignable
 
-  using data_t = nlohmann::json;
-  void init(const data_t& args);
-  void configure(const data_t& args);
-  void start(const data_t& args);
-  void stop(const data_t& args);
+  void configure();
+  void start();
+  void stop();
   void set_running(bool should_run);
 
   void graceful_stop();
@@ -55,9 +54,7 @@ public:
   }
 
 private:
-  // Types
-  using module_conf_t = dunedaq::flxlibs::felixcardreader::Conf;
-
+  
   // Constants
   static constexpr size_t m_max_links_per_card = 6;
   // static constexpr size_t m_margin_blocks = 4;
@@ -78,7 +75,7 @@ private:
   void read_current_address();
 
   // Configuration and internals
-  module_conf_t m_cfg;
+  
   std::atomic<bool> m_run_marker;
   bool m_configured{ false };
   uint8_t m_card_id;      // NOLINT
