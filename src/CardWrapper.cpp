@@ -39,7 +39,7 @@ CardWrapper::CardWrapper(const appdal::FelixInterface * cfg)
   , m_logical_unit(cfg->get_slr())
   , m_dma_id(cfg->get_dma_id())
   , m_margin_blocks(cfg->get_dma_margin_blocks())
-  , m_block_threshold(cfg->get_dmablock_threshold())
+  , m_block_threshold(cfg->get_dma_block_threshold())
   , m_interrupt_mode(cfg->get_interrupt_mode())
   , m_poll_time(cfg->get_poll_time())
   , m_numa_id(cfg->get_numa_id())
@@ -48,7 +48,7 @@ CardWrapper::CardWrapper(const appdal::FelixInterface * cfg)
   , m_dma_processor(0)
   , m_handle_block_addr(nullptr)
 {
-  m_dma_memory_size = cfg->get_dma_memory_size_gb * 1024 * 1024 * 1024UL;
+  m_dma_memory_size = cfg->get_dma_memory_size_gb() * 1024 * 1024 * 1024UL;
   m_links_enabled = cfg->get_links_enabled();
 
   std::ostringstream tnoss;

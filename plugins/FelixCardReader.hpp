@@ -12,7 +12,7 @@
 #include "appfwk/cmd/Nljs.hpp"
 #include "appfwk/cmd/Structs.hpp"
 
-#include "flxlibs/felixcardreader/Structs.hpp"
+//#include "flxlibs/felixcardreader/Structs.hpp"
 
 // From appfwk
 #include "appfwk/DAQModule.hpp"
@@ -48,7 +48,7 @@ public:
   FelixCardReader(FelixCardReader&&) = delete;                 ///< FelixCardReader is not move-constructible
   FelixCardReader& operator=(FelixCardReader&&) = delete;      ///< FelixCardReader is not move-assignable
 
-  void init(const std::shared_ptf<appfwk::ModuleConfiguration> mcfg) override;
+  void init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg) override;
 
 private:
  

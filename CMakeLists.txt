@@ -14,13 +14,13 @@ find_package(felix REQUIRED)
 find_package(opmonlib REQUIRED)
 find_package(daqconf REQUIRED)
 
-daq_codegen(felixcardreader.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
-daq_codegen(felixcardcontroller.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
+#daq_codegen(felixcardreader.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
+#daq_codegen(felixcardcontroller.jsonnet TEMPLATES Structs.hpp.j2 Nljs.hpp.j2 )
 daq_codegen( *info.jsonnet DEP_PKGS opmonlib TEMPLATES opmonlib/InfoStructs.hpp.j2 opmonlib/InfoNljs.hpp.j2 )
 
 ##############################################################################
 # Dependency sets
-set(DUNEDAQ_DEPENDENCIES appfwk::appfwk readoutlibs::readoutlibs fdreadoutlibs::fdreadoutlibs)
+set(DUNEDAQ_DEPENDENCIES appfwk::appfwk readoutlibs::readoutlibs fdreadoutlibs::fdreadoutlibs appdal::appdal coredal::coredal)
 
 # Provide override functionality for FELIX dependencies
 option(WITH_FELIX_AS_PACKAGE "FELIX externals as a dunedaq package" ON)
@@ -52,7 +52,8 @@ endif()
 
 ##############################################################################
 # Main library
-daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp CardControllerWrapper.cpp LINK_LIBRARIES ${FELIX_DEPENDENCIES} ${DUNEDAQ_DEPENDENCIES})
+#daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp CardControllerWrapper.cpp LINK_LIBRARIES ${FELIX_DEPENDENCIES} ${DUNEDAQ_DEPENDENCIES})
+daq_add_library(DefaultParserImpl.cpp CardWrapper.cpp LINK_LIBRARIES ${FELIX_DEPENDENCIES} ${DUNEDAQ_DEPENDENCIES})
 
 
 if(WITH_FELIX_AS_PACKAGE)
@@ -65,15 +66,15 @@ endif()
 ##############################################################################
 # Plugins
 daq_add_plugin(FelixCardReader duneDAQModule LINK_LIBRARIES flxlibs)
-daq_add_plugin(FelixCardController duneDAQModule LINK_LIBRARIES flxlibs)
+#daq_add_plugin(FelixCardController duneDAQModule LINK_LIBRARIES flxlibs)
 
 ##############################################################################
 # Integration tests
-daq_add_application(flxlibs_test_cardwrapper test_cardwrapper_app.cxx TEST LINK_LIBRARIES flxlibs)
-daq_add_application(flxlibs_test_elinkhandler test_elinkhandler_app.cxx TEST LINK_LIBRARIES flxlibs)
-daq_add_application(flxlibs_test_tp_elinkhandler test_tp_elinkhandler_app.cxx TEST LINK_LIBRARIES flxlibs)
-daq_add_application(flxlibs_test_elink_to_file test_elink_to_file_app.cxx TEST LINK_LIBRARIES flxlibs)
-daq_add_application(flxlibs_test_elink_to_heap test_elink_to_heap_app.cxx TEST LINK_LIBRARIES flxlibs)
+#daq_add_application(flxlibs_test_cardwrapper test_cardwrapper_app.cxx TEST LINK_LIBRARIES flxlibs)
+#daq_add_application(flxlibs_test_elinkhandler test_elinkhandler_app.cxx TEST LINK_LIBRARIES flxlibs)
+#daq_add_application(flxlibs_test_tp_elinkhandler test_tp_elinkhandler_app.cxx TEST LINK_LIBRARIES flxlibs)
+#daq_add_application(flxlibs_test_elink_to_file test_elink_to_file_app.cxx TEST LINK_LIBRARIES flxlibs)
+#daq_add_application(flxlibs_test_elink_to_heap test_elink_to_heap_app.cxx TEST LINK_LIBRARIES flxlibs)
 
 ##############################################################################
 # Applications

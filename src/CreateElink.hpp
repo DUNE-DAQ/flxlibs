@@ -12,8 +12,8 @@
 #include "ElinkModel.hpp"
 #include "flxlibs/AvailableParserOperations.hpp"
 #include "readoutlibs/ReadoutIssues.hpp"
-#include "fdreadoutlibs/ProtoWIBSuperChunkTypeAdapter.hpp"
-#include "fdreadoutlibs/DUNEWIBSuperChunkTypeAdapter.hpp"
+//#include "fdreadoutlibs/ProtoWIBSuperChunkTypeAdapter.hpp"
+//#include "fdreadoutlibs/DUNEWIBSuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/DAPHNESuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/DAPHNEStreamSuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/VariableSizePayloadTypeAdapter.hpp"
@@ -23,8 +23,8 @@
 
 namespace dunedaq {
 
-DUNE_DAQ_TYPESTRING(dunedaq::fdreadoutlibs::types::ProtoWIBSuperChunkTypeAdapter, "WIBFrame")
-DUNE_DAQ_TYPESTRING(dunedaq::fdreadoutlibs::types::DUNEWIBSuperChunkTypeAdapter, "WIB2Frame")
+//DUNE_DAQ_TYPESTRING(dunedaq::fdreadoutlibs::types::ProtoWIBSuperChunkTypeAdapter, "WIBFrame")
+//DUNE_DAQ_TYPESTRING(dunedaq::fdreadoutlibs::types::DUNEWIBSuperChunkTypeAdapter, "WIB2Frame")
 DUNE_DAQ_TYPESTRING(dunedaq::fdreadoutlibs::types::DAPHNESuperChunkTypeAdapter, "PDSFrame")
 DUNE_DAQ_TYPESTRING(dunedaq::fdreadoutlibs::types::DAPHNEStreamSuperChunkTypeAdapter, "PDSStreamFrame")
 
@@ -41,6 +41,7 @@ createElinkModel(const std::string& conn_uid)
   std::string raw_dt{ *datatypes.begin() };
   TLOG() << "Choosing specializations for ElinkModel for output connection "
          << " [uid:" << conn_uid << " , data_type:" << raw_dt << ']';
+/*
 
   if (raw_dt.find("WIBFrame") != std::string::npos) {
     // WIB1 specific char arrays
@@ -74,7 +75,8 @@ createElinkModel(const std::string& conn_uid)
     parser.process_chunk_func = parsers::fixsizedChunkInto<fdreadoutlibs::types::DUNEWIBSuperChunkTypeAdapter>(sink);
     return elink_model;
 
-  } else if (raw_dt.find("PDSStreamFrame") != std::string::npos) {
+  } else*/ 
+  if (raw_dt.find("PDSStreamFrame") != std::string::npos) {
     // PDS specific char arrays
     auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::DAPHNEStreamSuperChunkTypeAdapter>>();
     elink_model->set_sink(conn_uid);

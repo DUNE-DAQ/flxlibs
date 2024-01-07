@@ -12,7 +12,7 @@
 
 #include "packetformat/block_format.hpp"
 
-#include "appfwk/DAQModuleHelper.hpp"
+//#include "appfwk/DAQModuleHelper.hpp"
 #include "iomanager/IOManager.hpp"
 #include "iomanager/Sender.hpp"
 #include "flxlibs/felixcardreaderinfo/InfoNljs.hpp"
