@@ -103,21 +103,21 @@ FelixCardReader::init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
   for (auto res : modconf->get_interfaces()[0]->get_contains()) {
     auto stream = res->cast<coredal::DROStreamConf>();
     const appdal::FelixStreamParameters* stream_pars = stream->get_stream_params()->cast<appdal::FelixStreamParameters>();
-    src_id_to_elink_map[stream->get_src_id()] = stream_pars->get_link();
+    src_id_to_elink_map[stream->get_source_id()] = stream_pars->get_link();
   }
 
   for (auto qi : modconf->get_outputs()) {
     auto q_with_id = qi->cast<coredal::QueueWithId>();
     if (q_with_id == nullptr) continue;
     TLOG_DEBUG(TLVL_WORK_STEPS) << ": CardReader output queue is " << q_with_id->UID();
-    TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << q_with_id->UID() << " DLH number: " << q_with_id->get_id();
-    auto elink = src_id_to_elink_map[q_with_id->get_id()];
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << q_with_id->UID() << " DLH number: " << q_with_id->get_source_id();
+    auto elink = src_id_to_elink_map[q_with_id->get_source_id()];
     m_elinks[elink] = createElinkModel(q_with_id->UID());
     if (m_elinks[elink] == nullptr) {
       ers::fatal(InitializationError(ERS_HERE, "CreateElink failed to provide an appropriate model for queue!"));
     }
     m_elinks[elink]->init(m_block_queue_capacity);
-    //m_elinks[q_with_id->get_id()]->init(args, m_block_queue_capacity);
+    //m_elinks[q_with_id->get_source_id()]->init(args, m_block_queue_capacity);
   }
 
   // Router function of block to appropriate ElinkHandlers
