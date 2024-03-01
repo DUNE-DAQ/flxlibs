@@ -12,10 +12,12 @@
 #include "appfwk/cmd/Nljs.hpp"
 #include "appfwk/cmd/Structs.hpp"
 
-#include "flxlibs/felixcardreader/Structs.hpp"
+//#include "flxlibs/felixcardreader/Structs.hpp"
 
 // From appfwk
 #include "appfwk/DAQModule.hpp"
+#include "appfwk/ModuleConfiguration.hpp"
+
 #include "utilities/WorkerThread.hpp"
 
 // FELIX Software Suite provided
@@ -46,12 +48,10 @@ public:
   FelixCardReader(FelixCardReader&&) = delete;                 ///< FelixCardReader is not move-constructible
   FelixCardReader& operator=(FelixCardReader&&) = delete;      ///< FelixCardReader is not move-assignable
 
-  void init(const data_t& args) override;
+  void init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg) override;
 
 private:
-  // Types
-  using module_conf_t = dunedaq::flxlibs::felixcardreader::Conf;
-
+ 
   // Constants
   static constexpr int m_elink_multiplier = 64;
   static constexpr size_t m_block_queue_capacity = 1000000;
@@ -66,8 +66,7 @@ private:
 
   // Configuration
   bool m_configured;
-  module_conf_t m_cfg;
-
+  
   int m_card_id;
   int m_logical_unit;
 
