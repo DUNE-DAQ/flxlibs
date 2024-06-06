@@ -6,14 +6,14 @@
  * received with this code.
  */
 //#include "flxlibs/felixcardreader/Nljs.hpp"
-#include "coredal/Connection.hpp"
-#include "coredal/QueueWithId.hpp"
-#include "coredal/DROStreamConf.hpp"
-#include "coredal/GeoId.hpp"
+#include "confmodel/Connection.hpp"
+#include "confmodel/QueueWithId.hpp"
+#include "confmodel/DROStreamConf.hpp"
+#include "confmodel/GeoId.hpp"
 
-#include "appdal/DataReader.hpp"
-#include "appdal/FelixInterface.hpp"
-#include "appdal/FelixStreamParameters.hpp"
+#include "appmodel/DataReader.hpp"
+#include "appmodel/FelixInterface.hpp"
+#include "appmodel/FelixStreamParameters.hpp"
 
 #include "CreateElink.hpp"
 #include "FelixCardReader.hpp"
@@ -82,13 +82,13 @@ FelixCardReader::init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
 {
   //auto ini = args.get<appfwk::app::ModInit>();
   
-  auto modconf = mcfg->module<appdal::DataReader>(get_name());
+  auto modconf = mcfg->module<appmodel::DataReader>(get_name());
 
   if (modconf->get_interfaces().size() != 1) {
     throw InitializationError(ERS_HERE, "FLX Data Reader does not have a unique associated interface");
   }
 
-  auto interface = modconf->get_interfaces()[0]->cast<appdal::FelixInterface>();
+  auto interface = modconf->get_interfaces()[0]->cast<appmodel::FelixInterface>();
   m_card_wrapper = std::make_unique<CardWrapper>(interface);
   m_card_id = interface->get_card();
   m_logical_unit = interface->get_slr();
@@ -101,13 +101,13 @@ FelixCardReader::init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
 // Create a source_id to local elink map
   std::map<uint, uint> src_id_to_elink_map;
   for (auto res : modconf->get_interfaces()[0]->get_contains()) {
-    auto stream = res->cast<coredal::DROStreamConf>();
-    const appdal::FelixStreamParameters* stream_pars = stream->get_stream_params()->cast<appdal::FelixStreamParameters>();
+    auto stream = res->cast<confmodel::DROStreamConf>();
+    const appmodel::FelixStreamParameters* stream_pars = stream->get_stream_params()->cast<appmodel::FelixStreamParameters>();
     src_id_to_elink_map[stream->get_source_id()] = stream_pars->get_link();
   }
 
   for (auto qi : modconf->get_outputs()) {
-    auto q_with_id = qi->cast<coredal::QueueWithId>();
+    auto q_with_id = qi->cast<confmodel::QueueWithId>();
     if (q_with_id == nullptr) continue;
     TLOG_DEBUG(TLVL_WORK_STEPS) << ": CardReader output queue is " << q_with_id->UID();
     TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << q_with_id->UID() << " DLH number: " << q_with_id->get_source_id();

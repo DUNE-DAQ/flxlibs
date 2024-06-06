@@ -19,7 +19,7 @@ daq_codegen( *info.jsonnet DEP_PKGS opmonlib TEMPLATES opmonlib/InfoStructs.hpp.
 
 ##############################################################################
 # Dependency sets
-set(DUNEDAQ_DEPENDENCIES appfwk::appfwk readoutlibs::readoutlibs fdreadoutlibs::fdreadoutlibs appdal::appdal coredal::coredal)
+set(DUNEDAQ_DEPENDENCIES appfwk::appfwk readoutlibs::readoutlibs fdreadoutlibs::fdreadoutlibs appmodel::appmodel confmodel::confmodel)
 
 # Provide override functionality for FELIX dependencies
 option(WITH_FELIX_AS_PACKAGE "FELIX externals as a dunedaq package" ON)
