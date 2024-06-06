@@ -33,7 +33,7 @@ enum
 namespace dunedaq {
 namespace flxlibs {
 
-CardWrapper::CardWrapper(const appdal::FelixInterface * cfg)
+CardWrapper::CardWrapper(const appmodel::FelixInterface * cfg)
   : m_run_marker{ false }
   , m_card_id(cfg->get_card())
   , m_logical_unit(cfg->get_slr())

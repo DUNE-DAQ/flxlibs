@@ -11,7 +11,7 @@
 //#include "flxlibs/felixcardreader/Nljs.hpp"
 //#include "flxlibs/felixcardreader/Structs.hpp"
 
-#include "appdal/FelixInterface.hpp"
+#include "appmodel/FelixInterface.hpp"
 #include "readoutlibs/utils/ReusableThread.hpp"
 
 #include "flxcard/FlxCard.h"
@@ -33,7 +33,7 @@ public:
    * @brief CardWrapper Constructor
    * @param name Instance name for this CardWrapper instance
    */
-  CardWrapper(const appdal::FelixInterface * cfg);
+  CardWrapper(const appmodel::FelixInterface * cfg);
   ~CardWrapper();
   CardWrapper(const CardWrapper&) = delete;            ///< CardWrapper is not copy-constructible
   CardWrapper& operator=(const CardWrapper&) = delete; ///< CardWrapper is not copy-assignable
