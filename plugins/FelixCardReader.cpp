@@ -5,15 +5,16 @@
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
-//#include "flxlibs/felixcardreader/Nljs.hpp"
+#include "confmodel/ResourceSetAND.hpp"
 #include "confmodel/Connection.hpp"
 #include "confmodel/QueueWithId.hpp"
-#include "confmodel/DROStreamConf.hpp"
+#include "confmodel/DetectorStream.hpp"
+#include "confmodel/DetectorToDaqConnection.hpp"
 #include "confmodel/GeoId.hpp"
 
 #include "appmodel/DataReader.hpp"
 #include "appmodel/FelixInterface.hpp"
-#include "appmodel/FelixStreamParameters.hpp"
+#include "appmodel/FelixDataSender.hpp"
 
 #include "CreateElink.hpp"
 #include "FelixCardReader.hpp"
@@ -84,26 +85,40 @@ FelixCardReader::init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
   
   auto modconf = mcfg->module<appmodel::DataReader>(get_name());
 
-  if (modconf->get_interfaces().size() != 1) {
+  if (modconf->get_connections().size() != 1) {
     throw InitializationError(ERS_HERE, "FLX Data Reader does not have a unique associated interface");
   }
 
-  auto interface = modconf->get_interfaces()[0]->cast<appmodel::FelixInterface>();
-  m_card_wrapper = std::make_unique<CardWrapper>(interface);
-  m_card_id = interface->get_card();
-  m_logical_unit = interface->get_slr();
-  m_links_enabled = interface->get_links_enabled();
-  m_num_links = m_links_enabled.size();
-  m_block_size = interface->get_dma_block_size() * m_1kb_block_size;
-  m_chunk_trailer_size = interface->get_chunk_trailer_size();
-  
+  const confmodel::DetectorToDaqConnection*  det_conn = modconf->get_connections()[0]->cast<confmodel::DetectorToDaqConnection>();
 
 // Create a source_id to local elink map
   std::map<uint, uint> src_id_to_elink_map;
-  for (auto res : modconf->get_interfaces()[0]->get_contains()) {
-    auto stream = res->cast<confmodel::DROStreamConf>();
-    const appmodel::FelixStreamParameters* stream_pars = stream->get_stream_params()->cast<appmodel::FelixStreamParameters>();
-    src_id_to_elink_map[stream->get_source_id()] = stream_pars->get_link();
+
+  for (const auto & resources : det_conn->get_contains() {
+    const appmodel::FelixInterface* interface = resources->cast<appmodel::FelixInterface>();
+    const confmodel::ResourceSetAND* det_senders = resources->cast<confmodel::ResourceSetAND>();
+    if (interface != nullptr) {
+      m_card_wrapper = std::make_unique<CardWrapper>(interface);
+      m_card_id = interface->get_card();
+      m_logical_unit = interface->get_slr();
+      m_links_enabled = interface->get_links_enabled();
+      m_num_links = m_links_enabled.size();
+      m_block_size = interface->get_dma_block_size() * m_1kb_block_size;
+      m_chunk_trailer_size = interface->get_chunk_trailer_size();
+    }
+    else if (det_senders !- nullptr){
+      for (const auto & det_sender_res : det_senders->get_contains()) {
+         const appmodel::FelixDataSender* data_sender = det_sender_res->cast<appmodel::FelixDataSender>();
+	 if (data_sender != nullptr) {
+	 for (const auto & stream_res : data_sender->get_contains()) {
+           const confmodel::DetectorStream* stream = stream_res->cast<confmodel::DetectorStream>();
+           if (stream != nullptr) {
+              src_id_to_elink_map[stream->get_source_id()] = data_sender->get_link();
+	   } 
+	 }
+         }
+      }
+    } 
   }
 
   for (auto qi : modconf->get_outputs()) {
