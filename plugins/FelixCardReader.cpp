@@ -94,7 +94,7 @@ FelixCardReader::init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
 // Create a source_id to local elink map
   std::map<uint, uint> src_id_to_elink_map;
 
-  for (const auto & resources : det_conn->get_contains() {
+  for (const auto & resources : det_conn->get_contains()) {
     const appmodel::FelixInterface* interface = resources->cast<appmodel::FelixInterface>();
     const confmodel::ResourceSetAND* det_senders = resources->cast<confmodel::ResourceSetAND>();
     if (interface != nullptr) {
@@ -106,7 +106,7 @@ FelixCardReader::init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
       m_block_size = interface->get_dma_block_size() * m_1kb_block_size;
       m_chunk_trailer_size = interface->get_chunk_trailer_size();
     }
-    else if (det_senders !- nullptr){
+    else if (det_senders != nullptr){
       for (const auto & det_sender_res : det_senders->get_contains()) {
          const appmodel::FelixDataSender* data_sender = det_sender_res->cast<appmodel::FelixDataSender>();
 	 if (data_sender != nullptr) {
