@@ -1,5 +1,5 @@
 /**
- * @file FelixCardReader.cc FelixCardReader DAQModule implementation
+ * @file FelixReaderModule.cc FelixReaderModule DAQModule implementation
  *
  * This is part of the DUNE DAQ Application Framework, copyright 2020.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -7,17 +7,17 @@
  */
 #include "confmodel/ResourceSetAND.hpp"
 #include "confmodel/Connection.hpp"
-#include "confmodel/QueueWithId.hpp"
+#include "confmodel/QueueWithSourceId.hpp"
 #include "confmodel/DetectorStream.hpp"
 #include "confmodel/DetectorToDaqConnection.hpp"
 #include "confmodel/GeoId.hpp"
 
-#include "appmodel/DataReader.hpp"
+#include "appmodel/DataReceiverModule.hpp"
 #include "appmodel/FelixInterface.hpp"
 #include "appmodel/FelixDataSender.hpp"
 
 #include "CreateElink.hpp"
-#include "FelixCardReader.hpp"
+#include "FelixReaderModule.hpp"
 #include "FelixIssues.hpp"
 
 #include "logging/Logging.hpp"
@@ -34,7 +34,7 @@
 /**
  * @brief Name used by TRACE TLOG calls from this source file
  */
-#define TRACE_NAME "FelixCardReader" // NOLINT
+#define TRACE_NAME "FelixReaderModule" // NOLINT
 
 /**
  * @brief TRACE debug levels used in this source file
@@ -49,7 +49,7 @@ enum
 namespace dunedaq {
 namespace flxlibs {
 
-FelixCardReader::FelixCardReader(const std::string& name)
+FelixReaderModule::FelixReaderModule(const std::string& name)
   : DAQModule(name)
   , m_configured(false)
   , m_card_id(0)
@@ -62,9 +62,9 @@ FelixCardReader::FelixCardReader(const std::string& name)
 
 {
  
-  register_command("conf", &FelixCardReader::do_configure);
-  register_command("start", &FelixCardReader::do_start);
-  register_command("stop_trigger_sources", &FelixCardReader::do_stop);
+  register_command("conf", &FelixReaderModule::do_configure);
+  register_command("start", &FelixReaderModule::do_start);
+  register_command("stop_trigger_sources", &FelixReaderModule::do_stop);
 }
 
 inline void
@@ -79,11 +79,11 @@ tokenize(std::string const& str, const char delim, std::vector<std::string>& out
 }
 
 void
-FelixCardReader::init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
+FelixReaderModule::init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
 {
   //auto ini = args.get<appfwk::app::ModInit>();
   
-  auto modconf = mcfg->module<appmodel::DataReader>(get_name());
+  auto modconf = mcfg->module<appmodel::DataReceiverModule>(get_name());
 
   if (modconf->get_connections().size() != 1) {
     throw InitializationError(ERS_HERE, "FLX Data Reader does not have a unique associated interface");
@@ -122,7 +122,7 @@ FelixCardReader::init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
   }
 
   for (auto qi : modconf->get_outputs()) {
-    auto q_with_id = qi->cast<confmodel::QueueWithId>();
+    auto q_with_id = qi->cast<confmodel::QueueWithSourceId>();
     if (q_with_id == nullptr) continue;
     TLOG_DEBUG(TLVL_WORK_STEPS) << ": CardReader output queue is " << q_with_id->UID();
     TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << q_with_id->UID() << " DLH number: " << q_with_id->get_source_id();
@@ -165,7 +165,7 @@ FelixCardReader::init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
 }
 
 void
-FelixCardReader::do_configure(const data_t& /*args*/)
+FelixReaderModule::do_configure(const data_t& /*args*/)
 {
    
     bool is_32b_trailer = false;
@@ -207,7 +207,7 @@ FelixCardReader::do_configure(const data_t& /*args*/)
 }
 
 void
-FelixCardReader::do_start(const data_t& /*args*/)
+FelixReaderModule::do_start(const data_t& /*args*/)
 {
     m_card_wrapper->start();
     for (auto& [tag, elink] : m_elinks) {
@@ -216,7 +216,7 @@ FelixCardReader::do_start(const data_t& /*args*/)
 }
 
 void
-FelixCardReader::do_stop(const data_t& /*args*/)
+FelixReaderModule::do_stop(const data_t& /*args*/)
 {
     m_card_wrapper->stop();
     for (auto& [tag, elink] : m_elinks) {
@@ -225,7 +225,7 @@ FelixCardReader::do_stop(const data_t& /*args*/)
 }
 
 void
-FelixCardReader::get_info(opmonlib::InfoCollector& ci, int level)
+FelixReaderModule::get_info(opmonlib::InfoCollector& ci, int level)
 {
     for (unsigned lid = 0; lid < m_num_links; ++lid) {
       auto tag = m_links_enabled[lid] * m_elink_multiplier;
@@ -236,4 +236,4 @@ FelixCardReader::get_info(opmonlib::InfoCollector& ci, int level)
 } // namespace flxlibs
 } // namespace dunedaq
 
-DEFINE_DUNE_DAQ_MODULE(dunedaq::flxlibs::FelixCardReader)
+DEFINE_DUNE_DAQ_MODULE(dunedaq::flxlibs::FelixReaderModule)
