@@ -64,7 +64,7 @@ endif()
 
 ##############################################################################
 # Plugins
-daq_add_plugin(FelixCardReader duneDAQModule LINK_LIBRARIES flxlibs)
+daq_add_plugin(FelixReaderModule duneDAQModule LINK_LIBRARIES flxlibs)
 #daq_add_plugin(FelixCardController duneDAQModule LINK_LIBRARIES flxlibs)
 
 ##############################################################################

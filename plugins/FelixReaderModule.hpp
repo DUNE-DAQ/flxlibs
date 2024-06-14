@@ -1,5 +1,5 @@
 /**
- * @file FelixCardReader.hpp FELIX card reader DAQ Module.
+ * @file FelixReaderModule.hpp FELIX card reader DAQ Module.
  *
  * This is part of the DUNE DAQ , copyright 2020.
  * Licensing/copyright details are in the COPYING file that you should have
@@ -34,19 +34,19 @@
 
 namespace dunedaq::flxlibs {
 
-class FelixCardReader : public dunedaq::appfwk::DAQModule
+class FelixReaderModule : public dunedaq::appfwk::DAQModule
 {
 public:
   /**
-   * @brief FelixCardReader Constructor
-   * @param name Instance name for this FelixCardReader instance
+   * @brief FelixReaderModule Constructor
+   * @param name Instance name for this FelixReaderModule instance
    */
-  explicit FelixCardReader(const std::string& name);
+  explicit FelixReaderModule(const std::string& name);
 
-  FelixCardReader(const FelixCardReader&) = delete;            ///< FelixCardReader is not copy-constructible
-  FelixCardReader& operator=(const FelixCardReader&) = delete; ///< FelixCardReader is not copy-assignable
-  FelixCardReader(FelixCardReader&&) = delete;                 ///< FelixCardReader is not move-constructible
-  FelixCardReader& operator=(FelixCardReader&&) = delete;      ///< FelixCardReader is not move-assignable
+  FelixReaderModule(const FelixReaderModule&) = delete;            ///< FelixReaderModule is not copy-constructible
+  FelixReaderModule& operator=(const FelixReaderModule&) = delete; ///< FelixReaderModule is not copy-assignable
+  FelixReaderModule(FelixReaderModule&&) = delete;                 ///< FelixReaderModule is not move-constructible
+  FelixReaderModule& operator=(FelixReaderModule&&) = delete;      ///< FelixReaderModule is not move-assignable
 
   void init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg) override;
 
