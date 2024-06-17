@@ -12,7 +12,7 @@
 #include "confmodel/DetectorToDaqConnection.hpp"
 #include "confmodel/GeoId.hpp"
 
-#include "appmodel/DataReceiverModule.hpp"
+#include "appmodel/DataReaderModule.hpp"
 #include "appmodel/FelixInterface.hpp"
 #include "appmodel/FelixDataSender.hpp"
 
@@ -83,7 +83,7 @@ FelixReaderModule::init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
 {
   //auto ini = args.get<appfwk::app::ModInit>();
   
-  auto modconf = mcfg->module<appmodel::DataReceiverModule>(get_name());
+  auto modconf = mcfg->module<appmodel::DataReaderModule>(get_name());
 
   if (modconf->get_connections().size() != 1) {
     throw InitializationError(ERS_HERE, "FLX Data Reader does not have a unique associated interface");
