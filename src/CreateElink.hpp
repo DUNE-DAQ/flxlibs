@@ -11,7 +11,7 @@
 #include "ElinkConcept.hpp"
 #include "ElinkModel.hpp"
 #include "flxlibs/AvailableParserOperations.hpp"
-#include "readoutlibs/ReadoutIssues.hpp"
+#include "datahandlinglibs/DataHandlingIssues.hpp"
 //#include "fdreadoutlibs/ProtoWIBSuperChunkTypeAdapter.hpp"
 //#include "fdreadoutlibs/DUNEWIBSuperChunkTypeAdapter.hpp"
 #include "fdreadoutlibs/DAPHNESuperChunkTypeAdapter.hpp"
@@ -35,7 +35,7 @@ createElinkModel(const std::string& conn_uid)
 {
   auto datatypes = dunedaq::iomanager::IOManager::get()->get_datatypes(conn_uid);
   if (datatypes.size() != 1) {
-    ers::error(dunedaq::readoutlibs::GenericConfigurationError(ERS_HERE,
+    ers::error(dunedaq::datahandlinglibs::GenericConfigurationError(ERS_HERE,
       "Multiple output data types specified! Expected only a single type!"));
   }
   std::string raw_dt{ *datatypes.begin() };

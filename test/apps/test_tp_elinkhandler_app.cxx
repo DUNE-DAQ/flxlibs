@@ -12,7 +12,7 @@
 #include "flxlibs/AvailableParserOperations.hpp"
 
 #include "logging/Logging.hpp"
-#include "readoutlibs/ReadoutTypes.hpp"
+#include "datahandlinglibs/ReadoutTypes.hpp"
 #include "detdataformats/wib/RawWIBTp.hpp"
 
 #include "packetformat/block_format.hpp"
