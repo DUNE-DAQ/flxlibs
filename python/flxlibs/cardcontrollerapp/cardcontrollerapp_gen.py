@@ -60,7 +60,7 @@ def get_cardcontroller_app(
             if mode=="fix_rate":
                 elinks.append(flx.Link(link_id=l, enabled=True, dma_desc=0, superchunk_factor=12))
             if mode=="var_rate":
-                elinks.append(flx.Link(link_id=l, enabled=True, dma_desc=0, superchunk_factor=1))
+                elinks.append(flx.Link(link_id=l, enabled=True, dma_desc=0, superchunk_factor=3))
         # if enable_firmware_tpg:
             # elinks.append(flx.Link(link_id=5, enabled=True, dma_desc=0, superchunk_factor=64))
         lus.append(flx.LogicalUnit(log_unit_id=slr, emu_fanout=emulator_mode, links=elinks, ignore_alignment_mask=ignore_alignment_mask[slr]))
