@@ -62,7 +62,9 @@ private:
   void do_configure(const data_t& args);
   void do_start(const data_t& args);
   void do_stop(const data_t& args);
-  void get_info(opmonlib::InfoCollector& ci, int level);
+
+  #warning MISSING OPMON
+  //void get_info(opmonlib::InfoCollector& ci, int level);
 
   // Configuration
   bool m_configured;

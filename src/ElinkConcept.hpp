@@ -49,7 +49,6 @@ public:
   virtual void conf(size_t block_size, bool is_32b_trailers) = 0;
   virtual void start() = 0;
   virtual void stop() = 0;
-  virtual void get_info(opmonlib::InfoCollector& ci, int level) = 0;
 
   virtual bool queue_in_block_address(uint64_t block_addr) = 0; // NOLINT
 
