@@ -15,7 +15,6 @@
 //#include "appfwk/DAQModuleHelper.hpp"
 #include "iomanager/IOManager.hpp"
 #include "iomanager/Sender.hpp"
-#include "flxlibs/felixcardreaderinfo/InfoNljs.hpp"
 #include "logging/Logging.hpp"
 #include "datahandlinglibs/utils/ReusableThread.hpp"
 
@@ -122,52 +121,53 @@ public:
     }
   }
 
-  void get_info(opmonlib::InfoCollector& ci, int /*level*/)
-  {
-    felixcardreaderinfo::ELinkInfo info;
-    auto now = std::chrono::high_resolution_clock::now();
-    auto& stats = m_parser_impl.get_stats();
+  #warning MISSING OPMON
+  // void get_info(opmonlib::InfoCollector& ci, int /*level*/)
+  // {
+  //   felixcardreaderinfo::ELinkInfo info;
+  //   auto now = std::chrono::high_resolution_clock::now();
+  //   auto& stats = m_parser_impl.get_stats();
 
-    info.card_id = m_card_id;
-    info.logical_unit = m_logical_unit;
-    info.link_id = m_link_id;
-    info.link_tag = m_link_tag;
+  //   info.card_id = m_card_id;
+  //   info.logical_unit = m_logical_unit;
+  //   info.link_id = m_link_id;
+  //   info.link_tag = m_link_tag;
 
-    double seconds = std::chrono::duration_cast<std::chrono::microseconds>(now - m_t0).count() / 1000000.;
+  //   double seconds = std::chrono::duration_cast<std::chrono::microseconds>(now - m_t0).count() / 1000000.;
 
-    info.num_short_chunks_processed = stats.short_ctr.exchange(0);
-    info.num_chunks_processed = stats.chunk_ctr.exchange(0);
-    info.num_subchunks_processed = stats.subchunk_ctr.exchange(0);
-    info.num_blocks_processed = stats.block_ctr.exchange(0);
-    info.num_short_chunks_processed_with_error = stats.error_short_ctr.exchange(0);
-    info.num_chunks_processed_with_error = stats.error_chunk_ctr.exchange(0);
-    info.num_subchunks_processed_with_error = stats.error_subchunk_ctr.exchange(0);
-    info.num_blocks_processed_with_error = stats.error_block_ctr.exchange(0);
-    info.num_subchunk_crc_errors = stats.subchunk_crc_error_ctr.exchange(0);
-    info.num_subchunk_trunc_errors = stats.subchunk_trunc_error_ctr.exchange(0);
-    info.num_subchunk_errors = stats.subchunk_error_ctr.exchange(0);
-    info.rate_blocks_processed = info.num_blocks_processed / seconds / 1000.;
-    info.rate_chunks_processed = info.num_chunks_processed / seconds / 1000.;
+  //   info.num_short_chunks_processed = stats.short_ctr.exchange(0);
+  //   info.num_chunks_processed = stats.chunk_ctr.exchange(0);
+  //   info.num_subchunks_processed = stats.subchunk_ctr.exchange(0);
+  //   info.num_blocks_processed = stats.block_ctr.exchange(0);
+  //   info.num_short_chunks_processed_with_error = stats.error_short_ctr.exchange(0);
+  //   info.num_chunks_processed_with_error = stats.error_chunk_ctr.exchange(0);
+  //   info.num_subchunks_processed_with_error = stats.error_subchunk_ctr.exchange(0);
+  //   info.num_blocks_processed_with_error = stats.error_block_ctr.exchange(0);
+  //   info.num_subchunk_crc_errors = stats.subchunk_crc_error_ctr.exchange(0);
+  //   info.num_subchunk_trunc_errors = stats.subchunk_trunc_error_ctr.exchange(0);
+  //   info.num_subchunk_errors = stats.subchunk_error_ctr.exchange(0);
+  //   info.rate_blocks_processed = info.num_blocks_processed / seconds / 1000.;
+  //   info.rate_chunks_processed = info.num_chunks_processed / seconds / 1000.;
 
-    TLOG_DEBUG(2) << inherited::m_elink_str // Move to TLVL_TAKE_NOTE from readout
-                  << " Parser stats ->"
-                  << " Blocks: " << info.num_blocks_processed << " Block rate: " << info.rate_blocks_processed
-                  << " [kHz]"
-                  << " Chunks: " << info.num_chunks_processed << " Chunk rate: " << info.rate_chunks_processed
-                  << " [kHz]"
-                  << " Shorts: " << info.num_short_chunks_processed << " Subchunks:" << info.num_subchunks_processed
-                  << " Error Chunks: " << info.num_chunks_processed_with_error
-                  << " Error Shorts: " << info.num_short_chunks_processed_with_error
-                  << " Error Subchunks: " << info.num_subchunks_processed_with_error
-                  << " Error Block: " << info.num_blocks_processed_with_error;
+  //   TLOG_DEBUG(2) << inherited::m_elink_str // Move to TLVL_TAKE_NOTE from readout
+  //                 << " Parser stats ->"
+  //                 << " Blocks: " << info.num_blocks_processed << " Block rate: " << info.rate_blocks_processed
+  //                 << " [kHz]"
+  //                 << " Chunks: " << info.num_chunks_processed << " Chunk rate: " << info.rate_chunks_processed
+  //                 << " [kHz]"
+  //                 << " Shorts: " << info.num_short_chunks_processed << " Subchunks:" << info.num_subchunks_processed
+  //                 << " Error Chunks: " << info.num_chunks_processed_with_error
+  //                 << " Error Shorts: " << info.num_short_chunks_processed_with_error
+  //                 << " Error Subchunks: " << info.num_subchunks_processed_with_error
+  //                 << " Error Block: " << info.num_blocks_processed_with_error;
 
-    m_t0 = now;
+  //   m_t0 = now;
 
-    opmonlib::InfoCollector child_ci;
-    child_ci.add(info);
+  //   opmonlib::InfoCollector child_ci;
+  //   child_ci.add(info);
 
-    ci.add(m_opmon_str, child_ci);
-  }
+  //   ci.add(m_opmon_str, child_ci);
+  // }
 
 private:
   // Types

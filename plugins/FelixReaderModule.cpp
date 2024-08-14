@@ -224,14 +224,14 @@ FelixReaderModule::do_stop(const data_t& /*args*/)
     }
 }
 
-void
-FelixReaderModule::get_info(opmonlib::InfoCollector& ci, int level)
-{
-    for (unsigned lid = 0; lid < m_num_links; ++lid) {
-      auto tag = m_links_enabled[lid] * m_elink_multiplier;
-      m_elinks[tag]->get_info(ci, level);
-    }
-}
+// void
+// FelixReaderModule::get_info(opmonlib::InfoCollector& ci, int level)
+// {
+//     for (unsigned lid = 0; lid < m_num_links; ++lid) {
+//       auto tag = m_links_enabled[lid] * m_elink_multiplier;
+//       m_elinks[tag]->get_info(ci, level);
+//     }
+// }
 
 } // namespace flxlibs
 } // namespace dunedaq
