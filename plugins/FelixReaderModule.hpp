@@ -63,9 +63,6 @@ private:
   void do_start(const data_t& args);
   void do_stop(const data_t& args);
 
-  #warning MISSING OPMON
-  void generate_opmon_data() override;
-
   // Configuration
   bool m_configured;
   
@@ -81,7 +78,7 @@ private:
   std::unique_ptr<CardWrapper> m_card_wrapper;
 
   // ElinkConcept
-  std::map<int, std::unique_ptr<ElinkConcept>> m_elinks;
+  std::map<int, std::shared_ptr<ElinkConcept>> m_elinks;
 
   // Function for routing block addresses from card to elink handler
   std::function<void(uint64_t)> m_block_router; // NOLINT

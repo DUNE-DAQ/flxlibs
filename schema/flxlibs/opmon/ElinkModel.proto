@@ -5,7 +5,7 @@ package dunedaq.flxlibs.opmon;
 message CardReaderInfo {
 
   uint64 num_short_chunks_processed = 1 ;
-  uint64 num_chunks_processed" = 2;   
+  uint64 num_chunks_processed = 2;   
   uint64 num_subchunks_processed = 3 ;
   uint64 num_blocks_processed = 4; 
 

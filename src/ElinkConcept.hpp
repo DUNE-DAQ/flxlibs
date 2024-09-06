@@ -23,7 +23,7 @@
 namespace dunedaq {
 namespace flxlibs {
 
-class ElinkConcept
+class ElinkConcept : public opmonlib::MonitorableObject 
 {
 public:
   ElinkConcept()
@@ -73,8 +73,6 @@ public:
     tidstrs << "ept-" << std::to_string(m_card_id) << "-" << std::to_string(m_logical_unit);
     m_elink_source_tid = tidstrs.str();
 
-    m_opmon_str =
-      "elink_" + std::to_string(m_card_id) + "_" + std::to_string(m_logical_unit) + "_" + std::to_string(m_link_id);
   }
 
 protected:
@@ -87,7 +85,6 @@ protected:
   int m_link_id;
   int m_link_tag;
   std::string m_elink_str;
-  std::string m_opmon_str;
   std::string m_elink_source_tid;
   std::chrono::time_point<std::chrono::high_resolution_clock> m_t0;
 
