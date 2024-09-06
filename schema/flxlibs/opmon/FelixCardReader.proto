@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package dunedaq.flxlibs.opmon;
+
+message CardReaderInfo {
+
+  uint64 num_short_chunks_processed = 1 ;
+  uint64 num_chunks_processed" = 2;   
+  uint64 num_subchunks_processed = 3 ;
+  uint64 num_blocks_processed = 4; 
+
+  uint64 num_short_chunks_processed_with_error = 10;
+  uint64 num_chunks_processed_with_error       = 11;
+  uint64 num_subchunks_processed_with_error    = 12;
+  uint64 num_blocks_processed_with_error       = 13; 
+
+  uint64 num_subchunk_crc_errors   = 15;
+  uint64 num_subchunk_trunc_errors = 16; // Number of truncation errors
+  uint64 num_subchunk_errors       = 17;
+
+  double rate_blocks_processed = 20; // Rate of processed blocks in KHz
+  double rate_chunks_processed = 21; // Rate of processed chunks in KHz
+ 
+}
+

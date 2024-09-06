@@ -64,7 +64,7 @@ private:
   void do_stop(const data_t& args);
 
   #warning MISSING OPMON
-  //void get_info(opmonlib::InfoCollector& ci, int level);
+  void generate_opmon_data() override;
 
   // Configuration
   bool m_configured;
