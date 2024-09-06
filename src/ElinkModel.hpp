@@ -131,11 +131,6 @@ protected:
     auto now = std::chrono::high_resolution_clock::now();
     auto& stats = m_parser_impl.get_stats();
 
-  //   info.card_id = m_card_id;
-  //   info.logical_unit = m_logical_unit;
-  //   info.link_id = m_link_id;
-  //   info.link_tag = m_link_tag;
-
     double seconds = std::chrono::duration_cast<std::chrono::microseconds>(now - m_t0).count() / 1000000.;
 
     info.set_num_short_chunks_processed( stats.short_ctr.exchange(0) );
