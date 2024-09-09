@@ -127,11 +127,12 @@ FelixReaderModule::init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
     TLOG_DEBUG(TLVL_WORK_STEPS) << ": CardReader output queue is " << q_with_id->UID();
     TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << q_with_id->UID() << " DLH number: " << q_with_id->get_source_id();
     auto elink = src_id_to_elink_map[q_with_id->get_source_id()];
-    m_elinks[elink] = createElinkModel(q_with_id->UID());
-    if (m_elinks[elink] == nullptr) {
+    auto link_ptr = m_elinks[elink] = createElinkModel(q_with_id->UID());
+    if ( ! link_ptr ) {
       ers::fatal(InitializationError(ERS_HERE, "CreateElink failed to provide an appropriate model for queue!"));
     }
-    m_elinks[elink]->init(m_block_queue_capacity);
+    register_node( q_with_id->UID(), link_ptr);
+    link_ptr->init(m_block_queue_capacity);
     //m_elinks[q_with_id->get_source_id()]->init(args, m_block_queue_capacity);
   }
 
@@ -224,14 +225,6 @@ FelixReaderModule::do_stop(const data_t& /*args*/)
     }
 }
 
-// void
-// FelixReaderModule::get_info(opmonlib::InfoCollector& ci, int level)
-// {
-//     for (unsigned lid = 0; lid < m_num_links; ++lid) {
-//       auto tag = m_links_enabled[lid] * m_elink_multiplier;
-//       m_elinks[tag]->get_info(ci, level);
-//     }
-// }
 
 } // namespace flxlibs
 } // namespace dunedaq
