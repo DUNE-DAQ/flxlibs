@@ -8,9 +8,9 @@
 #ifndef FLXLIBS_PLUGINS_FELIXCARDREADER_HPP_
 #define FLXLIBS_PLUGINS_FELIXCARDREADER_HPP_
 
-#include "appfwk/app/Nljs.hpp"
-#include "appfwk/cmd/Nljs.hpp"
-#include "appfwk/cmd/Structs.hpp"
+//#include "appfwk/app/Nljs.hpp"
+//#include "appfwk/cmd/Nljs.hpp"
+//#include "appfwk/cmd/Structs.hpp"
 
 //#include "flxlibs/felixcardreader/Structs.hpp"
 
