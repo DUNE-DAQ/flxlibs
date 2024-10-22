@@ -67,17 +67,6 @@ FelixReaderModule::FelixReaderModule(const std::string& name)
   register_command("stop_trigger_sources", &FelixReaderModule::do_stop);
 }
 
-inline void
-tokenize(std::string const& str, const char delim, std::vector<std::string>& out)
-{
-  std::size_t start;
-  std::size_t end = 0;
-  while ((start = str.find_first_not_of(delim, end)) != std::string::npos) {
-    end = str.find(delim, start);
-    out.push_back(str.substr(start, end - start));
-  }
-}
-
 void
 FelixReaderModule::init(const std::shared_ptr<appfwk::ModuleConfiguration> mcfg)
 {
