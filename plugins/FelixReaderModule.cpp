@@ -5,14 +5,14 @@
  * Licensing/copyright details are in the COPYING file that you should have
  * received with this code.
  */
-#include "confmodel/ResourceSetAND.hpp"
 #include "confmodel/Connection.hpp"
 #include "confmodel/QueueWithSourceId.hpp"
+#include "confmodel/DetDataSender.hpp"
 #include "confmodel/DetectorStream.hpp"
-#include "confmodel/DetectorToDaqConnection.hpp"
 #include "confmodel/GeoId.hpp"
 
 #include "appmodel/DataReaderModule.hpp"
+#include "appmodel/FelixDetectorToDaqConnection.hpp"
 #include "appmodel/FelixInterface.hpp"
 #include "appmodel/FelixDataSender.hpp"
 
@@ -79,49 +79,26 @@ FelixReaderModule::init(const std::shared_ptr<appfwk::ConfigurationManager> mcfg
     throw InitializationError(ERS_HERE, "FLX Data Reader does not have a unique associated flx_if");
   }
 
-  const confmodel::DetectorToDaqConnection*  det_conn = modconf->get_connections()[0]->cast<confmodel::DetectorToDaqConnection>();
+  const auto  det_conn = modconf->get_connections()[0]->cast<appmodel::FelixDetectorToDaqConnection>();
 
 // Create a source_id to local elink map
   std::map<uint, uint> src_id_to_elink_map;
   auto flx_if = det_conn->get_receiver()->cast<appmodel::FelixInterface>();
-  auto det_senders = det_conn->get_senders();
+  auto det_senders = det_conn->get_felix_senders();
 
-  if (!det_senders.empty()) {
-    for (const auto& det_sender_res : det_senders) {
-
-      const appmodel::FelixDataSender* data_sender = det_sender_res->cast<appmodel::FelixDataSender>();
-      
-      if (data_sender != nullptr) {
-        // Check if sender enabled
-        if (data_sender->disabled(*session))
-          continue;
-
-        if (data_sender->get_contains().size() > 1 ){ 
-          // TODO add throw
-        }
-
-        for (const auto& stream_res : data_sender->get_contains()) {
-          const confmodel::DetectorStream* stream = stream_res->cast<confmodel::DetectorStream>();
-          if (stream != nullptr) {
-            if (stream->disabled(*session)) {
-              TLOG_DEBUG(7) << "Ignoring disabled DetectorStream " << stream->UID();
-              continue;
-            }
-            src_id_to_elink_map[stream->get_source_id()] = data_sender->get_link();
-          } else {
-            // TODO add throw
-            // stream is nullpointer, this is not a DetectorStream!
-          }
-        }
-
-        TLOG(TLVL_BOOKKEEPING) << "Registering link: " << (uint32_t)data_sender->get_link() << " / " << m_links_enabled.size();
-        m_links_enabled.push_back(data_sender->get_link());
-
-      } else {
-        // TODO add throw
-        // det_senders is nullpointer, this is not a FelixDataSender!
-        // 
+  if (!det_senders.empty()) { // Redundant test as schema forbids 0 senders
+    for (const auto& data_sender : det_senders) {
+      // Check if sender enabled
+      if (data_sender->disabled(*session)) {
+        continue;
       }
+      for (const auto& stream : data_sender->get_streams()) {
+        src_id_to_elink_map[stream->get_source_id()] = data_sender->get_link();
+      }
+
+      TLOG(TLVL_BOOKKEEPING) << "Registering link: " << (uint32_t)data_sender->get_link() << " / " << m_links_enabled.size();
+      m_links_enabled.push_back(data_sender->get_link());
+
     }
   }
   m_num_links = m_links_enabled.size();
