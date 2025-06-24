@@ -83,13 +83,13 @@ FelixReaderModule::init(const std::shared_ptr<appfwk::ConfigurationManager> mcfg
 
 // Create a source_id to local elink map
   std::map<uint, uint> src_id_to_elink_map;
-  auto flx_if = det_conn->get_receiver()->cast<appmodel::FelixInterface>();
+  auto flx_if = det_conn->receiver()->cast<appmodel::FelixInterface>();
   auto det_senders = det_conn->get_felix_senders();
 
   if (!det_senders.empty()) { // Redundant test as schema forbids 0 senders
     for (const auto& data_sender : det_senders) {
       // Check if sender enabled
-      if (data_sender->disabled(*session)) {
+      if (data_sender->is_disabled(*session)) {
         continue;
       }
       for (const auto& stream : data_sender->get_streams()) {
