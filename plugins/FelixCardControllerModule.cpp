@@ -14,6 +14,8 @@
 #include "appmodel/FelixCardControllerModule.hpp"
 #include "appmodel/FelixInterface.hpp"
 #include "appmodel/FelixDataSender.hpp"
+#include "appmodel/FelixDetectorToDaqConnection.hpp"
+
 
 #include "logging/Logging.hpp"
 
