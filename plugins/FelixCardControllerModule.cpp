@@ -14,6 +14,8 @@
 #include "appmodel/FelixCardControllerModule.hpp"
 #include "appmodel/FelixInterface.hpp"
 #include "appmodel/FelixDataSender.hpp"
+#include "appmodel/FelixDetectorToDaqConnection.hpp"
+
 
 #include "logging/Logging.hpp"
 
@@ -68,14 +70,14 @@ FelixCardControllerModule::init(const std::shared_ptr<appfwk::ConfigurationManag
   for( auto det_conn : det_connections )  {
 
     // Extract felix infos
-    auto flx_if = det_conn->get_receiver()->cast<appmodel::FelixInterface>();
+    auto flx_if = det_conn->receiver()->cast<appmodel::FelixInterface>();
 
-    auto det_senders = det_conn->get_senders();
+    auto det_senders = det_conn->senders();
 
     std::vector<const appmodel::FelixDataSender*> flx_senders;
     for( auto ds : det_senders) {
 
-      if (ds->disabled(*session))
+      if (ds->is_disabled(*session))
         continue;
 
       flx_senders.push_back(ds->cast<appmodel::FelixDataSender>());
