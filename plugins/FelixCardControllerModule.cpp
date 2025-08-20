@@ -63,7 +63,7 @@ void
 FelixCardControllerModule::init(const std::shared_ptr<appfwk::ConfigurationManager> cfgMgr) {
   
   m_cfg = cfgMgr->get_dal<appmodel::FelixCardControllerModule>(get_name());
-  auto session = cfgMgr->session();
+  auto session = cfgMgr->get_session();
 
   auto det_connections = m_cfg->get_controls();
 
@@ -97,7 +97,7 @@ FelixCardControllerModule::init(const std::shared_ptr<appfwk::ConfigurationManag
 }
 
 void
-FelixCardControllerModule::do_configure(const data_t& args)
+FelixCardControllerModule::do_configure(const CommandData_t& /*args*/)
 {
 
   for( auto const & [id, cw ] : m_card_wrappers ) {
@@ -108,7 +108,7 @@ FelixCardControllerModule::do_configure(const data_t& args)
 }
 
 void
-FelixCardControllerModule::get_reg(const data_t& args)
+FelixCardControllerModule::get_reg(const CommandData_t& args)
 {
   auto conf = args.get<felixcardcontroller::GetRegisters>();
   auto id = conf.card_id + conf.log_unit_id;
@@ -119,7 +119,7 @@ FelixCardControllerModule::get_reg(const data_t& args)
 }
 
 void
-FelixCardControllerModule::set_reg(const data_t& args)
+FelixCardControllerModule::set_reg(const CommandData_t& args)
 {
   auto conf = args.get<felixcardcontroller::SetRegisters>();
   auto id = conf.card_id + conf.log_unit_id;
@@ -130,7 +130,7 @@ FelixCardControllerModule::set_reg(const data_t& args)
 }
 
 void
-FelixCardControllerModule::get_bf(const data_t& args)
+FelixCardControllerModule::get_bf(const CommandData_t& args)
 {
   auto conf = args.get<felixcardcontroller::GetBFs>();
   auto id = conf.card_id + conf.log_unit_id;
@@ -142,7 +142,7 @@ FelixCardControllerModule::get_bf(const data_t& args)
 }
 
 void
-FelixCardControllerModule::set_bf(const data_t& args)
+FelixCardControllerModule::set_bf(const CommandData_t& args)
 {
   auto conf = args.get<felixcardcontroller::SetBFs>();
   auto id = conf.card_id + conf.log_unit_id;
@@ -153,7 +153,7 @@ FelixCardControllerModule::set_bf(const data_t& args)
 }
 
 void
-FelixCardControllerModule::gth_reset(const data_t& /*args*/)
+FelixCardControllerModule::gth_reset(const CommandData_t& /*args*/)
 {
   // Do the reset only for the first device (whole card)
   m_card_wrappers.begin()->second->gth_reset();
