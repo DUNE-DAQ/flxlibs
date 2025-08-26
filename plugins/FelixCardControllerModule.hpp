@@ -43,12 +43,12 @@ public:
 private:
 
   // Commands
-  void do_configure(const data_t& args);
-  void get_reg(const data_t& args);
-  void set_reg(const data_t& args);
-  void get_bf(const data_t& args);
-  void set_bf(const data_t& args);
-  void gth_reset(const data_t& args);
+  void do_configure(const CommandData_t& args);
+  void get_reg(const CommandData_t& args);
+  void set_reg(const CommandData_t& args);
+  void get_bf(const CommandData_t& args);
+  void set_bf(const CommandData_t& args);
+  void gth_reset(const CommandData_t& args);
 
   // Configuration
   const appmodel::FelixCardControllerModule* m_cfg;

@@ -54,9 +54,9 @@ private:
   static constexpr int m_32b_trailer_size = 32;
 
   // Commands
-  void do_configure(const data_t& args);
-  void do_start(const data_t& args);
-  void do_stop(const data_t& args);
+  void do_configure(const CommandData_t& args);
+  void do_start(const CommandData_t& args);
+  void do_stop(const CommandData_t& args);
 
   // Configuration
   bool m_configured;

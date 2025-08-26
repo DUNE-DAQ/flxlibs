@@ -73,7 +73,7 @@ FelixReaderModule::init(const std::shared_ptr<appfwk::ConfigurationManager> mcfg
   //auto ini = args.get<appfwk::app::ModInit>();
   
   auto modconf = mcfg->get_dal<appmodel::DataReaderModule>(get_name());
-  auto session = mcfg->session();
+  auto session = mcfg->get_session();
 
   if (modconf->get_connections().size() != 1) {
     throw InitializationError(ERS_HERE, "FLX Data Reader does not have a unique associated flx_if");
@@ -156,7 +156,7 @@ FelixReaderModule::init(const std::shared_ptr<appfwk::ConfigurationManager> mcfg
 }
 
 void
-FelixReaderModule::do_configure(const data_t& /*args*/)
+FelixReaderModule::do_configure(const CommandData_t& /*args*/)
 {
    
     bool is_32b_trailer = false;
@@ -198,7 +198,7 @@ FelixReaderModule::do_configure(const data_t& /*args*/)
 }
 
 void
-FelixReaderModule::do_start(const data_t& /*args*/)
+FelixReaderModule::do_start(const CommandData_t& /*args*/)
 {
     m_card_wrapper->start();
     for (auto& [tag, elink] : m_elinks) {
@@ -207,7 +207,7 @@ FelixReaderModule::do_start(const data_t& /*args*/)
 }
 
 void
-FelixReaderModule::do_stop(const data_t& /*args*/)
+FelixReaderModule::do_stop(const CommandData_t& /*args*/)
 {
     m_card_wrapper->stop();
     for (auto& [tag, elink] : m_elinks) {
