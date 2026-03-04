@@ -111,19 +111,33 @@ FelixReaderModule::init(const std::shared_ptr<appfwk::ConfigurationManager> mcfg
   }
   
 
-  for (auto qi : modconf->get_outputs()) {
-    auto q_with_id = qi->cast<confmodel::QueueWithSourceId>();
-    if (q_with_id == nullptr) continue;
-    TLOG_DEBUG(TLVL_WORK_STEPS) << ": CardReader output queue is " << q_with_id->UID();
-    TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << q_with_id->UID() << " DLH number: " << q_with_id->get_source_id();
-    auto elink = src_id_to_elink_map[q_with_id->get_source_id()];
-    auto link_ptr = m_elinks[elink] = createElinkModel(q_with_id->UID());
+  // for (auto qi : modconf->get_outputs()) {
+  //   auto q_with_id = qi->cast<confmodel::QueueWithSourceId>();
+  //   if (q_with_id == nullptr) continue;
+  //   TLOG_DEBUG(TLVL_WORK_STEPS) << ": CardReader output queue is " << q_with_id->UID();
+  //   TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << q_with_id->UID() << " DLH number: " << q_with_id->get_source_id();
+  //   auto elink = src_id_to_elink_map[q_with_id->get_source_id()];
+  //   auto link_ptr = m_elinks[elink] = createElinkModel(q_with_id->UID());
+  //   if ( ! link_ptr ) {
+  //     ers::fatal(InitializationError(ERS_HERE, "CreateElink failed to provide an appropriate model for queue!"));
+  //   }
+  //   register_node( q_with_id->UID(), link_ptr);
+  //   link_ptr->init(m_block_queue_capacity);
+  //   //m_elinks[q_with_id->get_source_id()]->init(args, m_block_queue_capacity);
+  // }
+
+  for (atuo cb :modconf->get_raw_data_callbacks()) {
+    auto cb_with_id = cb->cast<appmodel::DataMoveCallbackConf>();
+    if (cb_with_id == nullptr) continue;
+    TLOG_DEBUG(TLVL_WORK_STEPS) << ": CardReader output callback is " << cb_with_id->UID();
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target callback: " << cb_with_id->UID() << " DLH number: " << cb_with_id->get_source_id();
+    auto elink = src_id_to_elink_map[cb_with_id->get_source_id()];
+    auto link_ptr = m_elinks[elink] = createElinkModel(cb_with_id->UID());
     if ( ! link_ptr ) {
       ers::fatal(InitializationError(ERS_HERE, "CreateElink failed to provide an appropriate model for queue!"));
     }
-    register_node( q_with_id->UID(), link_ptr);
+    register_node( cb_with_id->UID(), link_ptr);
     link_ptr->init(m_block_queue_capacity);
-    //m_elinks[q_with_id->get_source_id()]->init(args, m_block_queue_capacity);
   }
 
   // Router function of block to appropriate ElinkHandlers
