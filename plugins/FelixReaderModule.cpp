@@ -11,6 +11,7 @@
 #include "confmodel/DetectorStream.hpp"
 #include "confmodel/GeoId.hpp"
 
+#include "appmodel/DataMoveCallbackConf.hpp"
 #include "appmodel/DataReaderModule.hpp"
 #include "appmodel/FelixDetectorToDaqConnection.hpp"
 #include "appmodel/FelixInterface.hpp"
