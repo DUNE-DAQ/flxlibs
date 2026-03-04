@@ -62,7 +62,7 @@ dump_to_buffer(const char* data,
 
 template<class TargetStruct>
 inline std::function<void(const felix::packetformat::chunk& chunk)>
-fixsizedChunkInto(std::shared_ptr<iomanager::SenderConcept<TargetStruct>>& sink,
+fixsizedChunkInto(std::shared_ptr<std::function<void(TargetStruct&&)>>& cb,
                   std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {
@@ -84,18 +84,18 @@ fixsizedChunkInto(std::shared_ptr<iomanager::SenderConcept<TargetStruct>>& sink,
         bytes_copied_chunk += subchunk_sizes[i];
       }
       try {
-        // finally, push to sink
-        sink->send(std::move(payload), timeout);
-      } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
-        // ers::error(ParserOperationQueuePushFailure(ERS_HERE, " "));
+        (*cb)(std::move(payload));
+      } catch (const std::exception &e) {
+          TLOG() << "Caught " << e.what();
       }
+
     }
   };
 }
 
 template<class TargetStruct>
 inline std::function<void(const felix::packetformat::shortchunk& shortchunk)>
-fixsizedShortchunkInto(std::shared_ptr<iomanager::SenderConcept<TargetStruct>>& sink,
+fixsizedShortchunkInto(std::shared_ptr<std::function<void(TargetStruct&&)>>& cb,
                        std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::shortchunk& shortchunk) {
@@ -109,10 +109,9 @@ fixsizedShortchunkInto(std::shared_ptr<iomanager::SenderConcept<TargetStruct>>& 
       TargetStruct payload;
       std::memcpy(static_cast<char*>(payload), shortchunk.data, target_size);
       try {
-        // finally, push to sink
-        sink->send(std::move(payload), timeout);
-      } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
-        // ers::error(ParserOperationQueuePushFailure(ERS_HERE, " "));
+        (*cb)(std::move(payload));
+      } catch (const std::exception &e) {
+          TLOG() << "Caught " << e.what();
       }
     }
   };
@@ -120,8 +119,7 @@ fixsizedShortchunkInto(std::shared_ptr<iomanager::SenderConcept<TargetStruct>>& 
 
 template<class TargetStruct>
 inline std::function<void(const felix::packetformat::chunk& chunk)>
-fixsizedChunkViaHeap(std::shared_ptr<iomanager::SenderConcept<TargetStruct*>>& sink,
-                     // std::shared_ptr<iomanager::SenderConcept<std::unique_ptr<TargetStruct>>>& sink,
+fixsizedChunkViaHeap(std::shared_ptr<std::function<void(TargetStruct&&)>>& cb,
                      std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {
@@ -148,10 +146,9 @@ fixsizedChunkViaHeap(std::shared_ptr<iomanager::SenderConcept<TargetStruct*>>& s
         bytes_copied_chunk += subchunk_sizes[i];
       }
       try {
-        // finally, push to sink
-        sink->send(std::move(payload), timeout); // std::move(std::make_unique<TargetStruct>(payload)), timeout);
-      } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
-        // ers::error(ParserOperationQueuePushFailure(ERS_HERE, " "));
+        (*cb)(std::move(payload));
+      } catch (const std::exception &e) {
+          TLOG() << "Caught " << e.what();
       }
     }
   };
@@ -159,7 +156,7 @@ fixsizedChunkViaHeap(std::shared_ptr<iomanager::SenderConcept<TargetStruct*>>& s
 
 template<class TargetWithDatafield>
 inline std::function<void(const felix::packetformat::chunk&)>
-varsizedChunkIntoWithDatafield(std::shared_ptr<iomanager::SenderConcept<TargetWithDatafield>>& sink,
+varsizedChunkIntoWithDatafield(std::shared_ptr<std::function<void(TargetWithDatafield&&)>>& cb,
                                std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {
@@ -179,16 +176,16 @@ varsizedChunkIntoWithDatafield(std::shared_ptr<iomanager::SenderConcept<TargetWi
     }
     twd.set_data_size(bytes_copied_chunk);
     try {
-      sink->send(std::move(twd), timeout);
-    } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
-      // ers::error
+      (*cb)(std::move(twd));
+    } catch (const std::exception &e) {
+        TLOG() << "Caught " << e.what();
     }
   };
 }
 
 template<class TargetWithDatafield>
 inline std::function<void(const felix::packetformat::shortchunk&)>
-varsizedShortchunkIntoWithDatafield(std::shared_ptr<iomanager::SenderConcept<TargetWithDatafield>>& sink,
+varsizedShortchunkIntoWithDatafield(std::shared_ptr<std::function<void(TargetWithDatafield&&)>>& cb,
                                std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::shortchunk& shortchunk) {
@@ -197,15 +194,15 @@ varsizedShortchunkIntoWithDatafield(std::shared_ptr<iomanager::SenderConcept<Tar
     std::memcpy(static_cast<void*>(twd.get_data().data()), shortchunk.data, shortchunk.length);
     twd.set_data_size(shortchunk.length);
     try {
-      sink->send(std::move(twd), timeout);
-    } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
-      // ers::error
+      (*cb)(std::move(twd));
+    } catch (const std::exception &e) {
+        TLOG() << "Caught " << e.what();
     }
   };
 }
 
 inline std::function<void(const felix::packetformat::chunk& chunk)>
-varsizedChunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadoutlibs::types::VariableSizePayloadTypeAdapter>>& sink,
+varsizedChunkIntoWrapper(std::shared_ptr<std::function<void(fdreadoutlibs::types::VariableSizePayloadTypeAdapter&&)>>& cb,
                          std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {
@@ -223,15 +220,15 @@ varsizedChunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadoutlibs:
     }
     fdreadoutlibs::types::VariableSizePayloadTypeAdapter payload_wrapper(chunk_length, payload);
     try {
-      sink->send(std::move(payload_wrapper), timeout);
-    } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
-      // ers
+      (*cb)(std::move(payload_wrapper));
+    } catch (const std::exception &e) {
+        TLOG() << "Caught " << e.what();
     }
   };
 }
 
 inline std::function<void(const felix::packetformat::shortchunk& shortchunk)>
-varsizedShortchunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadoutlibs::types::VariableSizePayloadTypeAdapter>>& sink,
+varsizedShortchunkIntoWrapper(std::shared_ptr<std::function<void(fdreadoutlibs::types::VariableSizePayloadTypeAdapter&&)>>& cb,
                               std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::shortchunk& shortchunk) {
@@ -240,24 +237,24 @@ varsizedShortchunkIntoWrapper(std::shared_ptr<iomanager::SenderConcept<fdreadout
     std::memcpy(payload, shortchunk.data, shortchunk_length);
     fdreadoutlibs::types::VariableSizePayloadTypeAdapter payload_wrapper(shortchunk_length, payload);
     try {
-      sink->send(std::move(payload_wrapper), timeout);
-    } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
-      // ers
+      (*cb)(std::move(payload_wrapper));
+    } catch (const std::exception &e) {
+        TLOG() << "Caught " << e.what();
     }
   };
 }
 
 
 inline std::function<void(const felix::packetformat::chunk& chunk)>
-errorChunkIntoSink(std::shared_ptr<iomanager::SenderConcept<felix::packetformat::chunk>>& sink,
+errorChunkIntoSink(std::shared_ptr<std::function<void(felix::packetformat::chunk&&)>>& cb,
                    std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {
     try {
       auto payload = chunk;
-      sink->send(std::move(payload), timeout);
-    } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
-      // ers
+      (*cb)(std::move(payload));
+    } catch (const std::exception &e) {
+        TLOG() << "Caught " << e.what();
     }
   };
 }

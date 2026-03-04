@@ -20,6 +20,8 @@
 #include "logging/Logging.hpp"
 #include "utilities/ReusableThread.hpp"
 
+#include "datahandlinglibs/DataMoveCallbackRegistry.hpp"
+
 #include <folly/ProducerConsumerQueue.h>
 #include <nlohmann/json.hpp>
 
@@ -34,7 +36,6 @@ template<class TargetPayloadType>
 class ElinkModel : public ElinkConcept
 {
 public:
-  using sink_t = iomanager::SenderConcept<TargetPayloadType>;
   using err_sink_t = iomanager::SenderConcept<felix::packetformat::chunk>;
   using inherited = ElinkConcept;
   using data_t = nlohmann::json;
@@ -49,18 +50,6 @@ public:
     , m_parser_thread(0)
   {}
   ~ElinkModel() {}
-
-  void set_sink(const std::string& sink_name) override
-  {
-    if (m_sink_is_set) {
-      TLOG_DEBUG(5) << "ElinkModel sink is already set in initialized!";
-    } else {
-      m_sink_queue = get_iom_sender<TargetPayloadType>(sink_name);
-      m_sink_is_set = true;
-    }
-  }
-
-  std::shared_ptr<sink_t>& get_sink() { return m_sink_queue; }
 
   std::shared_ptr<err_sink_t>& get_error_sink() { return m_error_sink_queue; }
 
@@ -123,6 +112,22 @@ public:
     }
   }
 
+  void acquire_callback() override
+  {
+    if (m_callback_is_acquired) {
+      TLOG_DEBUG(5) << "SourceModel callback is already acquired!";
+    } else {
+      // Getting DataMoveCBRegistry
+      auto dmcbr = datahandlinglibs::DataMoveCallbackRegistry::get();
+      m_sink_callback = dmcbr->get_callback<TargetPayloadType>(inherited::m_sink_conf);
+      m_callback_is_acquired = true;
+    }
+  }
+
+  // Callbacks
+  bool m_callback_is_acquired{ false };
+  using sink_cb_t = std::shared_ptr<std::function<void(TargetPayloadType&&)>>;
+  sink_cb_t m_sink_callback;
 
 protected:
   void generate_opmon_data() override {
@@ -172,6 +177,7 @@ protected:
 	     
   }
 
+
 private:
   // Types
   using UniqueBlockAddrQueue = std::unique_ptr<folly::ProducerConsumerQueue<uint64_t>>; // NOLINT(build/unsigned)
@@ -182,7 +188,6 @@ private:
 
   // Sink
   bool m_sink_is_set{ false };
-  std::shared_ptr<sink_t> m_sink_queue;
   std::shared_ptr<err_sink_t> m_error_sink_queue;
 
   // blocks to process
