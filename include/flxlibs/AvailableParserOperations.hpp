@@ -83,12 +83,6 @@ fixsizedChunkInto(std::shared_ptr<std::function<void(TargetStruct&&)>>& cb,
           subchunk_data[i], subchunk_sizes[i], static_cast<void*>(&payload.data), bytes_copied_chunk, target_size);
         bytes_copied_chunk += subchunk_sizes[i];
       }
-      // try {
-      //   // finally, push to sink
-      //   sink->send(std::move(payload), timeout);
-      // } catch (const dunedaq::iomanager::TimeoutExpired& excpt) {
-      //   // ers::error(ParserOperationQueuePushFailure(ERS_HERE, " "));
-      // }
       try {
         (*cb)(std::move(payload));
       } catch (const std::exception &e) {
