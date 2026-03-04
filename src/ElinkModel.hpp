@@ -36,7 +36,6 @@ template<class TargetPayloadType>
 class ElinkModel : public ElinkConcept
 {
 public:
-  using sink_t = iomanager::SenderConcept<TargetPayloadType>;
   using err_sink_t = iomanager::SenderConcept<felix::packetformat::chunk>;
   using inherited = ElinkConcept;
   using data_t = nlohmann::json;
@@ -51,18 +50,6 @@ public:
     , m_parser_thread(0)
   {}
   ~ElinkModel() {}
-
-  void set_sink(const std::string& sink_name) override
-  {
-    if (m_sink_is_set) {
-      TLOG_DEBUG(5) << "ElinkModel sink is already set in initialized!";
-    } else {
-      m_sink_queue = get_iom_sender<TargetPayloadType>(sink_name);
-      m_sink_is_set = true;
-    }
-  }
-
-  std::shared_ptr<sink_t>& get_sink() { return m_sink_queue; }
 
   std::shared_ptr<err_sink_t>& get_error_sink() { return m_error_sink_queue; }
 
@@ -201,7 +188,6 @@ private:
 
   // Sink
   bool m_sink_is_set{ false };
-  std::shared_ptr<sink_t> m_sink_queue;
   std::shared_ptr<err_sink_t> m_error_sink_queue;
 
   // blocks to process

@@ -120,7 +120,6 @@ fixsizedShortchunkInto(std::shared_ptr<std::function<void(TargetStruct&&)>>& cb,
 template<class TargetStruct>
 inline std::function<void(const felix::packetformat::chunk& chunk)>
 fixsizedChunkViaHeap(std::shared_ptr<std::function<void(TargetStruct&&)>>& cb,
-                     // std::shared_ptr<iomanager::SenderConcept<std::unique_ptr<TargetStruct>>>& sink,
                      std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {

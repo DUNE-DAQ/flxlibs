@@ -46,7 +46,6 @@ public:
   ElinkConcept& operator=(ElinkConcept&&) = delete;      ///< ElinkConcept is not move-assignable
 
   virtual void init(const size_t block_queue_capacity) = 0;
-  virtual void set_sink(const std::string& sink_name) = 0;
   virtual void acquire_callback() = 0;
   
   virtual void conf(size_t block_size, bool is_32b_trailers) = 0;

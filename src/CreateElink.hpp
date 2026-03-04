@@ -74,10 +74,8 @@ createElinkModel(const appmodel::DataMoveCallbackConf* conf)
   if (datatype.find("PDSStreamFrame") != std::string::npos) {
     // PDS specific char arrays
     auto elink_model = std::make_unique<ElinkModel<fdreadoutlibs::types::DAPHNEStreamSuperChunkTypeAdapter>>();
-    // elink_model->set_sink(conn_uid);
     elink_model->set_sink_config(conf);
     auto& parser = elink_model->get_parser();
-    // auto& sink = elink_model->get_sink();
     auto& cb = elink_model->m_sink_callback;
     parser.process_chunk_func = parsers::fixsizedChunkInto<fdreadoutlibs::types::DAPHNEStreamSuperChunkTypeAdapter>(cb);
     return elink_model;
