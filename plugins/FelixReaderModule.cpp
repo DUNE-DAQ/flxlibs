@@ -127,13 +127,13 @@ FelixReaderModule::init(const std::shared_ptr<appfwk::ConfigurationManager> mcfg
   //   //m_elinks[q_with_id->get_source_id()]->init(args, m_block_queue_capacity);
   // }
 
-  for (atuo cb :modconf->get_raw_data_callbacks()) {
+  for (auto cb :modconf->get_raw_data_callbacks()) {
     auto cb_with_id = cb->cast<appmodel::DataMoveCallbackConf>();
     if (cb_with_id == nullptr) continue;
     TLOG_DEBUG(TLVL_WORK_STEPS) << ": CardReader output callback is " << cb_with_id->UID();
     TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target callback: " << cb_with_id->UID() << " DLH number: " << cb_with_id->get_source_id();
     auto elink = src_id_to_elink_map[cb_with_id->get_source_id()];
-    auto link_ptr = m_elinks[elink] = createElinkModel(cb_with_id->UID());
+    auto link_ptr = m_elinks[elink] = createElinkModel(cb_with_id);
     if ( ! link_ptr ) {
       ers::fatal(InitializationError(ERS_HERE, "CreateElink failed to provide an appropriate model for queue!"));
     }
@@ -217,6 +217,7 @@ FelixReaderModule::do_start(const CommandData_t& /*args*/)
 {
     m_card_wrapper->start();
     for (auto& [tag, elink] : m_elinks) {
+      elink->acquire_callback();
       elink->start();
     }
 }

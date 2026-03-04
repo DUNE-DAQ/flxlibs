@@ -15,6 +15,7 @@
 #include "appfwk/DAQModule.hpp"
 #include "packetformat/detail/block_parser.hpp"
 
+#include "appmodel/DataMoveCallbackConf.hpp"
 
 #include <memory>
 #include <sstream>
@@ -46,6 +47,8 @@ public:
 
   virtual void init(const size_t block_queue_capacity) = 0;
   virtual void set_sink(const std::string& sink_name) = 0;
+  virtual void acquire_callback() = 0;
+  
   virtual void conf(size_t block_size, bool is_32b_trailers) = 0;
   virtual void start() = 0;
   virtual void stop() = 0;
@@ -54,6 +57,11 @@ public:
 
   DefaultParserImpl& get_parser() { return std::ref(m_parser_impl); }
 
+  void set_sink_config(const appmodel::DataMoveCallbackConf* sink_conf) 
+  { 
+    m_sink_conf = sink_conf; 
+  }
+  
   void set_ids(int card, int slr, int id, int tag)
   {
     m_card_id = card;
@@ -75,7 +83,9 @@ public:
 
   }
 
-protected:
+  const appmodel::DataMoveCallbackConf* m_sink_conf;
+
+  protected:
   // Block Parser
   DefaultParserImpl m_parser_impl;
   std::unique_ptr<felix::packetformat::BlockParser<DefaultParserImpl>> m_parser;

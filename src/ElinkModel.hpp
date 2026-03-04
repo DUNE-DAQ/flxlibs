@@ -20,6 +20,8 @@
 #include "logging/Logging.hpp"
 #include "utilities/ReusableThread.hpp"
 
+#include "datahandlinglibs/DataMoveCallbackRegistry.hpp"
+
 #include <folly/ProducerConsumerQueue.h>
 #include <nlohmann/json.hpp>
 
@@ -123,6 +125,22 @@ public:
     }
   }
 
+  void acquire_callback() override
+  {
+    if (m_callback_is_acquired) {
+      TLOG_DEBUG(5) << "SourceModel callback is already acquired!";
+    } else {
+      // Getting DataMoveCBRegistry
+      auto dmcbr = datahandlinglibs::DataMoveCallbackRegistry::get();
+      m_sink_callback = dmcbr->get_callback<TargetPayloadType>(inherited::m_sink_conf);
+      m_callback_is_acquired = true;
+    }
+  }
+
+  // Callbacks
+  bool m_callback_is_acquired{ false };
+  using sink_cb_t = std::shared_ptr<std::function<void(TargetPayloadType&&)>>;
+  sink_cb_t m_sink_callback;
 
 protected:
   void generate_opmon_data() override {
@@ -171,6 +189,7 @@ protected:
 	       { "tag", std::to_string(m_link_tag) } } );
 	     
   }
+
 
 private:
   // Types
