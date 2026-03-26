@@ -11,6 +11,7 @@
 #include "confmodel/DetectorStream.hpp"
 #include "confmodel/GeoId.hpp"
 
+#include "appmodel/DataMoveCallbackConf.hpp"
 #include "appmodel/DataReaderModule.hpp"
 #include "appmodel/FelixDetectorToDaqConnection.hpp"
 #include "appmodel/FelixInterface.hpp"
@@ -109,21 +110,19 @@ FelixReaderModule::init(const std::shared_ptr<appfwk::ConfigurationManager> mcfg
         m_block_size = flx_if->get_dma_block_size() * m_1kb_block_size;
         m_chunk_trailer_size = flx_if->get_chunk_trailer_size();
   }
-  
 
-  for (auto qi : modconf->get_outputs()) {
-    auto q_with_id = qi->cast<confmodel::QueueWithSourceId>();
-    if (q_with_id == nullptr) continue;
-    TLOG_DEBUG(TLVL_WORK_STEPS) << ": CardReader output queue is " << q_with_id->UID();
-    TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target queue: " << q_with_id->UID() << " DLH number: " << q_with_id->get_source_id();
-    auto elink = src_id_to_elink_map[q_with_id->get_source_id()];
-    auto link_ptr = m_elinks[elink] = createElinkModel(q_with_id->UID());
+  for (auto cb :modconf->get_raw_data_callbacks()) {
+    auto cb_with_id = cb->cast<appmodel::DataMoveCallbackConf>();
+    if (cb_with_id == nullptr) continue;
+    TLOG_DEBUG(TLVL_WORK_STEPS) << ": CardReader output callback is " << cb_with_id->UID();
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target callback: " << cb_with_id->UID() << " DLH number: " << cb_with_id->get_source_id();
+    auto elink = src_id_to_elink_map[cb_with_id->get_source_id()];
+    auto link_ptr = m_elinks[elink] = createElinkModel(cb_with_id);
     if ( ! link_ptr ) {
       ers::fatal(InitializationError(ERS_HERE, "CreateElink failed to provide an appropriate model for queue!"));
     }
-    register_node( q_with_id->UID(), link_ptr);
+    register_node( cb_with_id->UID(), link_ptr);
     link_ptr->init(m_block_queue_capacity);
-    //m_elinks[q_with_id->get_source_id()]->init(args, m_block_queue_capacity);
   }
 
   // Router function of block to appropriate ElinkHandlers
@@ -202,6 +201,7 @@ FelixReaderModule::do_start(const CommandData_t& /*args*/)
 {
     m_card_wrapper->start();
     for (auto& [tag, elink] : m_elinks) {
+      elink->acquire_callback();
       elink->start();
     }
 }
