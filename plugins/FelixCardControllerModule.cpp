@@ -77,7 +77,7 @@ FelixCardControllerModule::init(const std::shared_ptr<appfwk::ConfigurationManag
     std::vector<const appmodel::FelixDataSender*> flx_senders;
     for( auto ds : det_senders) {
 
-      if (ds->is_disabled(*session))
+      if (ds->is_excluded(*session))
         continue;
 
       flx_senders.push_back(ds->cast<appmodel::FelixDataSender>());

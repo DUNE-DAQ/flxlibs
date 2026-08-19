@@ -90,7 +90,7 @@ FelixReaderModule::init(const std::shared_ptr<appfwk::ConfigurationManager> mcfg
   if (!det_senders.empty()) { // Redundant test as schema forbids 0 senders
     for (const auto& data_sender : det_senders) {
       // Check if sender enabled
-      if (data_sender->is_disabled(*session)) {
+      if (data_sender->is_excluded(*session)) {
         continue;
       }
       for (const auto& stream : data_sender->get_streams()) {
