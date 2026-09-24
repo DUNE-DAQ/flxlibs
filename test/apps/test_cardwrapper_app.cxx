@@ -11,17 +11,17 @@
 
 #include "logging/Logging.hpp"
 
-#include "regmap/regmap.h"
 #include "packetformat/block_format.hpp"
+#include "regmap/regmap.h"
 
 #include <nlohmann/json.hpp>
 
 #include <atomic>
 #include <chrono>
+#include <ios>
 #include <map>
 #include <memory>
 #include <string>
-#include <ios>
 
 using namespace dunedaq::flxlibs;
 

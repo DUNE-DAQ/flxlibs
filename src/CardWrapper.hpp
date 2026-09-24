@@ -8,8 +8,8 @@
 #ifndef FLXLIBS_SRC_CARDWRAPPER_HPP_
 #define FLXLIBS_SRC_CARDWRAPPER_HPP_
 
-//#include "flxlibs/felixcardreader/Nljs.hpp"
-//#include "flxlibs/felixcardreader/Structs.hpp"
+// #include "flxlibs/felixcardreader/Nljs.hpp"
+// #include "flxlibs/felixcardreader/Structs.hpp"
 
 #include "appmodel/FelixInterface.hpp"
 #include "utilities/ReusableThread.hpp"
@@ -33,7 +33,7 @@ public:
    * @brief CardWrapper Constructor
    * @param name Instance name for this CardWrapper instance
    */
-  CardWrapper(const appmodel::FelixInterface * cfg, std::vector<unsigned int>);
+  CardWrapper(const appmodel::FelixInterface* cfg, std::vector<unsigned int>);
   ~CardWrapper();
   CardWrapper(const CardWrapper&) = delete;            ///< CardWrapper is not copy-constructible
   CardWrapper& operator=(const CardWrapper&) = delete; ///< CardWrapper is not copy-assignable
@@ -54,7 +54,6 @@ public:
   }
 
 private:
-  
   // Constants
   static constexpr size_t m_max_links_per_card = 6;
   // static constexpr size_t m_margin_blocks = 4;
@@ -75,19 +74,19 @@ private:
   void read_current_address();
 
   // Configuration and internals
-  
+
   std::atomic<bool> m_run_marker;
   bool m_configured{ false };
   uint8_t m_card_id;      // NOLINT
   uint8_t m_logical_unit; // NOLINT
   std::string m_card_id_str;
-  uint8_t m_dma_id;         // NOLINT
-  size_t m_margin_blocks;   // NOLINT
-  size_t m_block_threshold; // NOLINT
-  bool m_interrupt_mode;    // NOLINT
-  size_t m_poll_time;       // NOLINT
-  uint8_t m_numa_id;        // NOLINT
-  std::vector<unsigned int> m_links_enabled;      // NOLINT
+  uint8_t m_dma_id;                          // NOLINT
+  size_t m_margin_blocks;                    // NOLINT
+  size_t m_block_threshold;                  // NOLINT
+  bool m_interrupt_mode;                     // NOLINT
+  size_t m_poll_time;                        // NOLINT
+  uint8_t m_numa_id;                         // NOLINT
+  std::vector<unsigned int> m_links_enabled; // NOLINT
   std::string m_info_str;
 
   // Card object

@@ -8,10 +8,9 @@
 #ifndef FLXLIBS_PLUGINS_FELIXCARDREADER_HPP_
 #define FLXLIBS_PLUGINS_FELIXCARDREADER_HPP_
 
-
 // From appfwk
-#include "appfwk/DAQModule.hpp"
 #include "appfwk/ConfigurationManager.hpp"
+#include "appfwk/DAQModule.hpp"
 
 #include "utilities/WorkerThread.hpp"
 
@@ -46,7 +45,6 @@ public:
   void init(const std::shared_ptr<appfwk::ConfigurationManager> mcfg) override;
 
 private:
- 
   // Constants
   static constexpr int m_elink_multiplier = 64;
   static constexpr size_t m_block_queue_capacity = 1000000;
@@ -60,7 +58,7 @@ private:
 
   // Configuration
   bool m_configured;
-  
+
   int m_card_id;
   int m_logical_unit;
 

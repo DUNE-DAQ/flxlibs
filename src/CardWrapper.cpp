@@ -33,7 +33,7 @@ enum
 namespace dunedaq {
 namespace flxlibs {
 
-CardWrapper::CardWrapper(const appmodel::FelixInterface * cfg, std::vector<unsigned int> enabled_links)
+CardWrapper::CardWrapper(const appmodel::FelixInterface* cfg, std::vector<unsigned int> enabled_links)
   : m_run_marker{ false }
   , m_card_id(cfg->get_card())
   , m_logical_unit(cfg->get_slr())
@@ -53,7 +53,7 @@ CardWrapper::CardWrapper(const appmodel::FelixInterface * cfg, std::vector<unsig
 
   std::ostringstream tnoss;
   tnoss << m_dma_processor_name << "-" << std::to_string(m_card_id); // append physical card id
-  m_dma_processor.set_name(tnoss.str(), m_logical_unit); // set_name appends logical unit id
+  m_dma_processor.set_name(tnoss.str(), m_logical_unit);             // set_name appends logical unit id
 
   std::ostringstream cardoss;
   cardoss << "[id:" << std::to_string(m_card_id) << " slr:" << std::to_string(m_logical_unit) << "]";
@@ -72,7 +72,6 @@ CardWrapper::~CardWrapper()
   close_card();
   TLOG_DEBUG(TLVL_ENTER_EXIT_METHODS) << "CardWrapper destroyed.";
 }
-
 
 void
 CardWrapper::configure()
@@ -155,8 +154,9 @@ CardWrapper::open_card()
     m_card_mutex.lock();
     auto absolute_card_id = m_card_id + m_logical_unit;
     u_int current_lock_mask = m_flx_card->get_lock_mask(absolute_card_id);
-    TLOG_DEBUG(TLVL_WORK_STEPS) << "Current lock mask for FELIX card " << m_card_id_str << " mask:" << int(current_lock_mask);
-    u_int to_lock_mask = u_int(m_dma_id+1);
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "Current lock mask for FELIX card " << m_card_id_str
+                                << " mask:" << int(current_lock_mask);
+    u_int to_lock_mask = u_int(m_dma_id + 1);
     if (current_lock_mask & to_lock_mask) { // LOCK_NONE=0, LOCK_DMA0=1, LOCK_DMA1=2 from FlxCard.h
       ers::fatal(flxlibs::CardError(ERS_HERE, "FELIX card's DMA is locked by another process!"));
       exit(EXIT_FAILURE);

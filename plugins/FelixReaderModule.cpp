@@ -6,20 +6,20 @@
  * received with this code.
  */
 #include "confmodel/Connection.hpp"
-#include "confmodel/QueueWithSourceId.hpp"
 #include "confmodel/DetDataSender.hpp"
 #include "confmodel/DetectorStream.hpp"
 #include "confmodel/GeoId.hpp"
+#include "confmodel/QueueWithSourceId.hpp"
 
 #include "appmodel/DataMoveCallbackConf.hpp"
 #include "appmodel/DataReaderModule.hpp"
+#include "appmodel/FelixDataSender.hpp"
 #include "appmodel/FelixDetectorToDaqConnection.hpp"
 #include "appmodel/FelixInterface.hpp"
-#include "appmodel/FelixDataSender.hpp"
 
 #include "CreateElink.hpp"
-#include "FelixReaderModule.hpp"
 #include "FelixIssues.hpp"
+#include "FelixReaderModule.hpp"
 
 #include "logging/Logging.hpp"
 
@@ -62,7 +62,7 @@ FelixReaderModule::FelixReaderModule(const std::string& name)
 //, block_ptr_sinks_{ }
 
 {
- 
+
   register_command("conf", &FelixReaderModule::do_configure);
   register_command("start", &FelixReaderModule::do_start);
   register_command("stop_trigger_sources", &FelixReaderModule::do_stop);
@@ -71,8 +71,8 @@ FelixReaderModule::FelixReaderModule(const std::string& name)
 void
 FelixReaderModule::init(const std::shared_ptr<appfwk::ConfigurationManager> mcfg)
 {
-  //auto ini = args.get<appfwk::app::ModInit>();
-  
+  // auto ini = args.get<appfwk::app::ModInit>();
+
   auto modconf = mcfg->get_dal<appmodel::DataReaderModule>(get_name());
   auto session = mcfg->get_session();
 
@@ -80,9 +80,9 @@ FelixReaderModule::init(const std::shared_ptr<appfwk::ConfigurationManager> mcfg
     throw InitializationError(ERS_HERE, "FLX Data Reader does not have a unique associated flx_if");
   }
 
-  const auto  det_conn = modconf->get_connections()[0]->cast<appmodel::FelixDetectorToDaqConnection>();
+  const auto det_conn = modconf->get_connections()[0]->cast<appmodel::FelixDetectorToDaqConnection>();
 
-// Create a source_id to local elink map
+  // Create a source_id to local elink map
   std::map<uint, uint> src_id_to_elink_map;
   auto flx_if = det_conn->receiver()->cast<appmodel::FelixInterface>();
   auto det_senders = det_conn->get_felix_senders();
@@ -97,31 +97,33 @@ FelixReaderModule::init(const std::shared_ptr<appfwk::ConfigurationManager> mcfg
         src_id_to_elink_map[stream->get_source_id()] = data_sender->get_link();
       }
 
-      TLOG(TLVL_BOOKKEEPING) << "Registering link: " << (uint32_t)data_sender->get_link() << " / " << m_links_enabled.size();
+      TLOG(TLVL_BOOKKEEPING) << "Registering link: " << (uint32_t)data_sender->get_link() << " / "
+                             << m_links_enabled.size();
       m_links_enabled.push_back(data_sender->get_link());
-
     }
   }
   m_num_links = m_links_enabled.size();
   if (flx_if != nullptr) {
-        m_card_wrapper = std::make_unique<CardWrapper>(flx_if, m_links_enabled);
-        m_card_id = flx_if->get_card();
-        m_logical_unit = flx_if->get_slr();
-        m_block_size = flx_if->get_dma_block_size() * m_1kb_block_size;
-        m_chunk_trailer_size = flx_if->get_chunk_trailer_size();
+    m_card_wrapper = std::make_unique<CardWrapper>(flx_if, m_links_enabled);
+    m_card_id = flx_if->get_card();
+    m_logical_unit = flx_if->get_slr();
+    m_block_size = flx_if->get_dma_block_size() * m_1kb_block_size;
+    m_chunk_trailer_size = flx_if->get_chunk_trailer_size();
   }
 
-  for (auto cb :modconf->get_raw_data_callbacks()) {
+  for (auto cb : modconf->get_raw_data_callbacks()) {
     auto cb_with_id = cb->cast<appmodel::DataMoveCallbackConf>();
-    if (cb_with_id == nullptr) continue;
+    if (cb_with_id == nullptr)
+      continue;
     TLOG_DEBUG(TLVL_WORK_STEPS) << ": CardReader output callback is " << cb_with_id->UID();
-    TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target callback: " << cb_with_id->UID() << " DLH number: " << cb_with_id->get_source_id();
+    TLOG_DEBUG(TLVL_WORK_STEPS) << "Creating ElinkModel for target callback: " << cb_with_id->UID()
+                                << " DLH number: " << cb_with_id->get_source_id();
     auto elink = src_id_to_elink_map[cb_with_id->get_source_id()];
     auto link_ptr = m_elinks[elink] = createElinkModel(cb_with_id);
-    if ( ! link_ptr ) {
+    if (!link_ptr) {
       ers::fatal(InitializationError(ERS_HERE, "CreateElink failed to provide an appropriate model for queue!"));
     }
-    register_node( cb_with_id->UID(), link_ptr);
+    register_node(cb_with_id->UID(), link_ptr);
     link_ptr->init(m_block_queue_capacity);
   }
 
@@ -157,64 +159,63 @@ FelixReaderModule::init(const std::shared_ptr<appfwk::ConfigurationManager> mcfg
 void
 FelixReaderModule::do_configure(const CommandData_t& /*args*/)
 {
-   
-    bool is_32b_trailer = false;
 
-    TLOG(TLVL_BOOKKEEPING) << "Number of felix links specified in configuration: " << m_links_enabled.size();
-    TLOG(TLVL_BOOKKEEPING) << "Number of data link handlers: " << m_elinks.size();
+  bool is_32b_trailer = false;
 
-    // Config checks
-    if (m_num_links != m_elinks.size()) {
-      ers::fatal(ElinkConfigurationInconsistency(ERS_HERE, m_links_enabled.size()));
-    }
-    if (m_block_size % m_1kb_block_size != 0) {
-      ers::fatal(BlockSizeConfigurationInconsistency(ERS_HERE, m_block_size));
-    } else if (m_block_size != m_1kb_block_size && m_chunk_trailer_size != m_32b_trailer_size) {
-      ers::fatal(BlockSizeConfigurationInconsistency(ERS_HERE, m_block_size));
-    } else if (m_chunk_trailer_size == m_32b_trailer_size) {
-      is_32b_trailer = true;
-    }
+  TLOG(TLVL_BOOKKEEPING) << "Number of felix links specified in configuration: " << m_links_enabled.size();
+  TLOG(TLVL_BOOKKEEPING) << "Number of data link handlers: " << m_elinks.size();
 
-    // Configure components
-    TLOG(TLVL_WORK_STEPS) << "Card ID: " << m_card_id;
-    TLOG(TLVL_WORK_STEPS) << "Configuring components with Block size:" << m_block_size
-                          << " & trailer size: " << m_chunk_trailer_size;
-    m_card_wrapper->configure();
-    // get linkids defined by queues
-    std::vector<int> linkids;
-    for(auto& [id, elink] : m_elinks) {
-      linkids.push_back(id);
-    }
-    // loop through all elinkmodels, change the linkids to link tags and configure
-    for (unsigned i = 0; i < m_num_links; ++i) {
-      auto elink = m_elinks.extract(linkids[i]);
-      auto tag = m_links_enabled[i] * m_elink_multiplier;
-      elink.key() = tag;
-      m_elinks.insert(std::move(elink));
-      m_elinks[tag]->set_ids(m_card_id, m_logical_unit, m_links_enabled[i], tag);
-      m_elinks[tag]->conf(m_block_size, is_32b_trailer);
-    }
+  // Config checks
+  if (m_num_links != m_elinks.size()) {
+    ers::fatal(ElinkConfigurationInconsistency(ERS_HERE, m_links_enabled.size()));
+  }
+  if (m_block_size % m_1kb_block_size != 0) {
+    ers::fatal(BlockSizeConfigurationInconsistency(ERS_HERE, m_block_size));
+  } else if (m_block_size != m_1kb_block_size && m_chunk_trailer_size != m_32b_trailer_size) {
+    ers::fatal(BlockSizeConfigurationInconsistency(ERS_HERE, m_block_size));
+  } else if (m_chunk_trailer_size == m_32b_trailer_size) {
+    is_32b_trailer = true;
+  }
+
+  // Configure components
+  TLOG(TLVL_WORK_STEPS) << "Card ID: " << m_card_id;
+  TLOG(TLVL_WORK_STEPS) << "Configuring components with Block size:" << m_block_size
+                        << " & trailer size: " << m_chunk_trailer_size;
+  m_card_wrapper->configure();
+  // get linkids defined by queues
+  std::vector<int> linkids;
+  for (auto& [id, elink] : m_elinks) {
+    linkids.push_back(id);
+  }
+  // loop through all elinkmodels, change the linkids to link tags and configure
+  for (unsigned i = 0; i < m_num_links; ++i) {
+    auto elink = m_elinks.extract(linkids[i]);
+    auto tag = m_links_enabled[i] * m_elink_multiplier;
+    elink.key() = tag;
+    m_elinks.insert(std::move(elink));
+    m_elinks[tag]->set_ids(m_card_id, m_logical_unit, m_links_enabled[i], tag);
+    m_elinks[tag]->conf(m_block_size, is_32b_trailer);
+  }
 }
 
 void
 FelixReaderModule::do_start(const CommandData_t& /*args*/)
 {
-    m_card_wrapper->start();
-    for (auto& [tag, elink] : m_elinks) {
-      elink->acquire_callback();
-      elink->start();
-    }
+  m_card_wrapper->start();
+  for (auto& [tag, elink] : m_elinks) {
+    elink->acquire_callback();
+    elink->start();
+  }
 }
 
 void
 FelixReaderModule::do_stop(const CommandData_t& /*args*/)
 {
-    m_card_wrapper->stop();
-    for (auto& [tag, elink] : m_elinks) {
-      elink->stop();
-    }
+  m_card_wrapper->stop();
+  for (auto& [tag, elink] : m_elinks) {
+    elink->stop();
+  }
 }
-
 
 } // namespace flxlibs
 } // namespace dunedaq

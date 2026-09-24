@@ -10,12 +10,11 @@
 #include "FelixCardControllerModule.hpp"
 #include "FelixIssues.hpp"
 
-#include "confmodel/DetectorToDaqConnection.hpp"
 #include "appmodel/FelixCardControllerModule.hpp"
-#include "appmodel/FelixInterface.hpp"
 #include "appmodel/FelixDataSender.hpp"
 #include "appmodel/FelixDetectorToDaqConnection.hpp"
-
+#include "appmodel/FelixInterface.hpp"
+#include "confmodel/DetectorToDaqConnection.hpp"
 
 #include "logging/Logging.hpp"
 
@@ -25,8 +24,8 @@
 #include <iomanip>
 #include <memory>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 /**
  * @brief Name used by TRACE TLOG calls from this source file
@@ -47,7 +46,8 @@ namespace dunedaq {
 namespace flxlibs {
 
 FelixCardControllerModule::FelixCardControllerModule(const std::string& name)
-  : DAQModule(name), m_cfg(nullptr)
+  : DAQModule(name)
+  , m_cfg(nullptr)
 {
 
   register_command("conf", &FelixCardControllerModule::do_configure);
@@ -60,14 +60,15 @@ FelixCardControllerModule::FelixCardControllerModule(const std::string& name)
 }
 
 void
-FelixCardControllerModule::init(const std::shared_ptr<appfwk::ConfigurationManager> cfgMgr) {
-  
+FelixCardControllerModule::init(const std::shared_ptr<appfwk::ConfigurationManager> cfgMgr)
+{
+
   m_cfg = cfgMgr->get_dal<appmodel::FelixCardControllerModule>(get_name());
   auto session = cfgMgr->get_session();
 
   auto det_connections = m_cfg->get_controls();
 
-  for( auto det_conn : det_connections )  {
+  for (auto det_conn : det_connections) {
 
     // Extract felix infos
     auto flx_if = det_conn->receiver()->cast<appmodel::FelixInterface>();
@@ -75,7 +76,7 @@ FelixCardControllerModule::init(const std::shared_ptr<appfwk::ConfigurationManag
     auto det_senders = det_conn->senders();
 
     std::vector<const appmodel::FelixDataSender*> flx_senders;
-    for( auto ds : det_senders) {
+    for (auto ds : det_senders) {
 
       if (ds->is_excluded(*session))
         continue;
@@ -83,13 +84,13 @@ FelixCardControllerModule::init(const std::shared_ptr<appfwk::ConfigurationManag
       flx_senders.push_back(ds->cast<appmodel::FelixDataSender>());
     }
 
-    uint32_t id = flx_if->get_card()+flx_if->get_slr();
+    uint32_t id = flx_if->get_card() + flx_if->get_slr();
 
     auto cw_p = std::make_shared<CardControllerWrapper>(id, flx_if, flx_senders);
     m_card_wrappers[id] = cw_p;
-    register_node( fmt::format("controller-{}", id), cw_p);
+    register_node(fmt::format("controller-{}", id), cw_p);
 
-    if(m_card_wrappers.size() == 1) {
+    if (m_card_wrappers.size() == 1) {
       // Do the init only for the first device (whole card)
       m_card_wrappers.begin()->second->init();
     }
@@ -100,7 +101,7 @@ void
 FelixCardControllerModule::do_configure(const CommandData_t& /*args*/)
 {
 
-  for( auto const & [id, cw ] : m_card_wrappers ) {
+  for (auto const& [id, cw] : m_card_wrappers) {
     uint64_t aligned = cw->get_register(REG_GBT_ALIGNMENT_DONE);
     cw->configure(m_cfg->get_super_chunk_size(), m_cfg->get_emu_fanout());
     cw->check_alignment(aligned);

@@ -8,8 +8,8 @@
 #ifndef FLXLIBS_SRC_CARDCONTROLLERWRAPPER_HPP_
 #define FLXLIBS_SRC_CARDCONTROLLERWRAPPER_HPP_
 
-#include "opmonlib/MonitorableObject.hpp"
 #include "flxcard/FlxCard.h"
+#include "opmonlib/MonitorableObject.hpp"
 
 #include <nlohmann/json.hpp>
 
@@ -19,8 +19,8 @@
 
 namespace dunedaq {
 namespace appmodel {
-  class FelixInterface;
-  class FelixDataSender;
+class FelixInterface;
+class FelixDataSender;
 }
 namespace flxlibs {
 
@@ -30,7 +30,9 @@ public:
   /**
    * @brief CardControllerWrapper Constructor
    */
-  CardControllerWrapper(uint32_t device_id, const appmodel::FelixInterface * flx_cfg, const std::vector<const appmodel::FelixDataSender*>& flx_senders);
+  CardControllerWrapper(uint32_t device_id,
+                        const appmodel::FelixInterface* flx_cfg,
+                        const std::vector<const appmodel::FelixDataSender*>& flx_senders);
   ~CardControllerWrapper();
   CardControllerWrapper(const CardControllerWrapper&) = delete;            ///< Not copy-constructible
   CardControllerWrapper& operator=(const CardControllerWrapper&) = delete; ///< Not copy-assignable
@@ -50,16 +52,14 @@ public:
 
 protected:
   void generate_opmon_data() override;
-  
-private:
 
+private:
   // Card
   void open_card();
   void close_card();
 
   // Card object
   uint32_t m_device_id;
-
 
   using UniqueFlxCard = std::unique_ptr<FlxCard>;
 
