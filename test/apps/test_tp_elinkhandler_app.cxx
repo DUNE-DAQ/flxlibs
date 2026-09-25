@@ -264,4 +264,4 @@ main(int argc, char* argv[])
 
   TLOG() << "Exiting.";
   return 0;
-}
+} //NOLINT
