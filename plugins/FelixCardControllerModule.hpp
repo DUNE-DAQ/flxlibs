@@ -33,15 +33,18 @@ class FelixCardControllerModule : public dunedaq::appfwk::DAQModule
 public:
   explicit FelixCardControllerModule(const std::string& name);
 
-  FelixCardControllerModule(const FelixCardControllerModule&) = delete; ///< FelixCardControllerModule is not copy-constructible
-  FelixCardControllerModule& operator=(const FelixCardControllerModule&) = delete; ///< FelixCardControllerModule is not copy-assignable
-  FelixCardControllerModule(FelixCardControllerModule&&) = delete;            ///< FelixCardControllerModule is not move-constructible
-  FelixCardControllerModule& operator=(FelixCardControllerModule&&) = delete; ///< FelixCardControllerModule is not move-assignable
+  FelixCardControllerModule(const FelixCardControllerModule&) =
+    delete; ///< FelixCardControllerModule is not copy-constructible
+  FelixCardControllerModule& operator=(const FelixCardControllerModule&) =
+    delete; ///< FelixCardControllerModule is not copy-assignable
+  FelixCardControllerModule(FelixCardControllerModule&&) =
+    delete; ///< FelixCardControllerModule is not move-constructible
+  FelixCardControllerModule& operator=(FelixCardControllerModule&&) =
+    delete; ///< FelixCardControllerModule is not move-assignable
 
   void init(const std::shared_ptr<appfwk::ConfigurationManager> cfgMgr) override;
 
 private:
-
   // Commands
   void do_configure(const CommandData_t& args);
   void get_reg(const CommandData_t& args);
@@ -53,7 +56,7 @@ private:
   // Configuration
   const appmodel::FelixCardControllerModule* m_cfg;
   // FELIX Card
-  std::map<uint32_t, std::shared_ptr<CardControllerWrapper> > m_card_wrappers;
+  std::map<uint32_t, std::shared_ptr<CardControllerWrapper>> m_card_wrappers;
 };
 
 } // namespace flxlibs

@@ -14,7 +14,7 @@
 
 #include "packetformat/block_format.hpp"
 
-//#include "appfwk/DAQModuleHelper.hpp"
+// #include "appfwk/DAQModuleHelper.hpp"
 #include "iomanager/IOManager.hpp"
 #include "iomanager/Sender.hpp"
 #include "logging/Logging.hpp"
@@ -48,7 +48,8 @@ public:
     : ElinkConcept()
     , m_run_marker{ false }
     , m_parser_thread(0)
-  {}
+  {
+  }
   ~ElinkModel() {}
 
   std::shared_ptr<err_sink_t>& get_error_sink() { return m_error_sink_queue; }
@@ -130,7 +131,8 @@ public:
   sink_cb_t m_sink_callback;
 
 protected:
-  void generate_opmon_data() override {
+  void generate_opmon_data() override
+  {
 
     opmon::CardReaderInfo info;
     auto now = std::chrono::high_resolution_clock::now();
@@ -138,13 +140,13 @@ protected:
 
     double seconds = std::chrono::duration_cast<std::chrono::microseconds>(now - m_t0).count() / 1000000.;
 
-    info.set_num_short_chunks_processed( stats.short_ctr.exchange(0) );
-    info.set_num_chunks_processed( stats.chunk_ctr.exchange(0) );
+    info.set_num_short_chunks_processed(stats.short_ctr.exchange(0));
+    info.set_num_chunks_processed(stats.chunk_ctr.exchange(0));
     info.set_num_subchunks_processed(stats.subchunk_ctr.exchange(0));
     info.set_num_blocks_processed(stats.block_ctr.exchange(0));
 
-    info.set_rate_blocks_processed(info.num_blocks_processed() / seconds / 1000. );
-    info.set_rate_chunks_processed(info.num_chunks_processed() / seconds / 1000. );
+    info.set_rate_blocks_processed(info.num_blocks_processed() / seconds / 1000.);
+    info.set_rate_chunks_processed(info.num_chunks_processed() / seconds / 1000.);
 
     info.set_num_short_chunks_processed_with_error(stats.error_short_ctr.exchange(0));
     info.set_num_chunks_processed_with_error(stats.error_chunk_ctr.exchange(0));
@@ -154,29 +156,26 @@ protected:
     info.set_num_subchunk_trunc_errors(stats.subchunk_trunc_error_ctr.exchange(0));
     info.set_num_subchunk_errors(stats.subchunk_error_ctr.exchange(0));
 
-
     TLOG_DEBUG(2) << inherited::m_elink_str // Move to TLVL_TAKE_NOTE from readout
-		  << " Parser stats ->"
-		  << " Blocks: " << info.num_blocks_processed() << " Block rate: " << info.rate_blocks_processed()
-		  << " [kHz]"
-		  << " Chunks: " << info.num_chunks_processed() << " Chunk rate: " << info.rate_chunks_processed()
-		  << " [kHz]"
-		  << " Shorts: " << info.num_short_chunks_processed() << " Subchunks:" << info.num_subchunks_processed()
-		  << " Error Chunks: " << info.num_chunks_processed_with_error()
-		  << " Error Shorts: " << info.num_short_chunks_processed_with_error()
-		  << " Error Subchunks: " << info.num_subchunks_processed_with_error()
-		  << " Error Block: " << info.num_blocks_processed_with_error();
+                  << " Parser stats ->"
+                  << " Blocks: " << info.num_blocks_processed() << " Block rate: " << info.rate_blocks_processed()
+                  << " [kHz]"
+                  << " Chunks: " << info.num_chunks_processed() << " Chunk rate: " << info.rate_chunks_processed()
+                  << " [kHz]"
+                  << " Shorts: " << info.num_short_chunks_processed() << " Subchunks:" << info.num_subchunks_processed()
+                  << " Error Chunks: " << info.num_chunks_processed_with_error()
+                  << " Error Shorts: " << info.num_short_chunks_processed_with_error()
+                  << " Error Subchunks: " << info.num_subchunks_processed_with_error()
+                  << " Error Block: " << info.num_blocks_processed_with_error();
 
     m_t0 = now;
 
-    publish( std::move(info),
-	     { { "card", std::to_string(m_card_id) },
-	       { "logical_unit", std::to_string(m_logical_unit) },
-	       { "link", std::to_string(m_link_id) },
-	       { "tag", std::to_string(m_link_tag) } } );
-	     
+    publish(std::move(info),
+            { { "card", std::to_string(m_card_id) },
+              { "logical_unit", std::to_string(m_logical_unit) },
+              { "link", std::to_string(m_link_id) },
+              { "tag", std::to_string(m_link_tag) } });
   }
-
 
 private:
   // Types

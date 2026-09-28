@@ -85,10 +85,9 @@ fixsizedChunkInto(std::shared_ptr<std::function<void(TargetStruct&&)>>& cb,
       }
       try {
         (*cb)(std::move(payload));
-      } catch (const std::exception &e) {
-          TLOG() << "Caught " << e.what();
+      } catch (const std::exception& e) {
+        TLOG() << "Caught " << e.what();
       }
-
     }
   };
 }
@@ -110,8 +109,8 @@ fixsizedShortchunkInto(std::shared_ptr<std::function<void(TargetStruct&&)>>& cb,
       std::memcpy(static_cast<char*>(payload), shortchunk.data, target_size);
       try {
         (*cb)(std::move(payload));
-      } catch (const std::exception &e) {
-          TLOG() << "Caught " << e.what();
+      } catch (const std::exception& e) {
+        TLOG() << "Caught " << e.what();
       }
     }
   };
@@ -147,8 +146,8 @@ fixsizedChunkViaHeap(std::shared_ptr<std::function<void(TargetStruct&&)>>& cb,
       }
       try {
         (*cb)(std::move(payload));
-      } catch (const std::exception &e) {
-          TLOG() << "Caught " << e.what();
+      } catch (const std::exception& e) {
+        TLOG() << "Caught " << e.what();
       }
     }
   };
@@ -166,7 +165,7 @@ varsizedChunkIntoWithDatafield(std::shared_ptr<std::function<void(TargetWithData
     TargetWithDatafield twd;
     twd.get_data().reserve(chunk.length());
     uint32_t bytes_copied_chunk = 0;
-    for (unsigned i = 0; i< n_subchunks; ++i) {
+    for (unsigned i = 0; i < n_subchunks; ++i) {
       dump_to_buffer(subchunk_data[i],
                      subchunk_sizes[i],
                      static_cast<void*>(twd.get_data().data()),
@@ -177,8 +176,8 @@ varsizedChunkIntoWithDatafield(std::shared_ptr<std::function<void(TargetWithData
     twd.set_data_size(bytes_copied_chunk);
     try {
       (*cb)(std::move(twd));
-    } catch (const std::exception &e) {
-        TLOG() << "Caught " << e.what();
+    } catch (const std::exception& e) {
+      TLOG() << "Caught " << e.what();
     }
   };
 }
@@ -186,7 +185,7 @@ varsizedChunkIntoWithDatafield(std::shared_ptr<std::function<void(TargetWithData
 template<class TargetWithDatafield>
 inline std::function<void(const felix::packetformat::shortchunk&)>
 varsizedShortchunkIntoWithDatafield(std::shared_ptr<std::function<void(TargetWithDatafield&&)>>& cb,
-                               std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
+                                    std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::shortchunk& shortchunk) {
     TargetWithDatafield twd;
@@ -195,15 +194,16 @@ varsizedShortchunkIntoWithDatafield(std::shared_ptr<std::function<void(TargetWit
     twd.set_data_size(shortchunk.length);
     try {
       (*cb)(std::move(twd));
-    } catch (const std::exception &e) {
-        TLOG() << "Caught " << e.what();
+    } catch (const std::exception& e) {
+      TLOG() << "Caught " << e.what();
     }
   };
 }
 
 inline std::function<void(const felix::packetformat::chunk& chunk)>
-varsizedChunkIntoWrapper(std::shared_ptr<std::function<void(fdreadoutlibs::types::VariableSizePayloadTypeAdapter&&)>>& cb,
-                         std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
+varsizedChunkIntoWrapper(
+  std::shared_ptr<std::function<void(fdreadoutlibs::types::VariableSizePayloadTypeAdapter&&)>>& cb,
+  std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::chunk& chunk) {
     auto subchunk_data = chunk.subchunks();
@@ -221,15 +221,16 @@ varsizedChunkIntoWrapper(std::shared_ptr<std::function<void(fdreadoutlibs::types
     fdreadoutlibs::types::VariableSizePayloadTypeAdapter payload_wrapper(chunk_length, payload);
     try {
       (*cb)(std::move(payload_wrapper));
-    } catch (const std::exception &e) {
-        TLOG() << "Caught " << e.what();
+    } catch (const std::exception& e) {
+      TLOG() << "Caught " << e.what();
     }
   };
 }
 
 inline std::function<void(const felix::packetformat::shortchunk& shortchunk)>
-varsizedShortchunkIntoWrapper(std::shared_ptr<std::function<void(fdreadoutlibs::types::VariableSizePayloadTypeAdapter&&)>>& cb,
-                              std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
+varsizedShortchunkIntoWrapper(
+  std::shared_ptr<std::function<void(fdreadoutlibs::types::VariableSizePayloadTypeAdapter&&)>>& cb,
+  std::chrono::milliseconds timeout = std::chrono::milliseconds(100))
 {
   return [&](const felix::packetformat::shortchunk& shortchunk) {
     auto shortchunk_length = shortchunk.length;
@@ -238,12 +239,11 @@ varsizedShortchunkIntoWrapper(std::shared_ptr<std::function<void(fdreadoutlibs::
     fdreadoutlibs::types::VariableSizePayloadTypeAdapter payload_wrapper(shortchunk_length, payload);
     try {
       (*cb)(std::move(payload_wrapper));
-    } catch (const std::exception &e) {
-        TLOG() << "Caught " << e.what();
+    } catch (const std::exception& e) {
+      TLOG() << "Caught " << e.what();
     }
   };
 }
-
 
 inline std::function<void(const felix::packetformat::chunk& chunk)>
 errorChunkIntoSink(std::shared_ptr<std::function<void(felix::packetformat::chunk&&)>>& cb,
@@ -253,12 +253,11 @@ errorChunkIntoSink(std::shared_ptr<std::function<void(felix::packetformat::chunk
     try {
       auto payload = chunk;
       (*cb)(std::move(payload));
-    } catch (const std::exception &e) {
-        TLOG() << "Caught " << e.what();
+    } catch (const std::exception& e) {
+      TLOG() << "Caught " << e.what();
     }
   };
 }
-
 
 //// Implement here any other DUNE specific FELIX chunk/block to User payload parsers
 

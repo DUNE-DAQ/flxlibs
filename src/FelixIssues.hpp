@@ -8,8 +8,8 @@
 #ifndef FLXLIBS_SRC_FELIXISSUES_HPP_
 #define FLXLIBS_SRC_FELIXISSUES_HPP_
 
-#include <ers/Issue.hpp>
 #include "logging/Logging.hpp" // NOTE: if ISSUES ARE DECLARED BEFORE include logging/Logging.hpp, TLOG_DEBUG<<issue wont work.
+#include <ers/Issue.hpp>
 
 #include <string>
 
@@ -25,7 +25,9 @@ ERS_DECLARE_ISSUE(flxlibs, QueueTimeoutError, " FELIX queue timed out: " << queu
 
 ERS_DECLARE_ISSUE(flxlibs, ChannelAlignment, " Channel not aligned: " << channel, ((int)channel)) // NOLINT
 
-ERS_DECLARE_ISSUE(flxlibs, UnexpectedChunk, " Unexpected chunk size: " << chunksize << " (observed) != " << expected << " (expected)",
+ERS_DECLARE_ISSUE(flxlibs,
+                  UnexpectedChunk,
+                  " Unexpected chunk size: " << chunksize << " (observed) != " << expected << " (expected)",
                   ((int)chunksize)((size_t)expected)) // NOLINT
 
 ERS_DECLARE_ISSUE(flxlibs,

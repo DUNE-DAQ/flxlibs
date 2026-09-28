@@ -33,3 +33,9 @@
 *.exe
 *.out
 *.app
+
+# clang-format files
+.clang-format
+.clang-format.previous
+.DS_Store
+.vscode/settings.json
